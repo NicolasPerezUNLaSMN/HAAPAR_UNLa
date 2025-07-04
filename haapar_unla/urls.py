@@ -16,9 +16,19 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from haapar_unla_app.views import inicio
+from haapar_unla_app import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', inicio),
+    path('', views.inicio, name='inicio'),
+    path('about/', views.about, name='about'),
+    path('blog/', views.blog, name='blog'),
+    path('blog-details/', views.blog_details, name='blog-details'),
+    path('contact/', views.contact, name='contact'),
+    path('portfolio/', views.portfolio, name='portfolio'),
+    path('portfolio-details/', views.portfolio_details, name='portfolio-details'),
+    path('services/', views.services, name='services'),
+    path('service-details/', views.service_details, name='service-details'),
+    path('team/', views.team, name='team'),
+    path('starter-page/', views.starter_page, name='starter-page'),
 ]

@@ -46,13 +46,13 @@
       <a href="index.html" class="logo d-flex align-items-center">
         <!-- Uncomment the line below if you also wish to use an image logo -->
         <!-- <img src="assets/img/logo.png" alt=""> -->
-        <h1 class="sitename">Moderna</h1>
+        <h1 class="sitename">UCES</h1>
       </a>
 
       <nav id="navmenu" class="navmenu">
         <ul>
           <li><a href="index.html" class="active">Home</a></li>
-          <li><a href="about.html">About</a></li>
+          <li><a href="{% url 'about' %}">About</a></li>
           <li><a href="services.html">Services</a></li>
           <li><a href="portfolio.html">Portfolio</a></li>
           <li><a href="team.html">Team</a></li>
@@ -74,7 +74,7 @@
               <li><a href="#">Dropdown 4</a></li>
             </ul>
           </li>
-          <li><a href="contact.html">Contact</a></li>
+          <li><a href="#contact">Contact</a></li>
         </ul>
         <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
       </nav>
@@ -86,10 +86,11 @@
 
     <!-- Hero Section -->
     <section id="hero" class="hero section dark-background">
-
-      <!-- <img src="assets/img/hero-bg.jpg" alt="" data-aos="fade-in"> -->
-
-      <div id="hero-carousel" class="carousel carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
+      <img src="{% static 'haapar_unla_app/assets/img/Uces.jpg' %}" alt="Nuevo fondo" class="uces-background" data-aos="fade-in">
+      <div class="container text-center mt-4">
+        <a href="#about" class="btn btn-primary">Crear proyecto</a>
+      </div>
+      <!--  <div id="hero-carousel" class="carousel carousel-fade" data-bs-ride="carousel" data-bs-interval="5000">
 
         <div class="container position-relative">
 
@@ -99,25 +100,25 @@
               <p>Ut velit est quam dolor ad a aliquid qui aliquid. Sequi ea ut et est quaerat sequi nihil ut aliquam. Occaecati alias dolorem mollitia ut. Similique ea voluptatem. Esse doloremque accusamus repellendus deleniti vel. Minus et tempore modi architecto.</p>
               <a href="#about" class="btn-get-started">Read More</a>
             </div>
-          </div><!-- End Carousel Item -->
+          </div> --> <!-- End Carousel Item -->
 
-          <div class="carousel-item">
+          <!--<div class="carousel-item">
             <div class="carousel-container">
               <h2>Lorem Ipsum Dolor</h2>
               <p>Ut velit est quam dolor ad a aliquid qui aliquid. Sequi ea ut et est quaerat sequi nihil ut aliquam. Occaecati alias dolorem mollitia ut. Similique ea voluptatem. Esse doloremque accusamus repellendus deleniti vel. Minus et tempore modi architecto.</p>
               <a href="#about" class="btn-get-started">Read More</a>
             </div>
-          </div><!-- End Carousel Item -->
+          </div> --><!-- End Carousel Item -->
 
-          <div class="carousel-item">
+          <!-- <div class="carousel-item">
             <div class="carousel-container">
               <h2>Sequi ea ut et est quaerat</h2>
               <p>Ut velit est quam dolor ad a aliquid qui aliquid. Sequi ea ut et est quaerat sequi nihil ut aliquam. Occaecati alias dolorem mollitia ut. Similique ea voluptatem. Esse doloremque accusamus repellendus deleniti vel. Minus et tempore modi architecto.</p>
-              <a href="#about" class="btn-get-started">Read More</a>
-            </div>
-          </div><!-- End Carousel Item -->
+              --> <!--<a href="#about" class="btn-get-started">Read More</a>
+            </div>-->
+          <!--</div>--><!-- End Carousel Item -->
 
-          <a class="carousel-control-prev" href="#hero-carousel" role="button" data-bs-slide="prev">
+          <!--<a class="carousel-control-prev" href="#hero-carousel" role="button" data-bs-slide="prev">
             <span class="carousel-control-prev-icon bi bi-chevron-left" aria-hidden="true"></span>
           </a>
 
@@ -129,9 +130,9 @@
 
         </div>
 
-      </div>
+      </div>-->
 
-    </section><!-- /Hero Section -->
+    </section> <!-- /Hero Section --> 
 
     <!-- Featured Services Section -->
     <section id="featured-services" class="featured-services section">
