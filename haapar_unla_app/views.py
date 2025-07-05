@@ -32,3 +32,6 @@ def starter_page(request):
 
 def team(request):
     return render(request, 'haapar_unla_app/team.html')
+
+def crear_proyecto(request):
+    return render(request, 'haapar_unla_app/crear-proyecto.html')
