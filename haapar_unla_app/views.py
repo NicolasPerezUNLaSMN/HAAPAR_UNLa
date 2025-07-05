@@ -32,3 +32,19 @@ def starter_page(request):
 
 def team(request):
     return render(request, 'haapar_unla_app/team.html')
+
+# Vista para manejar el error 400
+def error_400_view(request, exception):
+    return render(request, 'haapar_unla_app/error/400.html', status=400)
+
+# Vista para manejar el error 403
+def error_403_view(request, exception):
+    return render(request, 'haapar_unla_app/error/403.html', status=403)
+
+# Vista para manejar el error 404
+def error_404_view(request, exception):
+    return render(request, 'haapar_unla_app/error/404.html', status=404)
+
+# Vista para manejar el error 500
+def error_500_view(request):
+    return render(request, 'haapar_unla_app/error/500.html', status=500)
