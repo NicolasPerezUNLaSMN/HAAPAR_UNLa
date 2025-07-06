@@ -33,6 +33,7 @@ urlpatterns = [
     path('service-details/', views.service_details, name='service-details'),
     path('team/', views.team, name='team'),
     path('starter-page/', views.starter_page, name='starter-page'),
+    path('signup/', views.registro, name='registro'),
 ]
 
 handler400 = views.error_400_view

@@ -1,4 +1,7 @@
 from django.shortcuts import render
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
+from django.http import HttpResponse
 
 def inicio(request):
     return render(request, 'haapar_unla_app/index.html')
@@ -33,7 +36,32 @@ def starter_page(request):
 def team(request):
     return render(request, 'haapar_unla_app/team.html')
 
-# Vista para manejar el error 400
+def registro(request):
+
+    if request.method == 'GET':
+        return render(request, 'haapar_unla_app/autenticacion/signup.html', {
+            'form': UserCreationForm
+        })
+    else:
+        if request.POST['password1'] == request.POST['password2']:
+            # Registro de Usuarios
+            try:
+                user = User.objects.create_user(
+                    username=request.POST["username"], password=request.POST["password1"])
+                user.save()
+                return HttpResponse("Usuario creado exitosamente")
+            except:
+                return render(request, 'haapar_unla_app/autenticacion/signup.html', {
+                    'form': UserCreationForm,
+                    'error': "Usuario ya existe"
+                })
+        return render(request, 'haapar_unla_app/autenticacion/signup.html', {
+            'form': UserCreationForm,
+            'error': "Contraseña no coincide"
+        })
+
+
+# Vista para manejar e error 400
 def error_400_view(request, exception):
     return render(request, 'haapar_unla_app/error/400.html', status=400)
 
