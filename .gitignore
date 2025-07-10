@@ -15,3 +15,7 @@ bin/
 
 # Ignorar el directorio del entorno virtual de Python
 venv/
+
+# ¡IMPORTANTE!: Ignora el archivo .env donde se almacenan variables de entorno
+# como credenciales de base de datos, claves API, etc.
+.env

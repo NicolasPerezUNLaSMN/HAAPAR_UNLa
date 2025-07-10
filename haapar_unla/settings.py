@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+load_dotenv() # Carga las variables del .env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -79,8 +81,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'haapar_unla',
-        'USER': 'postgres', # Tu usuario
-        'PASSWORD': 'admin', # Tu contraseña
+        'USER': os.environ.get('DB_USER'), # ¡IMPORTANTE!: No dejar credenciales directamente aquí.
+        'PASSWORD': os.environ.get('DB_PASSWORD'), # ¡IMPORTANTE!: No dejar credenciales directamente aquí.
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
@@ -109,7 +111,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'es-eu'
+LANGUAGE_CODE = 'es-AR'
 
 TIME_ZONE = 'America/Argentina/Buenos_Aires'
 
