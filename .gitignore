@@ -1,6 +1,17 @@
+# Ignorar configuraciones de usuario de VS Code que son específicas de cada desarrollador.
 .vscode/settings.json
+
+# Ignorar archivos específicos de macOS
 .DS_Store
-__pycache__
-db.sqlite3
+
+# Ignorar directorios de caché de Python generados automáticamente
+__pycache__/
+
+# Ignorar archivos compilados de Python
+*.pyc
+
+# Ignorar el directorio de ejecutables (comúnmente usado para entornos virtuales)
 bin/
+
+# Ignorar el directorio del entorno virtual de Python
 venv/
