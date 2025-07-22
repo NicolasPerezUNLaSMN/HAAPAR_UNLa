@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+load_dotenv() # Carga las variables del .env
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -24,9 +26,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-+54ji67!7xd)3=2c8jb01m^b90pjz!wrzu39_$o)(o2=a#9osr'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = True # Esto debe estar en False para que se activen las páginas de error personalizadas
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*'] # Cambia esto por los hosts permitidos en produccion
 
 
 # Application definition
@@ -77,8 +79,12 @@ WSGI_APPLICATION = 'haapar_unla.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'haapar_unla',
+        'USER': os.environ.get('DB_USER'), # ¡IMPORTANTE!: No dejar credenciales directamente aquí.
+        'PASSWORD': os.environ.get('DB_PASSWORD'), # ¡IMPORTANTE!: No dejar credenciales directamente aquí.
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
     }
 }
 
@@ -105,9 +111,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'es-AR'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/Argentina/Buenos_Aires'
 
 USE_I18N = True
 
