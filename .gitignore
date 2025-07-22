@@ -1,0 +1,36 @@
+# Ignorar directorios de caché de Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignorar el directorio de ejecutables (comúnmente usado para entornos virtuales)
+bin/
+
+# Ignorar entornos virtuales
+venv/
+env/
+.venv/
+
+# ¡IMPORTANTE! Ignora el archivo .env donde se almacenan variables de entorno
+# como credenciales de base de datos, claves API, etc.
+.env
+
+# Ignorar archivos de configuración de IDEs comunes
+.vscode/
+.idea/
+
+# Ignorar configuraciones de usuario de VS Code que son específicas de cada desarrollador.
+.vscode/settings.json
+
+# Ignorar archivos específicos de desarrollo local
+*.log
+*.pot
+*.mo
+.DS_Store # macOS
+Thumbs.db # Windows
+
+# Ignorar archivos de base de datos SQLite (si usas Django u otro framework con SQLite)
+db.sqlite3
+*/db.sqlite3 # Por si está en un subdirectorio
+
