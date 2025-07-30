@@ -18,6 +18,8 @@ from django.contrib import admin
 from django.urls import path
 from haapar_unla_app import views
 
+from django.conf.urls import handler400, handler403, handler404, handler500
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.inicio, name='inicio'),
@@ -32,3 +34,8 @@ urlpatterns = [
     path('team/', views.team, name='team'),
     path('starter-page/', views.starter_page, name='starter-page'),
 ]
+
+handler400 = views.error_400_view
+handler403 = views.error_403_view
+handler404 = views.error_404_view
+handler500 = views.error_500_view
