@@ -30,6 +30,5 @@ env/
 .DS_Store # macOS
 Thumbs.db # Windows
 
-# Ignorar archivos de base de datos SQLite (si usas Django u otro framework con SQLite)
+# Ignorar archivos de base de datos SQLite
 db.sqlite3
-*/db.sqlite3 # Por si está en un subdirectorio

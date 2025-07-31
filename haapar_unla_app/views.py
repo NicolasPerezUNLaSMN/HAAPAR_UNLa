@@ -17,7 +17,7 @@ def blog_details(request):
     return render(request, 'haapar_unla_app/blog-details.html')
 
 
-def blog(request):  # Esta es la vista que faltaba
+def blog(request):
     return render(request, 'haapar_unla_app/blog.html')
 
 
@@ -80,9 +80,11 @@ def registro(request):
             'error': "Contraseña no coincide"
         })
 
+
 def cerrar_sesion(request):
     logout(request)
     return redirect("inicio")
+
 
 def iniciar_sesion(request):
     if request.method == 'GET':
@@ -91,13 +93,14 @@ def iniciar_sesion(request):
         })
     else:
         # print(request.POST)
-        user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
-        
+        user = authenticate(
+            request, username=request.POST['username'], password=request.POST['password'])
+
         if user is None:
             return render(request, "haapar_unla_app/autenticacion/signin.html", {
-            'form': AuthenticationForm,
-            'error': 'Usuario o contraseña es incorrecto'
-        })
+                'form': AuthenticationForm,
+                'error': 'Usuario o contraseña es incorrecto'
+            })
         else:
             login(request, user)
             return redirect('inicio')
