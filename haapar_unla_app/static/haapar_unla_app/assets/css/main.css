@@ -12,29 +12,41 @@
 --------------------------------------------------------------*/
 /* Fonts */
 :root {
-  --default-font: "Roboto",  system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
-  --heading-font: "Raleway",  sans-serif;
-  --nav-font: "Poppins",  sans-serif;
+  --default-font: "Roboto", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Liberation Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --heading-font: "Raleway", sans-serif;
+  --nav-font: "Poppins", sans-serif;
 }
 
 /* Global Colors - The following color variables are used throughout the website. Updating them here will change the color scheme of the entire website */
-:root { 
-  --background-color: #ffffff; /* Background color for the entire website, including individual sections */
-  --default-color: #555555; /* Default color used for the majority of the text content across the entire website */
-  --heading-color: #1e4356; /* Color for headings, subheadings and title throughout the website */
-  --accent-color: #68a4c4; /* Accent color that represents your brand on the website. It's used for buttons, links, and other elements that need to stand out */
-  --surface-color: #ffffff; /* The surface color is used as a background of boxed elements within sections, such as cards, icon boxes, or other elements that require a visual separation from the global background. */
-  --contrast-color: #ffffff; /* Contrast color for text, ensuring readability against backgrounds of accent, heading, or default colors. */
+:root {
+  --background-color: #ffffff;
+  /* Background color for the entire website, including individual sections */
+  --default-color: #555555;
+  /* Default color used for the majority of the text content across the entire website */
+  --heading-color: #1e4356;
+  /* Color for headings, subheadings and title throughout the website */
+  --accent-color: #68a4c4;
+  /* Accent color that represents your brand on the website. It's used for buttons, links, and other elements that need to stand out */
+  --surface-color: #ffffff;
+  /* The surface color is used as a background of boxed elements within sections, such as cards, icon boxes, or other elements that require a visual separation from the global background. */
+  --contrast-color: #ffffff;
+  /* Contrast color for text, ensuring readability against backgrounds of accent, heading, or default colors. */
 }
 
 /* Nav Menu Colors - The following color variables are used specifically for the navigation menu. They are separate from the global colors to allow for more customization options */
 :root {
-  --nav-color: #ffffff;  /* Color del texto del nav */
-  --nav-hover-color: #68a4c4; /* Color al hacer hover */
-  --nav-mobile-background-color: rgba(30, 67, 86, 0.9); /* Fondo móvil */
-  --nav-dropdown-background-color: rgba(30, 67, 86, 0.95); /* Fondo dropdown */
-  --nav-dropdown-color: #ffffff; /* Color texto dropdown */
-  --nav-dropdown-hover-color: #68a4c4; /* Color hover dropdown */
+  --nav-color: #ffffff;
+  /* Color del texto del nav */
+  --nav-hover-color: #68a4c4;
+  /* Color al hacer hover */
+  --nav-mobile-background-color: rgba(30, 67, 86, 0.9);
+  /* Fondo móvil */
+  --nav-dropdown-background-color: rgba(30, 67, 86, 0.95);
+  /* Fondo dropdown */
+  --nav-dropdown-color: #ffffff;
+  /* Color texto dropdown */
+  --nav-dropdown-hover-color: #68a4c4;
+  /* Color hover dropdown */
 }
 
 /* Color Presets - These classes override global colors when applied to any section or element, providing reuse of the sam color scheme. */
@@ -89,7 +101,7 @@ h6 {
 
 /* PHP Email Form Messages
 ------------------------------*/
-.php-email-form .error-message {
+.php-form .error-message {
   display: none;
   background: #df1529;
   color: #ffffff;
@@ -99,7 +111,7 @@ h6 {
   font-weight: 600;
 }
 
-.php-email-form .sent-message {
+.php-form .sent-message {
   display: none;
   color: #ffffff;
   background: #059652;
@@ -109,7 +121,7 @@ h6 {
   font-weight: 600;
 }
 
-.php-email-form .loading {
+.php-form .loading {
   display: none;
   background: var(--surface-color);
   text-align: center;
@@ -117,7 +129,7 @@ h6 {
   margin-bottom: 24px;
 }
 
-.php-email-form .loading:before {
+.php-form .loading:before {
   content: "";
   display: inline-block;
   border-radius: 50%;
@@ -126,10 +138,10 @@ h6 {
   margin: 0 10px -6px 0;
   border: 3px solid var(--accent-color);
   border-top-color: var(--surface-color);
-  animation: php-email-form-loading 1s linear infinite;
+  animation: php-form-loading 1s linear infinite;
 }
 
-@keyframes php-email-form-loading {
+@keyframes php-form-loading {
   0% {
     transform: rotate(0deg);
   }
@@ -222,7 +234,8 @@ h6 {
 # Global Header
 --------------------------------------------------------------*/
 .header {
-  --background-color: rgba(30, 67, 86, 0.8); /* Fondo semitransparente */
+  --background-color: rgba(30, 67, 86, 0.8);
+  /* Fondo semitransparente */
   --default-color: #ffffff;
   --heading-color: #ffffff;
   color: var(--default-color);
@@ -230,8 +243,10 @@ h6 {
   padding: 15px 0;
   transition: all 0.5s;
   z-index: 997;
-  backdrop-filter: blur(5px); /* Efecto de desenfoque para mejor legibilidad */
-  -webkit-backdrop-filter: blur(5px); /* Para compatibilidad con Safari */
+  backdrop-filter: blur(5px);
+  /* Efecto de desenfoque para mejor legibilidad */
+  -webkit-backdrop-filter: blur(5px);
+  /* Para compatibilidad con Safari */
 }
 
 .header .logo {
@@ -253,7 +268,8 @@ h6 {
 /* Global Header on Scroll
 ------------------------------*/
 .scrolled .header {
-  --background-color: rgba(30, 67, 86, 0.95); /* Más opaco al hacer scroll */
+  --background-color: rgba(30, 67, 86, 0.95);
+  /* Más opaco al hacer scroll */
   box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
 }
 
@@ -2364,56 +2380,38 @@ section,
 }
 
 /*--------------------------------------------------------------
-# Contact Section
+# Form Section
 --------------------------------------------------------------*/
-.contact .info-item {
-  background-color: var(--surface-color);
-  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
-  padding: 24px 0 30px 0;
-}
 
-.contact .info-item i {
-  font-size: 20px;
-  color: var(--accent-color);
-  width: 56px;
-  height: 56px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: all 0.3s ease-in-out;
-  border-radius: 50%;
-  border: 2px dotted color-mix(in srgb, var(--accent-color), transparent 40%);
-}
-
-.contact .info-item h3 {
+.form .php-form h3 {
   color: color-mix(in srgb, var(--default-color), transparent 20%);
   font-size: 18px;
   font-weight: 700;
   margin: 10px 0;
 }
 
-.contact .info-item p {
+.form .info-item p {
   padding: 0;
   margin-bottom: 0;
   font-size: 14px;
 }
 
-.contact .php-email-form {
+.form .php-form {
   background-color: var(--surface-color);
   box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
   height: 100%;
-  padding: 30px 30px 0 30px;
+  padding: 30px 30px 30px 30px;
 }
 
 @media (max-width: 575px) {
-  .contact .php-email-form {
+  .form .php-form {
     padding: 20px;
   }
 }
 
-.contact .php-email-form input[type=text],
-.contact .php-email-form input[type=email],
-.contact .php-email-form textarea {
+.form .php-form input[type=text],
+.form-report .php-form input[type=text],
+.form-report .php-form textarea {
   font-size: 14px;
   padding: 10px 15px;
   box-shadow: none;
@@ -2423,19 +2421,19 @@ section,
   border-color: color-mix(in srgb, var(--default-color), transparent 80%);
 }
 
-.contact .php-email-form input[type=text]:focus,
-.contact .php-email-form input[type=email]:focus,
-.contact .php-email-form textarea:focus {
+.form-report .php-form input[type=text]:focus,
+.form-report .php-form input[type=text]:focus,
+.form-report .php-form textarea:focus {
   border-color: var(--accent-color);
 }
 
-.contact .php-email-form input[type=text]::placeholder,
-.contact .php-email-form input[type=email]::placeholder,
-.contact .php-email-form textarea::placeholder {
+.form-report .php-form input[type=text]::placeholder,
+.form-report .php-form input[type=text]::placeholder,
+.form-report .php-form textarea::placeholder {
   color: color-mix(in srgb, var(--default-color), transparent 70%);
 }
 
-.contact .php-email-form button[type=submit] {
+.form-report .php-form button[type=submit] {
   color: var(--contrast-color);
   background: var(--accent-color);
   border: 0;
@@ -2444,7 +2442,7 @@ section,
   border-radius: 50px;
 }
 
-.contact .php-email-form button[type=submit]:hover {
+.form-report .php-form button[type=submit]:hover {
   background: color-mix(in srgb, var(--accent-color), transparent 20%);
 }
 
@@ -2650,6 +2648,7 @@ section,
   color: color-mix(in srgb, var(--default-color), transparent 60%);
   font-size: 14px;
 }
+
 /*Imagen de fondo UCES*/
 .uces-background {
   position: absolute;
@@ -2658,6 +2657,7 @@ section,
   object-fit: cover;
   z-index: -1;
 }
+
 /*Boton crear proyecto*/
 
 .hero .container {
