@@ -88,8 +88,6 @@
               <li><a href="#">Dropdown 4</a></li>
             </ul>
           </li>
-
-          <li><a href="{% url 'contact' %}" class="{% if request.resolver_match.url_name == 'contact' %}active{% endif %}">Contact</a></li>
           
           {% if user.is_authenticated %}
            <li><a href="{% url 'cerrar_sesion' %}">Cerrar Sesion</a></li>
