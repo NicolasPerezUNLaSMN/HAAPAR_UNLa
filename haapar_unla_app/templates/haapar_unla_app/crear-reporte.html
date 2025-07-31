@@ -1,0 +1,85 @@
+{% extends 'haapar_unla_app/base.html' %}
+{% load static %}
+
+{# Sobrescribe el título de la página#}
+{% block title %}Crear Proyecto- HAAPAR UNLa{% endblock %}
+
+{# Sobrescribe la clase del body para esta página específica#}
+{% block body_class %}form-page{% endblock %}
+
+{% block content %}
+<main class="main">
+
+  <!-- Page Title -->
+  <div class="page-title dark-background">
+    <div class="container position-relative">
+      <h1>Crear Reportes</h1>
+      <p>Ingrese la informacion necesaria para realizar el reporte.</p>
+      <nav class="breadcrumbs"> </nav>
+    </div>
+  </div><!-- End Page Title -->
+
+  <!-- Form Section -->
+  <section id="form-report" class="form-report section">
+
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+
+  <div class="row justify-content-center"> <div class="col-lg-8 col-md-10"> <form action="forms/form-report.php" method="post" class="php-form" data-aos="fade-up" data-aos-delay="20">
+            <div class="row gy-4">
+
+              <div class="col-md-12">
+                <h3>Tema de Interes</h3>
+                <input type="text" name="tema" class="form-control"
+                  placeholder="Describa en una oracion el tema estudio que tiene en mente" required="">
+              </div>
+
+              <div class="col-md-12">
+                 <h3>Año de Estudio</h3>
+                <input type="text" class="form-control" name="anio"
+                  placeholder="¿Hasta que año quiere realizar el estudio de prospectiva?" required="">
+              </div>
+
+              <div class="col-md-12">
+                <h3>Seleccione el grado de investigacion</h3>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="gradoInvestigacion" id="bajo" value="ValorOpcion1"
+                    required>
+                  <label class="form-check-label" for="bajo">
+                    Detalle Bajo
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="gradoInvestigacion" id="estandar" value="ValorOpcion2">
+                  <label class="form-check-label" for="estandar">
+                    Informe Estandar
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="radio" name="gradoInvestigacion" id="profundo" value="ValorOpcion3">
+                  <label class="form-check-label" for="profundo">
+                    Investigacion Profunda
+                  </label>
+                </div>
+              </div>
+
+              <div class="col-md-12 text-center">
+                <div class="loading">Generando Reporte...</div>
+                <div class="error-message"></div>
+                <div class="sent-message">Reporte Generado</div>
+
+                <button type="submit">Crear Reporte</button>
+              </div>
+
+            </div>
+          </form>
+        </div>
+
+      </div>
+
+    </div>
+
+  </section><!-- /Form Section -->
+
+</main>
+
+{% endblock content %}

@@ -21,8 +21,8 @@ def blog(request):  # Esta es la vista que faltaba
     return render(request, 'haapar_unla_app/blog.html')
 
 
-def contact(request):
-    return render(request, 'haapar_unla_app/contact.html')
+def crear_reporte(request):
+    return render(request, 'haapar_unla_app/crear-reporte.html')
 
 
 def portfolio_details(request):
