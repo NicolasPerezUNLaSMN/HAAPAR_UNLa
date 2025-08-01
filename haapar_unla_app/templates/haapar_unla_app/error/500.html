@@ -1,42 +1,21 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+{% extends 'haapar_unla_app/base.html' %}
+{% load static %}
 
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        text-align: center;
-        padding: 50px;
-      }
-      h1 {
-        font-size: 50px;
-        color: #ff0000;
-      }
-      p {
-        font-size: 20px;
-      }
-      a {
-        color: white;
-        background-color: #007bff;
-        padding: 10px;
-        text-decoration: none;
-        border-radius: 10px;
-      }
-      a:hover {
-        text-decoration: none;
-      }
-    </style>
+{# Sobrescribe el título de la página #}
+{% block title %}Error 500 - HAAPAR{% endblock %}
 
-    <title>Error 500 - Error del servidor</title>
-  </head>
-  <body>
-    <div class="container">
-      <h1>500 - Error del servidor</h1>
-      <p>Lo sentimos, ocurrió un error inesperado en el servidor.</p>
-      <a href="/">Volver al inicio</a>
+{% block body_class %}error-500-page d-flex flex-column min-vh-100 mt-3{% endblock %}
+
+{% block content %}
+
+<main class="main-error flex-grow-1 d-flex align-items-center justify-content-center mt-5 pt-5">
+    <div class="container text-center py-5">
+      <div class="error-content">
+        <h1 class="display-1 text-danger fw-bold mb-3">500 - Error del servidor</h1>
+        <p class="h3 mb-4">Lo sentimos, ocurrió un error inesperado en el servidor.</p>
+        <a href="{% url 'inicio' %}" class="btn btn-primary btn-lg mt-4">Volver al inicio</a>
+      </div>
     </div>
-  </body>
-</html>
+</main>
+
+{% endblock content %}
