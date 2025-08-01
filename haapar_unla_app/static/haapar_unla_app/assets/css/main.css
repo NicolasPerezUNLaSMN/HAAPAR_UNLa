@@ -2649,7 +2649,7 @@ section,
   font-size: 14px;
 }
 
-/*Imagen de fondo UCES*/
+/** Imagen de fondo UCES */
 .uces-background {
   position: absolute;
   width: 100%;
@@ -2658,8 +2658,7 @@ section,
   z-index: -1;
 }
 
-/*Boton crear proyecto*/
-
+/** Boton crear proyecto */
 .hero .container {
   position: relative;
   z-index: 2;
