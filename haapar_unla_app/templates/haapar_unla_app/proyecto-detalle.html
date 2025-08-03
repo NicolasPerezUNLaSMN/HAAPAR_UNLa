@@ -1,0 +1,92 @@
+{% extends 'haapar_unla_app/base.html' %} 
+{% load static %} 
+
+{# Sobrescribe el título de la página #} 
+{% block title %} Detalle del Proyecto - HAAPAR {% endblock %} 
+
+{# Sobrescribe la clase del body para esta página específica #} 
+{% block body_class %} services-page {% endblock %} 
+
+{% block content %}
+
+<main class="main">
+  <!-- Titulo de la pagina -->
+  <div class="page-title dark-background">
+    <div class="container position-relative">
+      <h1>Detalle del proyecto</h1>
+      <p>Jugadores promesas del futbol mundial - 2040</p>
+      <span>ID 1</span>
+      <nav class="breadcrumbs"></nav>
+    </div>
+  </div>
+
+  <!-- Seccion del detalle del proyecto -->
+  <section id="featured-services" class="featured-services section">
+    <div class="container">
+      <div class="row gy-4">
+        <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+          <div class="service-item item-cyan position-relative">
+            <div class="icon">
+              <i class="bi bi-activity"></i>
+            </div>
+            <a href="{% url 'variable_detalle' %}" class="stretched-link">
+              <h3>Variables</h3>
+            </a>
+            <p>
+              Automatizacion de Variables de cada Proyecto
+            </p>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
+          <div class="service-item item-orange position-relative">
+            <div class="icon">
+              <i class="bi bi-broadcast"></i>
+            </div>
+            <a href="#" class="stretched-link">
+              <h3>Tendencias</h3>
+            </a>
+            <p>
+              Nuestro sistema de Tendencias ofrece una visión prospectiva crucial para la planificación de futuros y estudios del tiempo, impulsada por la inteligencia artificial. A partir de un tema de interés seleccionado por el usuario, un año de estudio definido, y un grado de investigación, la IA genera un conjunto de diez tendencias clave.
+            </p>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
+          <div class="service-item item-teal position-relative">
+            <div class="icon">
+              <i class="bi bi-easel"></i>
+            </div>
+            <a href="#" class="stretched-link">
+              <h3>Actores</h3>
+            </a>
+            <p>
+              Automatización de Actores Claves de cada proyecto
+            </p>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
+          <div class="service-item item-red position-relative">
+            <div class="icon">
+              <i class="bi bi-bounding-box-circles"></i>
+            </div>
+            <a href="#" class="stretched-link">
+              <h3>Analisis FODA</h3>
+            </a>
+            <p>
+              El análisis FODA (Fortalezas, Oportunidades, Debilidades y Amenazas) es una herramienta estratégica que permite realizar un diagnóstico interno y externo de un tema, proyecto u organización.
+            </p>
+            <a href="#" class="stretched-link"></a>
+          </div>
+        </div>
+      </div>
+
+      <div class="text-center mt-4">
+        <a href="#" onclick="history.back()" class="btn btn-dark">Volver</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+{% endblock content %}

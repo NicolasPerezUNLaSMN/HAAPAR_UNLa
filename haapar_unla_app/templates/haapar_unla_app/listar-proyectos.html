@@ -1,0 +1,71 @@
+{% extends 'haapar_unla_app/base.html' %} 
+{% load static %} 
+
+{% block title %} Mis Proyectos - HAAPAR {% endblock %} 
+
+{% block content %}
+
+<main class="main">
+  <div class="page-title dark-background">
+    <div class="container position-relative">
+      <h1>Mis Proyectos</h1>
+      <p>Aquí puedes ver y gestionar todos tus proyectos de estudio.</p>
+      <nav class="breadcrumbs"></nav>
+    </div>
+  </div>
+  <section id="projects-list" class="projects-list section">
+    <div class="container" data-aos="fade-up" data-aos-delay="100">
+      <div class="row justify-content-center">
+        <div class="col-lg-10 col-md-12">
+          <div class="table-responsive">
+            <table class="table table-striped table-hover">
+              <thead>
+                <tr>
+                  <th>Nombre del Tema</th>
+                  <th>Descripción</th>
+                  <th>Año de Estudio</th>
+                  <th>Precision</th>
+                  <th>Usuario</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Jugadores Promesas en el Futbol</td>
+                  <td>
+                    Este estudio se enfoca en la identificación, evaluación y seguimiento de talentos jóvenes en el fútbol
+                  </td>
+                  <td>2040</td>
+                  <td>Baja</td>
+                  <td>Juan</td>
+                  <td>
+                    <a href="{% url 'proyecto_detalle' %}" class="btn btn-sm btn-info me-1">Ver detalles</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Prospectiva Energética Regional</td>
+                  <td>
+                    Evaluación de fuentes de energía renovable y su integración
+                    en la matriz energética de la provincia.
+                  </td>
+                  <td>2050</td>
+                  <td>Alta</td>
+                  <td>Lucas</td>
+                  <td>
+                    <a href="{% url 'proyecto_detalle' %}" class="btn btn-sm btn-info me-1">Ver detalles</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="text-center mt-4">
+            <a href="{% url 'crear_reporte' %}" class="btn btn-dark" style="background-color: #00695A;">Crear Nuevo Reporte</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+{% endblock content %}

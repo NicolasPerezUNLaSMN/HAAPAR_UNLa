@@ -25,20 +25,20 @@ def crear_reporte(request):
     return render(request, 'haapar_unla_app/crear-reporte.html')
 
 
-def portfolio_details(request):
-    return render(request, 'haapar_unla_app/portfolio-details.html')
+def listar_proyectos(request):
+    return render(request, 'haapar_unla_app/listar-proyectos.html')
+
+
+def proyecto_detalle(request):
+    return render(request, 'haapar_unla_app/proyecto-detalle.html')
+
+
+def variable_detalle(request):
+    return render(request, 'haapar_unla_app/variable-detalle.html')
 
 
 def portfolio(request):
     return render(request, 'haapar_unla_app/portfolio.html')
-
-
-def service_details(request):
-    return render(request, 'haapar_unla_app/service-details.html')
-
-
-def services(request):
-    return render(request, 'haapar_unla_app/services.html')
 
 
 def starter_page(request):

@@ -58,12 +58,10 @@
         <ul>
           <li><a href="{% url 'inicio' %}"
               class="{% if request.resolver_match.url_name == 'inicio' %}active{% endif %}">Home</a></li>
-          <li><a href="{% url 'crear_reporte' %}"
-              class="{% if request.resolver_match.url_name == 'crear_reporte' %}active{% endif %}">Crear</a></li>
+            <li><a href="{% url 'listar_proyectos' %}"
+              class="{% if request.resolver_match.url_name == 'listar_proyectos' %}active{% endif %}">Proyectos</a></li>
           <li><a href="{% url 'about' %}"
-              class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}">About</a></li>
-          <li><a href="{% url 'services' %}"
-              class="{% if request.resolver_match.url_name == 'services' %}active{% endif %}">Services</a></li>
+              class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}">About</a></li>         
           <li><a href="{% url 'portfolio' %}"
               class="{% if request.resolver_match.url_name == 'portfolio' %}active{% endif %}">Portfolio</a></li>
           <li><a href="{% url 'team' %}"
