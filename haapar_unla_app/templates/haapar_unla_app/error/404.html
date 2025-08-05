@@ -1,0 +1,18 @@
+{% extends 'haapar_unla_app/base.html' %} 
+{% block title %} Error 404 - Página no encontrada {% endblock %}
+
+{% block content %}
+
+<main class="main-error flex-grow-1 d-flex align-items-center justify-content-center mt-5">
+  <div class="container-error text-center py-5">
+    <div class="content-error">
+      <h1 class="h1-error display-1 text-danger fw-bold mb-3">
+        404 - Página no encontrada
+      </h1>
+      <p class="p-error h3 mb-4">Lo sentimos, la página que buscas no existe.</p>
+      <a href="{% url 'inicio' %}" class="btn btn-primary btn-lg mt-4">Volver al inicio</a>
+    </div>
+  </div>
+</main>
+
+{% endblock %}

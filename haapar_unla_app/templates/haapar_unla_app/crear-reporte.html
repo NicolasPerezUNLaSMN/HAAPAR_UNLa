@@ -1,0 +1,59 @@
+{% extends 'haapar_unla_app/base.html' %}
+{% block title %}Crear Reporte{% endblock %}
+
+{% block content %}
+<!-- FORMULARIO CREAR REPORTES -->
+<div class="report-section p-2 mt-2 bg-white rounded">
+  <section class="report-section">
+    <!-- Encabezado -->
+    <h3 class="mb-4">Crear Reportes</h3>
+    <p class="text-muted  mt-0">Ingrese la información necesaria para realizar el reporte.</p>
+    <!-- Formulario -->
+    <form class="styled-form">
+      <!-- Tema de Interés -->
+      <div class="mb-4">
+        <label for="tema" class="form-label">Tema de Interés</label>
+        <input type="text" class="form-control" id="tema" required
+          placeholder="Describí brevemente el tema que querés explorar">
+      </div>
+
+      <!-- Año -->
+      <div class="mb-4">
+        <label for="anio" class="form-label">Año de Estudio</label>
+        <input type="text" class="form-control" id="anio" required placeholder="¿Hasta qué año querés proyectar?">
+      </div>
+
+      <!-- Grado de investigación -->
+      <div class="mb-4">
+        <label class="form-label">Grado de Investigación</label>
+        <div class="radio-group">
+          <input type="radio" name="grado" id="bajo" value="bajo" required>
+          <label for="bajo">Bajo</label>
+
+          <input type="radio" name="grado" id="estandar" value="estandar" required>
+          <label for="estandar">Estándar</label>
+
+          <input type="radio" name="grado" id="profundo" value="profundo" required>
+          <label for="profundo">Profundo</label>
+        </div>
+      </div>
+      
+      <!-- Botón de envío -->
+      <button type="submit" class="btn btn-primary">
+        <i class="fa-solid fa-file-circle-plus me-2"></i> Crear Reporte
+      </button>
+    </form>
+  </section>
+</div>
+</div>
+</main>
+</div>
+
+<!-- Script de toggle -->
+<script>
+  function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    sidebar.classList.toggle('collapsed');
+  }
+</script>
+{% endblock %}

@@ -18,17 +18,17 @@ from django.contrib import admin
 from django.urls import path
 from haapar_unla_app import views
 
+from django.conf.urls import handler400, handler403, handler404, handler500
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.inicio, name='inicio'),
-    path('about/', views.about, name='about'),
-    path('blog/', views.blog, name='blog'),
-    path('blog-details/', views.blog_details, name='blog-details'),
-    path('contact/', views.contact, name='contact'),
-    path('portfolio/', views.portfolio, name='portfolio'),
-    path('portfolio-details/', views.portfolio_details, name='portfolio-details'),
-    path('services/', views.services, name='services'),
-    path('service-details/', views.service_details, name='service-details'),
-    path('team/', views.team, name='team'),
-    path('starter-page/', views.starter_page, name='starter-page'),
+    path('signup/', views.registro, name='registro'),
+    path('logout/', views.cerrar_sesion, name='cerrar_sesion'),
+    path('signin/', views.iniciar_sesion, name='iniciar_sesion'),
 ]
+
+handler400 = views.error_400_view
+handler403 = views.error_403_view
+handler404 = views.error_404_view
+handler500 = views.error_500_view
