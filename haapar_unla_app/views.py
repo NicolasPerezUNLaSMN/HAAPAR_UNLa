@@ -7,6 +7,18 @@ def inicio(request):
     return render(request, 'haapar_unla_app/crear-reporte.html')
 
 
+def listar_proyectos(request):
+    return render(request, 'haapar_unla_app/listar-proyectos.html')
+
+
+def proyecto_detalle(request):
+    return render(request, 'haapar_unla_app/proyecto-detalle.html')
+
+
+def variable_detalle(request):
+    return render(request, 'haapar_unla_app/variable-detalle.html')
+
+
 def registro(request):
     """
     Gestiona el registro de nuevos usuarios en la aplicación.
