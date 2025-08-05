@@ -8,6 +8,7 @@ from django.db import IntegrityError
 def inicio(request):
     return render(request, 'haapar_unla_app/crear-reporte.html')
 
+
 def registro(request):
     """
     Gestiona el registro de nuevos usuarios en la aplicación.
