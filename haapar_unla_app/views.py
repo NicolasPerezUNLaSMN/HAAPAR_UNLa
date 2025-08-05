@@ -1,27 +1,9 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-from django.contrib.auth.models import User
+from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout, authenticate
-from django.db import IntegrityError
-
+from .forms import SignUpForm
 
 def inicio(request):
-    return render(request, 'haapar_unla_app/index.html')
-
-
-def about(request):
-    return render(request, 'haapar_unla_app/about.html')
-
-
-def blog_details(request):
-    return render(request, 'haapar_unla_app/blog-details.html')
-
-
-def blog(request):
-    return render(request, 'haapar_unla_app/blog.html')
-
-
-def crear_reporte(request):
     return render(request, 'haapar_unla_app/crear-reporte.html')
 
 
@@ -37,18 +19,6 @@ def variable_detalle(request):
     return render(request, 'haapar_unla_app/variable-detalle.html')
 
 
-def portfolio(request):
-    return render(request, 'haapar_unla_app/portfolio.html')
-
-
-def starter_page(request):
-    return render(request, 'haapar_unla_app/starter-page.html')
-
-
-def team(request):
-    return render(request, 'haapar_unla_app/team.html')
-
-
 def registro(request):
     """
     Gestiona el registro de nuevos usuarios en la aplicación.
@@ -57,27 +27,23 @@ def registro(request):
     POST: Procesa el envío del formulario, valida las contraseñas,
           crea el usuario, lo autentica e inicia sesión, o muestra errores.
     """
-    if request.method == 'GET':
-        return render(request, 'haapar_unla_app/autenticacion/signup.html', {
-            'form': UserCreationForm
-        })
+    if request.method == 'POST':
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            # Los datos son válidos, crea el usuario
+            user = form.save()
+            login(request, user)
+            return redirect("inicio")
+        else:
+            # El formulario no es válido, renderiza la plantilla con los errores
+            return render(request, 'haapar_unla_app/autenticacion/signup.html', {
+                'form': form,
+            })
     else:
-        if request.POST['password1'] == request.POST['password2']:
-            # Registro de Usuarios
-            try:
-                user = User.objects.create_user(
-                    username=request.POST["username"], password=request.POST["password1"])
-                user.save()
-                login(request, user)
-                return redirect("inicio")
-            except IntegrityError:
-                return render(request, 'haapar_unla_app/autenticacion/signup.html', {
-                    'form': UserCreationForm,
-                    'error': "El usuario ya existe"
-                })
+        # Si la solicitud es GET, creamos una instancia vacía del formulario
+        form = SignUpForm()
         return render(request, 'haapar_unla_app/autenticacion/signup.html', {
-            'form': UserCreationForm,
-            'error': "Contraseña no coincide"
+            'form': form
         })
 
 
@@ -87,21 +53,31 @@ def cerrar_sesion(request):
 
 
 def iniciar_sesion(request):
-    if request.method == 'GET':
-        return render(request, "haapar_unla_app/autenticacion/signin.html", {
-            'form': AuthenticationForm
-        })
-    else:
-        # print(request.POST)
-        user = authenticate(
-            request, username=request.POST['username'], password=request.POST['password'])
+    """
+    Gestiona el inicio de sesión de usuarios en la aplicación.
 
+    GET: Muestra el formulario de inicio de sesión.
+    POST: Procesa el envío del formulario, autentica al usuario e inicia sesión,
+          o muestra un mensaje de error si las credenciales son incorrectas.
+    """
+    if request.method == 'GET':
+        # Si la solicitud es GET, simplemente mostramos el formulario vacío
+        return render(request, "haapar_unla_app/autenticacion/signin.html", {
+            'form': AuthenticationForm() # Pasamos una instancia del formulario de autenticación
+        })
+    else: # Si la solicitud es POST (se envió el formulario)
+        # print(request.POST)
+        # Intentamos autenticar al usuario usando las credenciales enviadas
+        user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
+        
         if user is None:
+            # Si authenticate devuelve None, significa que las credenciales son incorrectas
             return render(request, "haapar_unla_app/autenticacion/signin.html", {
-                'form': AuthenticationForm,
-                'error': 'Usuario o contraseña es incorrecto'
+                'form': AuthenticationForm(),
+                'error': 'El usuario o la contraseña son incorrectas.'
             })
         else:
+            # Si authenticate devuelve un objeto de usuario, las credenciales son correctas
             login(request, user)
             return redirect('inicio')
 

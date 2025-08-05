@@ -1,86 +1,106 @@
-{% extends 'haapar_unla_app/base.html' %} 
-{% load static %} 
-
-{# Sobrescribe el título de la página #} 
-{% block title %} Detalle del Proyecto - HAAPAR {% endblock %} 
-
-{# Sobrescribe la clase del body para esta página específica #} 
-{% block body_class %} services-page {% endblock %} 
-
-{% block content %}
+{% extends 'haapar_unla_app/base.html' %} {% block title %} Detalle del Proyecto
+- HAAPAR {% endblock %} {% block content %}
 
 <main class="main">
   <!-- Titulo de la pagina -->
   <div class="page-title dark-background">
     <div class="container position-relative">
-      <h1>Detalle del proyecto</h1>
-      <p>Jugadores promesas del futbol mundial - 2040</p>
-      <span>ID 1</span>
-      <nav class="breadcrumbs"></nav>
+      <h1 class="text-center">Detalle del proyecto</h1>
+      <p class="text-center text-muted">Jugadores promesas del futbol mundial - 2040</p>
+      <p class="text-center fw-bold text-danger">ID 1</p>
     </div>
   </div>
 
   <!-- Seccion del detalle del proyecto -->
-  <section id="featured-services" class="featured-services section">
+  <section>
     <div class="container">
       <div class="row gy-4">
+        <div class="col-lg-3 col-md-6">
+          <div class="card bg-dark text-white border-secondary h-100">
+            <div class="card-body">
+              <div class="icon mb-3 text-center">
+                <i class="fa-solid fa-chart-line"></i>
+              </div>
+              <h3 class="card-title text-info text-center">
+                <a
+                  href="{% url 'variable_detalle' %}"
+                  class="stretched-link text-decoration-none"
+                  >Variables</a
+                >
+              </h3>
+              <p class="card-text text-center">
+                Automatizacion de Variables de cada Proyecto
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
-          <div class="service-item item-cyan position-relative">
-            <div class="icon">
-              <i class="bi bi-activity"></i>
+          <div class="card bg-dark text-white border-secondary h-100">
+            <div class="card-body">
+              <div class="icon mb-3 text-center">
+                <i class="fa-solid fa-arrow-trend-up"></i>
+              </div>
+              <h3 class="card-title text-info text-center">
+                <a
+                  href="#"
+                  class="stretched-link text-decoration-none"
+                  >Tendencias</a
+                >
+              </h3>
+              <p class="card-text text-center">
+                Nuestro sistema de Tendencias ofrece una visión prospectiva
+                crucial para la planificación de futuros y estudios del tiempo,
+                impulsada por la inteligencia artificial. A partir de un tema de
+                interés seleccionado por el usuario, un año de estudio definido, y
+                un grado de investigación, la IA genera un conjunto de diez
+                tendencias clave.
+              </p>
             </div>
-            <a href="{% url 'variable_detalle' %}" class="stretched-link">
-              <h3>Variables</h3>
-            </a>
-            <p>
-              Automatizacion de Variables de cada Proyecto
-            </p>
           </div>
         </div>
 
-        <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="200">
-          <div class="service-item item-orange position-relative">
-            <div class="icon">
-              <i class="bi bi-broadcast"></i>
+        <div class="col-lg-3 col-md-6">
+          <div class="card bg-dark text-white border-secondary h-100">
+            <div class="card-body">
+              <div class="icon mb-3 text-center">
+                <i class="fa-solid fa-people-roof"></i>
+              </div>
+              <h3 class="card-title text-info text-center">
+                <a
+                  href="#"
+                  class="stretched-link text-decoration-none"
+                  >Actores</a
+                >
+              </h3>
+              <p class="card-text text-center">
+                Automatización de Actores Claves de cada proyecto
+              </p>
             </div>
-            <a href="#" class="stretched-link">
-              <h3>Tendencias</h3>
-            </a>
-            <p>
-              Nuestro sistema de Tendencias ofrece una visión prospectiva crucial para la planificación de futuros y estudios del tiempo, impulsada por la inteligencia artificial. A partir de un tema de interés seleccionado por el usuario, un año de estudio definido, y un grado de investigación, la IA genera un conjunto de diez tendencias clave.
-            </p>
           </div>
         </div>
 
-        <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="300">
-          <div class="service-item item-teal position-relative">
-            <div class="icon">
-              <i class="bi bi-easel"></i>
+        <div class="col-lg-3 col-md-6">
+          <div class="card bg-dark text-white border-secondary h-100">
+            <div class="card-body">
+              <div class="icon mb-3 text-center">
+                <i class="fa-solid fa-chart-simple"></i>
+              </div>
+              <h3 class="card-title text-info text-center">
+                <a
+                  href="#"
+                  class="stretched-link text-decoration-none"
+                  >Analisis FODA</a
+                >
+              </h3>
+              <p class="card-text text-center">
+                El análisis FODA (Fortalezas, Oportunidades, Debilidades y
+                Amenazas) es una herramienta estratégica que permite realizar un
+                diagnóstico interno y externo de un tema, proyecto u organización.
+              </p>
             </div>
-            <a href="#" class="stretched-link">
-              <h3>Actores</h3>
-            </a>
-            <p>
-              Automatización de Actores Claves de cada proyecto
-            </p>
           </div>
         </div>
-
-        <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="400">
-          <div class="service-item item-red position-relative">
-            <div class="icon">
-              <i class="bi bi-bounding-box-circles"></i>
-            </div>
-            <a href="#" class="stretched-link">
-              <h3>Analisis FODA</h3>
-            </a>
-            <p>
-              El análisis FODA (Fortalezas, Oportunidades, Debilidades y Amenazas) es una herramienta estratégica que permite realizar un diagnóstico interno y externo de un tema, proyecto u organización.
-            </p>
-            <a href="#" class="stretched-link"></a>
-          </div>
-        </div>
-      </div>
 
       <div class="text-center mt-4">
         <a href="#" onclick="history.back()" class="btn btn-dark">Volver</a>
@@ -89,4 +109,4 @@
   </section>
 </main>
 
-{% endblock content %}
+{% endblock %}
