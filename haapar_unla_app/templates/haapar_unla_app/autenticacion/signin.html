@@ -1,8 +1,5 @@
 {% extends 'haapar_unla_app/base.html' %} 
-{% load static %} 
-
 {% block title %} Iniciar Sesion {% endblock %} 
-{% block body_class %} signin-page d-flex flex-column min-vh-100 mt-5 {% endblock %} 
 
 {% block content %}
 
@@ -14,7 +11,7 @@
 
         {# Muestra el mensaje de error si existe #} 
         {% if error %}
-        <p class="error-mensaje alert alert-danger">{{ error }}</p>
+        <p class="alert alert-danger text-danger fw-bold">{{ error }}</p>
         {% endif %} 
         
         {% csrf_token %} {# Esencial para la seguridad en formularios Django #}
@@ -51,4 +48,4 @@
   </div>
 </main>
 
-{% endblock content %}
+{% endblock %}

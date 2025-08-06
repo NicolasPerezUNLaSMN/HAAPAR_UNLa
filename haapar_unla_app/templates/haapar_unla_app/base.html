@@ -69,8 +69,8 @@
                         {% if user.is_authenticated %}
                           <li><a class="dropdown-item text-danger" href="{% url 'cerrar_sesion' %}">Cerrar Sesion</a></li>
                         {% else %}
-                          <li><a href="{% url 'registro' %}">Registrarse</a></li>
-                          <li><a href="{% url 'iniciar_sesion' %}">Iniciar Sesion</a></li>
+                          <li><a class="dropdown-item text-secondary" href="{% url 'registro' %}">Registrarse</a></li>
+                          <li><a class="dropdown-item text-success" href="{% url 'iniciar_sesion' %}">Iniciar Sesion</a></li>
                         {% endif %}
                     </ul>
                 </div>
