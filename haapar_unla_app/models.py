@@ -1,7 +1,5 @@
 from django.db import models
-from django.contrib.auth.hashers import make_password, check_password
-from django.contrib.auth.models import User, Group, Permission  
-
+from django.contrib.auth.models import User
 
 class Tema(models.Model):
     id_tema = models.AutoField(primary_key=True, verbose_name='ID Tema')
@@ -20,33 +18,45 @@ class Sistema(models.Model):
     nombre = models.CharField(max_length=255)
     descripcion = models.TextField()
     
-    
     def __str__(self):
         return self.nombre
 
 class Subsistema(models.Model):
     id_subsistema = models.AutoField(primary_key=True, verbose_name='ID Subsistema')
-    id_sistema = models.ForeignKey(Sistema, on_delete=models.CASCADE)
+    sistema = models.ForeignKey(Sistema, on_delete=models.CASCADE)
     nombre = models.CharField(max_length=255)
     descripcion = models.TextField()
 
-    
     def __str__(self):
         return self.nombre
+
+class PESTEL(models.Model):
+    PESTEL_CHOICES = [
+        ('P', 'Político'),
+        ('EC', 'Económico'),
+        ('S', 'Social'),
+        ('T', 'Tecnológico'),
+        ('EO', 'Ecológico'),
+        ('L', 'Legal'),
+    ]
+
+    tipo = models.CharField(max_length=2, choices=PESTEL_CHOICES)
+
+    def __str__(self):
+        return self.get_tipo_display()
 
 class Variable(models.Model):
     id_variable = models.AutoField(primary_key=True, verbose_name='ID Variable')
     subsistema = models.ForeignKey(Subsistema, on_delete=models.CASCADE)
     nombre = models.CharField(max_length=255)
     nombre_corto = models.CharField(max_length=50)
-    descripcion = models.CharField(max_length=255)
+    descripcion = models.TextField()
     
     INTERNA_EXTERNA_CHOICES = [
         ('I', 'Interna'),
         ('E', 'Externa'),
     ]
     tipo = models.CharField(max_length=1, choices=INTERNA_EXTERNA_CHOICES)
-    
     pestels = models.ManyToManyField('PESTEL')
     
     def __str__(self):
@@ -60,8 +70,9 @@ class IndicadorVariable(models.Model):
     formula = models.TextField()
     
     def __str__(self):
-        return self.nombre
-
+        return self.nombre_corto
+    
+    
 class Influencia(models.Model):
     id_influencia = models.AutoField(primary_key=True, verbose_name='ID Influencia')
     valor = models.DecimalField(max_digits=5, decimal_places=2)
@@ -71,24 +82,9 @@ class Influencia(models.Model):
     def __str__(self):
         return f"{self.variable_origen} → {self.variable_destino}"
 
-class PESTEL(models.Model):
-    PESTEL_CHOICES = [
-        ('P', 'Político'),
-        ('Ec', 'Económico'),
-        ('S', 'Social'),
-        ('T', 'Tecnológico'),
-        ('Eco', 'Ecológico'),
-        ('L', 'Legal'),
-    ]
-
-    tipo = models.CharField(max_length=3, choices=PESTEL_CHOICES)
-
-    def __str__(self):
-        return self.get_tipo_display()
-
 class TendenciaExterna(models.Model):
-    id_tendenciaExterna = models.AutoField(primary_key=True, verbose_name='ID Tendencia Externa')
-    subsitema= models.ForeignKey(Subsistema, on_delete=models.CASCADE)
+    id_tendencia_externa = models.AutoField(primary_key=True, verbose_name='ID Tendencia Externa')
+    subsistema= models.ForeignKey(Subsistema, on_delete=models.CASCADE)
     nombre = models.CharField(max_length=255)
     nombre_corto = models.CharField(max_length=50)
     tipo_dato = models.CharField(max_length=50)
@@ -97,21 +93,19 @@ class TendenciaExterna(models.Model):
     def __str__(self):
         return self.nombre
 
-
-
 class IndicadorTendencia(models.Model):
-    id_indicador_tendendencia = models.AutoField(primary_key=True, verbose_name='ID Indicador')
-    tendenciaExterna = models.ForeignKey(TendenciaExterna, on_delete=models.CASCADE)
+    id_indicador_tendencia = models.AutoField(primary_key=True, verbose_name='ID Indicador')
+    tendencia_externa = models.ForeignKey(TendenciaExterna, on_delete=models.CASCADE)
     nombre_corto = models.CharField(max_length=50)
     descripcion = models.TextField()
     formula = models.TextField()
     
     def __str__(self):
-        return self.nombre
+        return self.nombre_corto
 
 
 class VariableTendencia(models.Model):
-    id_variableTendencia = models.AutoField(primary_key=True, verbose_name='ID Variable-Tendencia')
+    id_variable_tendencia = models.AutoField(primary_key=True, verbose_name='ID Variable-Tendencia')
 
     variable = models.ForeignKey(Variable, on_delete=models.CASCADE)
     tendencia = models.ForeignKey(TendenciaExterna, on_delete=models.CASCADE)
@@ -145,9 +139,9 @@ class ActorClave(models.Model):
         return self.nombre
 
 class RelacionActor(models.Model):
-    id_actor_clave = models.ForeignKey(ActorClave, on_delete=models.CASCADE, related_name='actor_fuente')
-    id_subsistema = models.ForeignKey(Subsistema, on_delete=models.CASCADE)
+    actor_clave = models.ForeignKey(ActorClave, on_delete=models.CASCADE, related_name='actor_fuente')
+    subsistema = models.ForeignKey(Subsistema, on_delete=models.CASCADE)
     influencia = models.IntegerField()
 
     def __str__(self):
-        return f"{self.id_actor_clave} - {self.id_subsistema} (Influencia: {self.influencia})"
+        return f"{self.actor_clave} - {self.subsistema} (Influencia: {self.influencia})"
