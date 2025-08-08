@@ -24,11 +24,12 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.inicio, name='inicio'),
     path('proyectos/', views.listar_proyectos, name='listar_proyectos'),
-    path('proyecto-detalle/', views.proyecto_detalle, name='proyecto_detalle'),
+    path('proyecto-detalle/<int:tema_id>/', views.proyecto_detalle, name='proyecto_detalle'),
     path('variable-detalle/', views.variable_detalle, name='variable_detalle'),
     path('signup/', views.registro, name='registro'),
     path('logout/', views.cerrar_sesion, name='cerrar_sesion'),
     path('signin/', views.iniciar_sesion, name='iniciar_sesion'),
+    path('crear-reporte/', views.crear_reporte, name='crear-reporte'),
 ]
 
 handler400 = views.error_400_view

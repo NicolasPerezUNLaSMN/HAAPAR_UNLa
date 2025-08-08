@@ -25,32 +25,22 @@ HAAPAR {% endblock %} {% block content %}
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>Jugadores Promesas en el Futbol</td>
-                  <td>
-                    Este estudio se enfoca en la identificación, evaluación y
-                    seguimiento de talentos jóvenes en el fútbol
-                  </td>
-                  <td>2040</td>
-                  <td>Baja</td>
-                  <td>Juan</td>
-                  <td>
-                    <a href="{% url 'proyecto_detalle' %}" class="btn btn-sm btn-secondary">Ver detalles</a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>Prospectiva Energética Regional</td>
-                  <td>
-                    Evaluación de fuentes de energía renovable y su integración
-                    en la matriz energética de la provincia.
-                  </td>
-                  <td>2050</td>
-                  <td>Alta</td>
-                  <td>Lucas</td>
-                  <td>
-                    <a href="{% url 'proyecto_detalle' %}" class="btn btn-sm btn-secondary">Ver detalles</a>
-                  </td>
-                </tr>
+                {% for tema in temas %}
+                  <tr>
+                    <td>{{ tema.nombre }}</td>
+                    <td>{{ tema.descripcion }}</td>
+                    <td>{{ tema.horizonte }}</td>
+                    <td>—</td> <!-- precision -->
+                    <td>{{ tema.user.username }}</td>
+                    <td>
+                      <a href="{% url 'proyecto_detalle' tema.id_tema %}" class="btn btn-sm btn-secondary">Ver detalles</a>
+                    </td>
+                  </tr>
+                {% empty %}
+                  <tr>
+                    <td colspan="6" class="text-center">No hay proyectos aún.</td>
+                  </tr>
+                {% endfor %}
               </tbody>
             </table>
           </div>

@@ -1,18 +1,44 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required
 from .forms import SignUpForm
+from haapar_unla_app.models import Tema
+from django.contrib.auth.models import User
+
+@login_required
+def crear_reporte(request):
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        descripcion = request.POST.get('descripcion')
+        horizonte = request.POST.get('horizonte')
+        territorio = request.POST.get('territorio')
+
+        #user = User.objects.get(username='Y')
+        
+        Tema.objects.create(
+            user=request.user,
+            nombre=nombre,
+            descripcion=descripcion,
+            horizonte=horizonte,
+            territorio=territorio
+        )
+        return redirect('crear-reporte')
+
+    return render(request, 'haapar_unla_app/crear-reporte.html')
 
 def inicio(request):
     return render(request, 'haapar_unla_app/crear-reporte.html')
 
 
 def listar_proyectos(request):
-    return render(request, 'haapar_unla_app/listar-proyectos.html')
+    temas = Tema.objects.filter(user=request.user)
+    return render(request, 'haapar_unla_app/listar-proyectos.html', {'temas': temas})
 
 
-def proyecto_detalle(request):
-    return render(request, 'haapar_unla_app/proyecto-detalle.html')
+def proyecto_detalle(request, tema_id):
+    tema = Tema.objects.get(id_tema=tema_id)
+    return render(request, 'haapar_unla_app/proyecto-detalle.html', {'tema': tema})
 
 
 def variable_detalle(request):
