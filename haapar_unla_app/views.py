@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
@@ -26,6 +26,13 @@ def crear_reporte(request):
         return redirect('crear-reporte')
 
     return render(request, 'haapar_unla_app/crear-reporte.html')
+
+@login_required
+def eliminar_proyecto(request, id_tema):
+    tema = get_object_or_404(Tema, id_tema=id_tema, user=request.user)
+    if request.method == 'POST':
+        tema.delete()
+        return redirect('listar_proyectos')
 
 def inicio(request):
     return render(request, 'haapar_unla_app/crear-reporte.html')

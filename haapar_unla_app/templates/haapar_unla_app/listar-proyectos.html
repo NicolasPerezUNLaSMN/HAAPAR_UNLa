@@ -16,24 +16,52 @@ HAAPAR {% endblock %} {% block content %}
             <table class="table table-dark table-hover table-striped">
               <thead>
                 <tr class="table-dark">
-                  <th>Nombre del Tema</th>
-                  <th>Descripción</th>
-                  <th>Año de Estudio</th>
-                  <th>Precision</th>
-                  <th>Usuario</th>
-                  <th>Acciones</th>
+                  <th class="text-center">Nombre del Tema</th>
+                  <th class="text-center">Descripción</th>
+                  <th class="text-center">Año de Estudio</th>
+                  <th class="text-center">Precision</th>
+                  <th class="text-center">Usuario</th>
+                  <th class="text-center">Detalle</th>
+                  <th class="text-center">Eliminar</th>
                 </tr>
               </thead>
               <tbody>
                 {% for tema in temas %}
                   <tr>
-                    <td>{{ tema.nombre }}</td>
-                    <td>{{ tema.descripcion }}</td>
-                    <td>{{ tema.horizonte }}</td>
-                    <td>—</td> <!-- precision -->
-                    <td>{{ tema.user.username }}</td>
-                    <td>
+                    <td class="text-center align-middle">{{ tema.nombre }}</td>
+                    <td class="text-center align-middle">{{ tema.descripcion }}</td>
+                    <td class="text-center align-middle">{{ tema.horizonte }}</td>
+                    <td class="text-center align-middle">—</td> <!-- precision -->
+                    <td class="text-center align-middle">{{ tema.user.username }}</td>
+                    <td class="text-center align-middle">
                       <a href="{% url 'proyecto_detalle' tema.id_tema %}" class="btn btn-sm btn-secondary">Ver detalles</a>
+                    </td>
+                    <td class="text-center align-middle">
+                      <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmModal{{ tema.id_tema }}">
+                        <i class="fa-solid fa-trash"></i>
+                      </button>
+
+                      <div class="modal fade" id="confirmModal{{ tema.id_tema }}" tabindex="-1" aria-labelledby="confirmModalLabel{{ tema.id_tema }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                          <div class="modal-content">
+                            <div class="modal-header" style="color: black;">
+                              <h5 class="modal-title" id="confirmModalLabel{{ tema.id_tema }}">Confirmar eliminación</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                            </div>
+                            <div class="modal-body" style="color: black;">
+                              ¿Estás seguro de que quieres eliminar el proyecto <strong>{{ tema.nombre }}</strong>? 
+                              Esta acción no se puede deshacer.
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                              <form method="POST" action="{% url 'eliminar_proyecto' tema.id_tema %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger">Eliminar</button>
+                              </form>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 {% empty %}

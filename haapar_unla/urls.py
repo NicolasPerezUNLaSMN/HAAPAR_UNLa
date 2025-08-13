@@ -30,6 +30,7 @@ urlpatterns = [
     path('logout/', views.cerrar_sesion, name='cerrar_sesion'),
     path('signin/', views.iniciar_sesion, name='iniciar_sesion'),
     path('crear-reporte/', views.crear_reporte, name='crear-reporte'),
+    path('eliminar-proyecto/<int:id_tema>/', views.eliminar_proyecto, name='eliminar_proyecto'),
 ]
 
 handler400 = views.error_400_view
