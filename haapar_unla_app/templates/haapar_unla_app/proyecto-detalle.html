@@ -1,0 +1,112 @@
+{% extends 'haapar_unla_app/base.html' %} {% block title %} Detalle del Proyecto
+- HAAPAR {% endblock %} {% block content %}
+
+<main class="main">
+  <!-- Titulo de la pagina -->
+  <div class="page-title dark-background">
+    <div class="container position-relative">
+      <h1 class="text-center">Detalle del proyecto</h1>
+      <p class="text-center text-muted">Jugadores promesas del futbol mundial - 2040</p>
+      <p class="text-center fw-bold text-danger">ID 1</p>
+    </div>
+  </div>
+
+  <!-- Seccion del detalle del proyecto -->
+  <section>
+    <div class="container">
+      <div class="row gy-4">
+        <div class="col-lg-3 col-md-6">
+          <div class="card bg-dark text-white border-secondary h-100">
+            <div class="card-body">
+              <div class="icon mb-3 text-center">
+                <i class="fa-solid fa-chart-line"></i>
+              </div>
+              <h3 class="card-title text-info text-center">
+                <a
+                  href="{% url 'variable_detalle' %}"
+                  class="stretched-link text-decoration-none"
+                  >Variables</a
+                >
+              </h3>
+              <p class="card-text text-center">
+                Automatizacion de Variables de cada Proyecto
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6" data-aos="fade-up" data-aos-delay="100">
+          <div class="card bg-dark text-white border-secondary h-100">
+            <div class="card-body">
+              <div class="icon mb-3 text-center">
+                <i class="fa-solid fa-arrow-trend-up"></i>
+              </div>
+              <h3 class="card-title text-info text-center">
+                <a
+                  href="#"
+                  class="stretched-link text-decoration-none"
+                  >Tendencias</a
+                >
+              </h3>
+              <p class="card-text text-center">
+                Nuestro sistema de Tendencias ofrece una visión prospectiva
+                crucial para la planificación de futuros y estudios del tiempo,
+                impulsada por la inteligencia artificial. A partir de un tema de
+                interés seleccionado por el usuario, un año de estudio definido, y
+                un grado de investigación, la IA genera un conjunto de diez
+                tendencias clave.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+          <div class="card bg-dark text-white border-secondary h-100">
+            <div class="card-body">
+              <div class="icon mb-3 text-center">
+                <i class="fa-solid fa-people-roof"></i>
+              </div>
+              <h3 class="card-title text-info text-center">
+                <a
+                  href="#"
+                  class="stretched-link text-decoration-none"
+                  >Actores</a
+                >
+              </h3>
+              <p class="card-text text-center">
+                Automatización de Actores Claves de cada proyecto
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-6">
+          <div class="card bg-dark text-white border-secondary h-100">
+            <div class="card-body">
+              <div class="icon mb-3 text-center">
+                <i class="fa-solid fa-chart-simple"></i>
+              </div>
+              <h3 class="card-title text-info text-center">
+                <a
+                  href="#"
+                  class="stretched-link text-decoration-none"
+                  >Analisis FODA</a
+                >
+              </h3>
+              <p class="card-text text-center">
+                El análisis FODA (Fortalezas, Oportunidades, Debilidades y
+                Amenazas) es una herramienta estratégica que permite realizar un
+                diagnóstico interno y externo de un tema, proyecto u organización.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      <div class="text-center mt-4">
+        <a href="#" onclick="history.back()" class="btn btn-dark">Volver</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+{% endblock %}

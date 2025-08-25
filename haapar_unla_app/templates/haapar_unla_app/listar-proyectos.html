@@ -1,0 +1,69 @@
+{% extends 'haapar_unla_app/base.html' %} {% block title %} Mis Proyectos -
+HAAPAR {% endblock %} {% block content %}
+
+<main class="main">
+  <div class="page-title dark-background">
+    <div class="container position-relative">
+      <h1 class="text-center">Mis Proyectos</h1>
+      <p class="text-center text-muted">Aquí puedes ver y gestionar todos tus proyectos de estudio.</p>
+    </div>
+  </div>
+  <section>
+    <div class="container">
+      <div class="row justify-content-center">
+        <div class="col-lg-10 col-md-12">
+          <div class="table-responsive">
+            <table class="table table-dark table-hover table-striped">
+              <thead>
+                <tr class="table-dark">
+                  <th>Nombre del Tema</th>
+                  <th>Descripción</th>
+                  <th>Año de Estudio</th>
+                  <th>Precision</th>
+                  <th>Usuario</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Jugadores Promesas en el Futbol</td>
+                  <td>
+                    Este estudio se enfoca en la identificación, evaluación y
+                    seguimiento de talentos jóvenes en el fútbol
+                  </td>
+                  <td>2040</td>
+                  <td>Baja</td>
+                  <td>Juan</td>
+                  <td>
+                    <a href="{% url 'proyecto_detalle' %}" class="btn btn-sm btn-secondary">Ver detalles</a>
+                  </td>
+                </tr>
+                <tr>
+                  <td>Prospectiva Energética Regional</td>
+                  <td>
+                    Evaluación de fuentes de energía renovable y su integración
+                    en la matriz energética de la provincia.
+                  </td>
+                  <td>2050</td>
+                  <td>Alta</td>
+                  <td>Lucas</td>
+                  <td>
+                    <a href="{% url 'proyecto_detalle' %}" class="btn btn-sm btn-secondary">Ver detalles</a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="text-center mt-4">
+            <div class="gap-2">
+              <a href="{% url 'inicio' %}" class="btn btn-success">Crear Nuevo Reporte</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+{% endblock %}

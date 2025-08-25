@@ -31,11 +31,11 @@
 
             <!-- Navegación -->
             <div class="nav flex-column">
-                <a href="#" class="sidebar-link active text-decoration-none" data-title="Nuevo Proyecto">
+                <a href="{% url 'inicio' %}" class="sidebar-link active text-decoration-none" data-title="Nuevo Proyecto">
                     <i class="fa-solid fa-pen-to-square"></i>
                     <span class="hide-on-collapse">Nuevo Proyecto</span>
                 </a>
-                <a href="#" class="sidebar-link active text-decoration-none proyectos" data-title="Proyectos">
+                <a href="{% url 'listar_proyectos' %}" class="sidebar-link active text-decoration-none proyectos" data-title="Proyectos">
                     <i class="fa-solid fa-clock-rotate-left"></i>
                     <span class="hide-on-collapse">Proyectos</span>
                 </a>
@@ -69,8 +69,8 @@
                         {% if user.is_authenticated %}
                           <li><a class="dropdown-item text-danger" href="{% url 'cerrar_sesion' %}">Cerrar Sesion</a></li>
                         {% else %}
-                          <li><a href="{% url 'registro' %}">Registrarse</a></li>
-                          <li><a href="{% url 'iniciar_sesion' %}">Iniciar Sesion</a></li>
+                          <li><a class="dropdown-item text-secondary" href="{% url 'registro' %}">Registrarse</a></li>
+                          <li><a class="dropdown-item text-success" href="{% url 'iniciar_sesion' %}">Iniciar Sesion</a></li>
                         {% endif %}
                     </ul>
                 </div>
