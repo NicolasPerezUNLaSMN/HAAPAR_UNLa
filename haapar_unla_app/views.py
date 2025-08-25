@@ -31,7 +31,8 @@ def crear_reporte(request):
 def eliminar_proyecto(request, id_tema):
     tema = get_object_or_404(Tema, id_tema=id_tema, user=request.user)
     if request.method == 'POST':
-        tema.delete()
+        tema.activo = False
+        tema.save()
         return redirect('listar_proyectos')
 
 def inicio(request):
@@ -39,7 +40,7 @@ def inicio(request):
 
 
 def listar_proyectos(request):
-    temas = Tema.objects.filter(user=request.user)
+    temas = Tema.objects.filter(user=request.user,activo=True)
     return render(request, 'haapar_unla_app/listar-proyectos.html', {'temas': temas})
 
 
