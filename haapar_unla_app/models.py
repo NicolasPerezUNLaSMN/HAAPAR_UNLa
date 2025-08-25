@@ -8,6 +8,7 @@ class Tema(models.Model):
     descripcion = models.TextField()
     horizonte = models.CharField(max_length=50)
     territorio = models.CharField(max_length=255)
+    activo = models.BooleanField(default=True)
     
     def __str__(self):
         return self.nombre
@@ -26,6 +27,7 @@ class Subsistema(models.Model):
     sistema = models.ForeignKey(Sistema, on_delete=models.CASCADE)
     nombre = models.CharField(max_length=255)
     descripcion = models.TextField()
+    activo = models.BooleanField(default=True)
 
     def __str__(self):
         return self.nombre
@@ -51,6 +53,7 @@ class Variable(models.Model):
     nombre = models.CharField(max_length=255)
     nombre_corto = models.CharField(max_length=50)
     descripcion = models.TextField()
+    activo = models.BooleanField(default=True)
     
     INTERNA_EXTERNA_CHOICES = [
         ('I', 'Interna'),
@@ -89,6 +92,7 @@ class TendenciaExterna(models.Model):
     nombre_corto = models.CharField(max_length=50)
     tipo_dato = models.CharField(max_length=50)
     descripcion = models.TextField()
+    activo = models.BooleanField(default=True)
     
     def __str__(self):
         return self.nombre
@@ -134,6 +138,7 @@ class ActorClave(models.Model):
     nombre = models.CharField(max_length=255)
     descripcion = models.TextField()
     puesto = models.CharField(max_length=255)
+    activo = models.BooleanField(default=True)
     
     def __str__(self):
         return self.nombre
