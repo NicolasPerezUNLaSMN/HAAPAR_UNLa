@@ -3,7 +3,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
 from .forms import SignUpForm
-from haapar_unla_app.models import Tema
+from haapar_unla_app.models import Tema, Variable, Subsistema
 from django.contrib.auth.models import User
 
 @login_required
@@ -50,7 +50,37 @@ def proyecto_detalle(request, tema_id):
 
 
 def variable_detalle(request):
-    return render(request, 'haapar_unla_app/variable-detalle.html')
+    variables = Variable.objects.filter(activo=True)
+    return render(request, 'haapar_unla_app/variable-detalle.html' , {"variables": variables})
+
+def eliminar_variable(request, pk):
+    variable = get_object_or_404(Variable, pk=pk)
+    variable.activo = False  
+    variable.save()
+    return redirect("variable_detalle") 
+
+def editar_variable(request, pk):
+    variable = get_object_or_404(Variable, pk=pk)
+    if request.method == "POST":
+        variable.nombre = request.POST.get("nombre")
+        variable.nombre_corto = request.POST.get("nombre_corto")
+        variable.descripcion = request.POST.get("descripcion")
+        variable.save()
+        return redirect("variable_detalle")
+    return render(request, "haapar_unla_app/editar-variable.html", {"variable": variable})
+
+def crear_variable(request):
+    if request.method == "POST":
+        nombre = request.POST.get("nombre")
+        nombre_corto = request.POST.get("nombre_corto")
+        descripcion = request.POST.get("descripcion")
+        tipo = request.POST.get("tipo")
+        
+        subsistema = Subsistema.objects.first()
+        
+        Variable.objects.create(nombre=nombre, nombre_corto=nombre_corto, descripcion=descripcion, tipo=tipo,subsistema=subsistema)
+        return redirect("variable_detalle")
+    return render(request, "haapar_unla_app/crear-variable.html")
 
 
 def registro(request):
@@ -134,3 +164,6 @@ def error_404_view(request, exception):
 # Vista para manejar el error 500
 def error_500_view(request):
     return render(request, 'haapar_unla_app/error/500.html', status=500)
+
+
+

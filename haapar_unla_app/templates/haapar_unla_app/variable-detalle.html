@@ -1,6 +1,4 @@
-{% extends 'haapar_unla_app/base.html' %} 
-{% block title %} Variables del Proyecto - HAAPAR {% endblock %} 
-
+{% extends 'haapar_unla_app/base.html' %}
 {% block content %}
 
 <main class="main">
@@ -8,7 +6,6 @@
     <div class="container position-relative">
       <h1 class="text-center">Variables del proyecto</h1>
       <p class="text-center text-muted">Jugadores promesas del futbol mundial - 2040</p>
-      <p class="text-center fw-bold text-danger">ID 1</p>
     </div>
   </div>
 
@@ -16,59 +13,30 @@
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-lg-10 col-md-12">
+
+          {% for variable in variables %}
           <div class="card bg-dark text-white border-secondary rounded mb-3">
             <div class="card-body">
               <div class="d-flex align-items-center mb-2">
-                <span class="badge bg-primary me-2">1</span>
-                <p class="card-text mb-0 text-white">// Nombre: Cantidad de minutos de juego por temporada // Nombre Corto: cant_de_minu_de_jueg</p>
+                <span class="badge bg-primary me-2">{{ forloop.counter }}</span>
+                <p class="card-text mb-0 text-white">// Nombre: {{ variable.nombre }} // Nombre Corto: {{ variable.nombre_corto }}</p>
               </div>
-              <h5 class="card-title text-info">Tipo: Interna</h5>
+              <h5 class="card-title text-info">Tipo: {{ variable.get_tipo_display }}</h5>
               <p class="card-text">
                 <small class="text-white">
-                  <strong>Descripción:</strong> La variable "Cantidad de minutos de juego por temporada" hace referencia a la suma total de minutos que un jugador ha jugado a lo largo de una temporada en un deporte específico. Este dato es relevante para evaluar la participación y rendimiento de un jugador en un equipo durante un período determinado.
-                </small>
-              </p>
-              <p class="card-text">
-                <small class="text-white">
-                  <strong>Tendencias:</strong> 1. Mayor rotación de jugadores en los equipos. 2. Aumento en la cantidad de partidos por temporada. 3. Mayor atención a la gestión del descanso de los jugadores. 4. Mayor incidencia de lesiones debido a la sobrecarga de minutos. 5. Incremento en la duración de los periodos de descanso entre partidos. 6. Mayor uso de la tecnología para monitorear el rendimiento de los jugadores durante los partidos. 7. Mayor énfasis en la planificación de la temporada para distribuir de manera equitativa los minutos de juego. 8. Mayor variabilidad en la manera en que se distribuyen los minutos de juego entre los jugadores titulares y suplentes. 9. Mayor importancia de la recuperación post-partido para optimizar el rendimiento en los minutos de juego. 10. Mayor atención a la carga física y mental de los jugadores para evitar el agotamiento durante la temporada.
+                  <strong>Descripción:</strong> {{ variable.descripcion }}
                 </small>
               </p>
               <div class="d-flex justify-content-center mt-3">
-                <a href="#" class="btn btn-secondary btn-sm me-2">Editar</a> 
-                <a href="#" class="btn btn-danger btn-sm">Eliminar</a>
+                <a href="{% url 'editar_variable' variable.id_variable %}" class="btn btn-secondary btn-sm me-2">Editar</a>
+                <a href="{% url 'eliminar_variable' variable.id_variable %}" class="btn btn-danger btn-sm">Eliminar</a>
               </div>
             </div>
           </div>
-          
-          <div class="card bg-dark text-white border-secondary rounded mb-3">
-            <div class="card-body">
-              <div class="d-flex align-items-center mb-2">
-                <span class="badge bg-secondary me-2">2</span>
-                <p class="card-text mb-0 text-white">// Número de goles anotados por temporada // nmer_de_gole_anot_po</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="card bg-dark text-white border-secondary rounded mb-3">
-            <div class="card-body">
-              <div class="d-flex align-items-center">
-                <span class="badge bg-secondary me-2">3</span>
-                <p class="card-text mb-0 text-white">// Tasa de lesiones por temporada // tasa_de_lesi_por_tem</p>
-              </div>
-            </div>
-          </div>
-
-          <div class="card bg-dark text-white border-secondary rounded mb-3">
-            <div class="card-body">
-              <div class="d-flex align-items-center">
-                <span class="badge bg-secondary me-2">4</span>
-                <p class="card-text mb-0 text-white">// Nivel de competencia en la liga en que juegan // nive_de_comp_en_la_l</p>
-              </div>
-            </div>
-          </div>
-    
+          {% endfor %}
 
           <div class="text-center mt-4">
+            <a href="{% url 'crear_variable' %}" class="btn btn-success">Agregar Variable</a>
             <a href="#" onclick="history.back()" class="btn btn-dark">Volver</a>
           </div>
         </div>
