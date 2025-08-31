@@ -29,6 +29,8 @@ urlpatterns = [
     path('signup/', views.registro, name='registro'),
     path('logout/', views.cerrar_sesion, name='cerrar_sesion'),
     path('signin/', views.iniciar_sesion, name='iniciar_sesion'),
+    path('crear-reporte/', views.crear_reporte, name='crear_reporte'),
+    path('subsistemas/', views.subsistemas, name='subsistemas'),
 ]
 
 handler400 = views.error_400_view
