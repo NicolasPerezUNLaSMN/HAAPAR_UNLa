@@ -1,0 +1,198 @@
+{% extends 'haapar_unla_app/base.html' %}
+{% block title %}Reporte Creado{% endblock %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center my-4">
+  <div class="report-section p-4 bg-white rounded shadow-sm" style="max-width: 700px; width: 100%;">
+    <section class="report-section text-center">
+      <!-- Título con color verde oscuro -->
+      <h3 class="mb-4 verde-oscuro">TEMA: <span class="verde-oscuro">{{ tema }}</span></h3>
+      
+      <h4 class="mb-3 border-bottom pb-2">SISTEMAS</h4>
+      
+      <div class="subsistemas-list">
+        <div class="subsistema-item d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-landmark me-2"></i> POLITICA
+          </div>
+          <button class="btn btn-sm btn-outline-danger eliminar-btn">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </div>
+        
+        <div class="subsistema-item d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-bus me-2"></i> TRANSPORTE
+          </div>
+          <button class="btn btn-sm btn-outline-danger eliminar-btn">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </div>
+        
+        <div class="subsistema-item d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-graduation-cap me-2"></i> EDUCACIÓN
+          </div>
+          <button class="btn btn-sm btn-outline-danger eliminar-btn">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </div>
+        
+        <div class="subsistema-item d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-chart-line me-2"></i> ECONOMÍA
+          </div>
+          <button class="btn btn-sm btn-outline-danger eliminar-btn">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </div>
+        
+        <div class="subsistema-item d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-heartbeat me-2"></i> SALUD
+          </div>
+          <button class="btn btn-sm btn-outline-danger eliminar-btn">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </div>
+        
+        <div class="subsistema-item d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-laptop-code me-2"></i> TECNOLOGÍA
+          </div>
+          <button class="btn btn-sm btn-outline-danger eliminar-btn">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </div>
+        
+        <div class="subsistema-item d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-leaf me-2"></i> MEDIO AMBIENTE
+          </div>
+          <button class="btn btn-sm btn-outline-danger eliminar-btn">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </div>
+        
+        <div class="subsistema-item d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-futbol me-2"></i> DEPORTE
+          </div>
+          <button class="btn btn-sm btn-outline-danger eliminar-btn">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </div>
+        
+        <div class="subsistema-item d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center">
+            <i class="fas fa-theater-masks me-2"></i> CULTURA
+          </div>
+          <button class="btn btn-sm btn-outline-danger eliminar-btn">
+            <i class="fas fa-trash-alt"></i>
+          </button>
+        </div>
+        
+      
+      <!-- Botón de Agregar con color verde -->
+      <div class="mt-4">
+        <button class="btn agregar-btn" style="background-color: #1a6c2c; color: white;">
+          <i class="fas fa-plus-circle me-2"></i> Agregar sistema
+        </button>
+      </div>
+    </section>
+  </div>
+</div>
+
+<style>
+.verde-oscuro {
+  color: #1a6c2c !important;
+}
+
+.subsistemas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.subsistema-item {
+  background: #f8f9fa;
+  padding: 16px 20px;
+  border-radius: 8px;
+  border: 1px solid #dee2e6;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.subsistema-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  background: #e9ecef;
+}
+
+.eliminar-btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+}
+
+.agregar-btn {
+  padding: 10px 20px;
+  font-weight: 500;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.agregar-btn:hover {
+  background-color: #145a32 !important;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Estilos responsivos */
+@media (max-width: 768px) {
+  .container {
+    padding: 0 15px;
+  }
+  
+  .report-section {
+    padding: 20px !important;
+  }
+  
+  .subsistema-item {
+    padding: 14px 16px;
+    font-size: 0.95rem;
+  }
+  
+  .eliminar-btn {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.7rem;
+  }
+}
+</style>
+
+<script>
+// Función para eliminar subsistemas
+document.addEventListener('DOMContentLoaded', function() {
+  // Agregar event listeners a todos los botones de eliminar
+  const eliminarButtons = document.querySelectorAll('.eliminar-btn');
+  
+  eliminarButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      const subsistemaItem = this.closest('.subsistema-item');
+      subsistemaItem.style.opacity = '0';
+      subsistemaItem.style.transition = 'opacity 0.3s ease';
+      
+      setTimeout(() => {
+        subsistemaItem.remove();
+      }, 300);
+    });
+  });
+  
+  // Función para agregar nuevo subsistema (ejemplo básico)
+  const agregarBtn = document.querySelector('.agregar-btn');
+  agregarBtn.addEventListener('click', function() {
+    alert('Funcionalidad de agregar nuevo subsistema. Aquí puedes implementar un modal o formulario para agregar nuevos items.');
+  });
+});
+</script>
+{% endblock %}
