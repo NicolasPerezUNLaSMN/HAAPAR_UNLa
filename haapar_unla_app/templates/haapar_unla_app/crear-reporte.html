@@ -6,13 +6,10 @@
 <div class="report-section p-2 mt-2 bg-white rounded">
   <section class="report-section">
     <!-- Encabezado -->
-    <h3 class="mb-4">Crear Reportes</h3>
-    <p class="text-muted mt-0">Ingrese la información necesaria para realizar el reporte.</p>
-    
-    <!-- Formulario - Modificado para enviar por POST -->
-    <form class="styled-form" method="POST" action="{% url 'crear_reporte' %}">
-      {% csrf_token %}
-      
+    <h3 class="text-center heading-section">Crear Reportes</h3>
+    <p class="text-center text-muted">Ingrese la información necesaria para realizar el reporte.</p>
+    <!-- Formulario -->
+    <form class="styled-form">
       <!-- Tema de Interés -->
       <div class="mb-4">
         <label for="tema" class="form-label">Tema de Interés</label>
@@ -45,7 +42,7 @@
           </div>
         </div>
       </div>
-      
+
       <!-- Botón de envío -->
       <button type="submit" class="btn btn-primary">
         <i class="fa-solid fa-file-circle-plus me-2"></i> Crear proyecto
