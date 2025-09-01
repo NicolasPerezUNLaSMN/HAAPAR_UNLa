@@ -18,6 +18,42 @@ def proyecto_detalle(request):
 def variable_detalle(request):
     return render(request, 'haapar_unla_app/variable-detalle.html')
 
+def crear_reporte(request):
+    if request.method == 'POST':
+        # Procesar los datos del formulario
+        tema = request.POST.get('tema')
+        anio = request.POST.get('anio')
+        grado = request.POST.get('grado')
+        
+        # Guardar los datos en la sesión para usarlos en la siguiente vista
+        request.session['reporte_tema'] = tema
+        request.session['reporte_anio'] = anio
+        request.session['reporte_grado'] = grado
+        
+        # Redirigir a la vista de subsistemas
+        return redirect('subsistemas')
+    
+    # Si es GET, mostrar el formulario vacío
+    return render(request, 'haapar_unla_app/crear-reporte.html')
+
+def subsistemas(request):
+    if request.method == 'GET':
+        # Recuperar parámetros de la URL
+        tema = request.GET.get('tema', request.session.get('reporte_tema', 'TEMA NO ESPECIFICADO'))
+        anio = request.GET.get('anio', request.session.get('reporte_anio', ''))
+        grado = request.GET.get('grado', request.session.get('reporte_grado', ''))
+        
+        # Guardar en sesión por si acaso
+        request.session['reporte_tema'] = tema
+        request.session['reporte_anio'] = anio
+        request.session['reporte_grado'] = grado
+    
+    return render(request, 'haapar_unla_app/subsistemas.html', {
+        'tema': tema,
+        'anio': anio,
+        'grado': grado
+    })
+
 
 def registro(request):
     """

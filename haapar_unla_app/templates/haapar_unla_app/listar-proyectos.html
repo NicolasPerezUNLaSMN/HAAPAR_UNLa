@@ -35,7 +35,11 @@ HAAPAR {% endblock %} {% block content %}
                   <td>Baja</td>
                   <td>Juan</td>
                   <td>
-                    <a href="{% url 'proyecto_detalle' %}" class="btn btn-sm btn-secondary">Ver detalles</a>
+                    <!-- Enlace simple con parámetros GET -->
+                    <a href="{% url 'subsistemas' %}?tema=Jugadores Promesas en el Futbol&anio=2040&grado=bajo" 
+                       class="btn btn-sm btn-secondary">
+                      Ver detalles
+                    </a>
                   </td>
                 </tr>
                 <tr>
@@ -48,7 +52,11 @@ HAAPAR {% endblock %} {% block content %}
                   <td>Alta</td>
                   <td>Lucas</td>
                   <td>
-                    <a href="{% url 'proyecto_detalle' %}" class="btn btn-sm btn-secondary">Ver detalles</a>
+                    <!-- Enlace simple con parámetros GET -->
+                    <a href="{% url 'subsistemas' %}?tema=Jugadores Promesas en el Futbol&anio=2040&grado=bajo" 
+                       class="btn btn-sm btn-secondary">
+                      Ver detalles
+                    </a>
                   </td>
                 </tr>
               </tbody>
