@@ -10,7 +10,9 @@
     <h3 class="text-center heading-section">Crear Reportes</h3>
     <p class="text-center text-muted">Ingrese la información necesaria para realizar el reporte.</p>
     <!-- Formulario -->
-    <form class="styled-form">      <!-- Tema de Interés -->
+    <form class="styled-form" method="POST" action="{% url 'crear_reporte' %}">
+       {% csrf_token %}
+      <!-- Tema de Interés -->
       <div class="mb-4">
         <label for="tema" class="form-label">Tema de Interés</label>
         <input type="text" class="form-control" id="tema" name="tema" required
