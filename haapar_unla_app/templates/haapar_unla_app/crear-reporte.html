@@ -6,21 +6,11 @@
 <div class="report-section p-2 mt-2 bg-white rounded">
   <section class="report-section">
     <!-- Encabezado -->
-<<<<<<< HEAD
+
     <h3 class="text-center heading-section">Crear Reportes</h3>
     <p class="text-center text-muted">Ingrese la información necesaria para realizar el reporte.</p>
     <!-- Formulario -->
-    <form class="styled-form">
-=======
-    <h3 class="mb-4">Crear Reportes</h3>
-    <p class="text-muted mt-0">Ingrese la información necesaria para realizar el reporte.</p>
-    
-    <!-- Formulario - Modificado para enviar por POST -->
-    <form class="styled-form" method="POST" action="{% url 'crear_reporte' %}">
-      {% csrf_token %}
-      
->>>>>>> a7651592868cead02f74fdae2ee7dce130558563
-      <!-- Tema de Interés -->
+    <form class="styled-form">      <!-- Tema de Interés -->
       <div class="mb-4">
         <label for="tema" class="form-label">Tema de Interés</label>
         <input type="text" class="form-control" id="tema" name="tema" required
@@ -30,6 +20,8 @@
       <!-- Año -->
       <div class="mb-4">
         <label for="anio" class="form-label">Año de Estudio</label>
+        <input type="number" class="form-control" id="anio" name="anio" required 
+               placeholder="¿Hasta qué año querés proyectar?" min="2023" max="2100">
         <input type="number" class="form-control" id="anio" name="anio" required 
                placeholder="¿Hasta qué año querés proyectar?" min="2023" max="2100">
       </div>
@@ -52,9 +44,9 @@
           </div>
         </div>
       </div>
-
       <!-- Botón de envío -->
       <button type="submit" class="btn btn-primary">
+        <i class="fa-solid fa-file-circle-plus me-2"></i> Crear proyecto
         <i class="fa-solid fa-file-circle-plus me-2"></i> Crear proyecto
       </button>
     </form>
