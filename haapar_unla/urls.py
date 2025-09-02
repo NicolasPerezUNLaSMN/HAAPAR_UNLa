@@ -35,6 +35,7 @@ urlpatterns = [
     path('perfil/', views.perfil, name='perfil'),
     path('perfil/', views.perfil, name='perfil'),
     path('perfil/', views.perfil, name='perfil'),
+    path('perfil/', views.perfil, name='perfil'),
 ]
 
 handler400 = views.error_400_view
