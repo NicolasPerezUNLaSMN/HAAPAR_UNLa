@@ -1,7 +1,20 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout, authenticate
-from .forms import SignUpForm
+from .forms import SignUpForm, User
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm
+from django.contrib.auth import update_session_auth_hash
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django import forms
+
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email']
+
 
 def inicio(request):
     return render(request, 'haapar_unla_app/crear-reporte.html')
@@ -116,6 +129,52 @@ def iniciar_sesion(request):
             # Si authenticate devuelve un objeto de usuario, las credenciales son correctas
             login(request, user)
             return redirect('inicio')
+
+
+@login_required
+def perfil(request):
+    user = request.user  
+    
+    if request.method == 'POST':
+   
+        if 'update_profile' in request.POST:
+            form = ProfileForm(request.POST, instance=user)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Perfil actualizado correctamente.')
+                return redirect('profile')
+        
+
+        elif 'change_password' in request.POST:
+            pass_form = PasswordChangeForm(user, request.POST)
+            if pass_form.is_valid():
+                user = pass_form.save()
+                update_session_auth_hash(request, user)  
+                messages.success(request, 'Contraseña cambiada con éxito.')
+                return redirect('profile')
+      
+        elif 'delete_profile' in request.POST:
+             user = request.user
+             user.is_active = False  
+             user.save()
+
+             messages.success(request, "Tu cuenta fue desactivada correctamente.")
+             logout(request)  
+             return redirect("inicio")  
+    
+    else:
+        form = ProfileForm(instance=user)
+        pass_form = PasswordChangeForm(user)
+    
+
+    initials = (user.first_name[:1] + user.last_name[:1]).upper() if user.first_name and user.last_name else user.username[:2].upper()
+    
+    return render(request, 'haapar_unla_app/perfil.html', {
+        'form': form,
+        'pass_form': pass_form,
+        'initials': initials,
+    })
+
 
 
 # Vista para manejar el error 400

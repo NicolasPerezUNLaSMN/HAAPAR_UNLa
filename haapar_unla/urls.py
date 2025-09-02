@@ -31,6 +31,10 @@ urlpatterns = [
     path('signin/', views.iniciar_sesion, name='iniciar_sesion'),
     path('crear-reporte/', views.crear_reporte, name='crear_reporte'),
     path('subsistemas/', views.subsistemas, name='subsistemas'),
+    path('perfil/', views.perfil, name='perfil'),
+    path('perfil/', views.perfil, name='perfil'),
+    path('perfil/', views.perfil, name='perfil'),
+    path('perfil/', views.perfil, name='perfil'),
 ]
 
 handler400 = views.error_400_view
