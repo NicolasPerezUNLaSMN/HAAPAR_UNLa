@@ -83,14 +83,10 @@ DATABASES = {
         'NAME': 'haapar_unla',
         'USER': os.environ.get('DB_USER'), # ¡IMPORTANTE!: No dejar credenciales directamente aquí.
         'PASSWORD': os.environ.get('DB_PASSWORD'), # ¡IMPORTANTE!: No dejar credenciales directamente aquí.
-        'HOST': 'localhost',
+        'HOST': '127.0.0.1',
         'PORT': '5432',
     }
 }
-
-
-
-AUTH_USER_MODEL = 'haapar_unla_app.Usuario'
 
 
 # Password validation

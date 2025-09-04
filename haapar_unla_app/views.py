@@ -1,23 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.forms import AuthenticationForm
 from django.contrib.auth import login, logout, authenticate
-from django.contrib.auth.decorators import login_required
-
-from .forms import SignUpForm, TemaForm
-from django.contrib.auth import get_user_model
-
-
-from haapar_unla_app.aplicaciones.casos_uso.registrar_usuario import RegistrarUsuario
-from haapar_unla_app.aplicaciones.casos_uso.iniciar_sesion import IniciarSesion
-from haapar_unla_app.aplicaciones.casos_uso.cerrar_sesion import CerrarSesion
-from haapar_unla_app.infraestructura.persistencia.usuario_repositorio_db import UsuarioRepositorioDB
-from django.contrib.auth import authenticate
-
-
-from haapar_unla_app.aplicaciones.casos_uso.crear_tema import CrearTema
-from haapar_unla_app.infraestructura.persistencia.tema_repositorio_db import TemaRepositorioDB
-
-
+from .forms import SignUpForm
 
 def inicio(request):
     return render(request, 'haapar_unla_app/crear-reporte.html')
@@ -34,7 +18,6 @@ def proyecto_detalle(request):
 def variable_detalle(request):
     return render(request, 'haapar_unla_app/variable-detalle.html')
 
-"""
 def crear_reporte(request):
     if request.method == 'POST':
         # Procesar los datos del formulario
@@ -51,7 +34,7 @@ def crear_reporte(request):
         return redirect('subsistemas')
     
     # Si es GET, mostrar el formulario vacío
-    return render(request, 'haapar_unla_app/crear-reporte.html')"""
+    return render(request, 'haapar_unla_app/crear-reporte.html')
 
 def subsistemas(request):
     if request.method == 'GET':
@@ -73,128 +56,66 @@ def subsistemas(request):
 
 
 def registro(request):
+    """
+    Gestiona el registro de nuevos usuarios en la aplicación.
+
+    GET: Muestra el formulario de registro.
+    POST: Procesa el envío del formulario, valida las contraseñas,
+          crea el usuario, lo autentica e inicia sesión, o muestra errores.
+    """
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
-            try:
-                repositorio = UsuarioRepositorioDB()
-                caso_uso = RegistrarUsuario(repositorio)
-                
-                usuario_creado = caso_uso.ejecutar(
-                    username=form.cleaned_data['username'],
-                    first_name=form.cleaned_data['first_name'],
-                    last_name=form.cleaned_data['last_name'],
-                    email=form.cleaned_data['email'],
-                    password=form.cleaned_data['password'],
-                    grupo_id=1
-                )
-                
-                user = authenticate(
-                    request,
-                    username=form.cleaned_data['username'],
-                    password=form.cleaned_data['password']
-                )
-                if user:
-                    login(request, user)
-                
-                return redirect('inicio')
-                
-            except ValueError as e:
-                form.add_error(None, str(e))          
-    
-    else:  
+            # Los datos son válidos, crea el usuario
+            user = form.save()
+            login(request, user)
+            return redirect("inicio")
+        else:
+            # El formulario no es válido, renderiza la plantilla con los errores
+            return render(request, 'haapar_unla_app/autenticacion/signup.html', {
+                'form': form,
+            })
+    else:
+        # Si la solicitud es GET, creamos una instancia vacía del formulario
         form = SignUpForm()
-    
-    
-    return render(request, 'haapar_unla_app/autenticacion/signup.html', {'form': form})
+        return render(request, 'haapar_unla_app/autenticacion/signup.html', {
+            'form': form
+        })
+
 
 def cerrar_sesion(request):
-    try:
-        repositorio = UsuarioRepositorioDB()
-        caso_uso = CerrarSesion(repositorio)
-        
-        # Ejecutar caso de uso
-        caso_uso.ejecutar(request)
-        
-        # Redirigir a la página de inicio
-        return redirect('inicio')
-        
-    except Exception as e:
-        # En caso de error, igual redirigir pero podrías loggear el error
-        print(f"Error al cerrar sesión: {e}")
-        return redirect('inicio')
+    logout(request)
+    return redirect("inicio")
 
 
 def iniciar_sesion(request):
+    """
+    Gestiona el inicio de sesión de usuarios en la aplicación.
+
+    GET: Muestra el formulario de inicio de sesión.
+    POST: Procesa el envío del formulario, autentica al usuario e inicia sesión,
+          o muestra un mensaje de error si las credenciales son incorrectas.
+    """
     if request.method == 'GET':
+        # Si la solicitud es GET, simplemente mostramos el formulario vacío
         return render(request, "haapar_unla_app/autenticacion/signin.html", {
-            'form': AuthenticationForm()
+            'form': AuthenticationForm() # Pasamos una instancia del formulario de autenticación
         })
-    
-    else:  
-        try:
-            form = AuthenticationForm(request, data=request.POST)
-            
-            if form.is_valid():        
-                repositorio = UsuarioRepositorioDB()
-                caso_uso = IniciarSesion(repositorio)
-                
-                usuario_entidad = caso_uso.ejecutar(
-                    username=form.cleaned_data['username'],
-                    password=form.cleaned_data['password']
-                )
-                          
-                # Obtener el modelo de Django para hacer login
-                User = get_user_model()
-                user_model = User.objects.get(username=usuario_entidad.username)
-                
-                login(request, user_model)
-                              
-                return redirect('inicio')
-                
-            else:
-                return render(request, "haapar_unla_app/autenticacion/signin.html", {
-                    'form': form,
-                    'error': 'Por favor corrige los errores del formulario'
-                })
-                
-        except ValueError as e:
+    else: # Si la solicitud es POST (se envió el formulario)
+        # print(request.POST)
+        # Intentamos autenticar al usuario usando las credenciales enviadas
+        user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
+        
+        if user is None:
+            # Si authenticate devuelve None, significa que las credenciales son incorrectas
             return render(request, "haapar_unla_app/autenticacion/signin.html", {
-                'form': form,
-                'error': str(e)
+                'form': AuthenticationForm(),
+                'error': 'El usuario o la contraseña son incorrectas.'
             })
-            
-        except Exception as e:
-            import traceback
-            traceback.print_exc()
-            
-            return render(request, "haapar_unla_app/autenticacion/signin.html", {
-                'form': form,
-                'error': f'Error inesperado: {str(e)}'
-            })
-
-
-#------------- Tema -------------------------------
-@login_required
-def crear_tema(request):
-    if request.method == 'POST':
-        form = TemaForm(request.POST)
-        if form.is_valid():
-            repositorio = TemaRepositorioDB()
-            caso_uso = CrearTema(repositorio)
-            
-            # Más claro con nombre específico
-            tema_creado = caso_uso.crear(
-                user_id=request.user.id,
-                nombre=form.cleaned_data['nombre'],
-                descripcion=form.cleaned_data['descripcion'],
-                horizonte=form.cleaned_data['horizonte'],
-                territorio=form.cleaned_data['territorio']
-            )
-            return redirect('proyecto_detalle')
-
-
-
+        else:
+            # Si authenticate devuelve un objeto de usuario, las credenciales son correctas
+            login(request, user)
+            return redirect('inicio')
 
 
 # Vista para manejar el error 400
