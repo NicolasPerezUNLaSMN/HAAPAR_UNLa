@@ -1,9 +1,41 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
+from django.conf import settings
+from django.contrib.auth.hashers import make_password
+
+class Task(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    title = models.CharField(max_length=200)
+    description = models.TextField(blank=True)
+    created = models.DateTimeField(auto_now_add=True)
+    datecompleted = models.DateTimeField(null=True, blank=True)
+    important = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.title
+
+class Usuario(AbstractUser):
+    grupo_id = models.IntegerField(default=1)
+    
+    username = models.CharField(max_length=150, unique=True, blank=False, null=True)
+    
+    USERNAME_FIELD = 'username'  # Campo que se usa para login
+    REQUIRED_FIELDS = ['email']  # Campos que pedirá al crear superusuario
+    
+    class Meta:
+        db_table = 'haapar_unla_app_usuario'
+
+    def save(self, *args, **kwargs):
+        if not self.password.startswith('pbkdf2_sha256$'):
+            self.password = make_password(self.password)
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return f"{self.first_name} {self.last_name} ({self.email})"
 
 class Tema(models.Model):
     id_tema = models.AutoField(primary_key=True, verbose_name='ID Tema')
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     nombre = models.CharField(max_length=255)
     descripcion = models.TextField()
     horizonte = models.CharField(max_length=50)
@@ -126,8 +158,16 @@ class Evaluacion(models.Model):
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
     variable = models.ForeignKey(Variable, on_delete=models.CASCADE)
-    usuario_creador = models.ForeignKey(User, on_delete=models.CASCADE, related_name='usuario_creador')
-    usuario_modificador = models.ForeignKey(User, on_delete=models.CASCADE, related_name='usuario_mod')
+    usuario_creador = models.ForeignKey(
+        settings.AUTH_USER_MODEL,  
+        on_delete=models.CASCADE, 
+        related_name='usuario_creador'
+    )
+    usuario_modificador = models.ForeignKey(
+        settings.AUTH_USER_MODEL,  
+        on_delete=models.CASCADE,
+        related_name='usuario_modificador'
+    )
     
     def __str__(self):
         return f"Evaluación de {self.variable}"

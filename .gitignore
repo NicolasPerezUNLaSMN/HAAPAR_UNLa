@@ -32,3 +32,6 @@ Thumbs.db # Windows
 
 # Ignorar archivos de base de datos SQLite
 db.sqlite3
+
+#Ignorar migrations
+migrations/
