@@ -11,9 +11,11 @@
     <p class="text-center text-muted">Ingrese la información necesaria para realizar el reporte.</p>
     <!-- Formulario -->
     <form class="styled-form" method="POST" action="{% url 'crear_reporte' %}">
+
       {% csrf_token %}
 
       <!-- Nombre del Tema de interés-->
+
       <div class="mb-4">
         <label for="tema" class="form-label">Nombre del Tema</label>
         <input type="text" class="form-control" id="nombre" name="nombre" required
@@ -30,6 +32,7 @@
       <!-- Año -->
       <div class="mb-4">
         <label for="anio" class="form-label">Año de Estudio</label>
+
         <input type="number" class="form-control" id="horizonte" name="horizonte" required 
                placeholder="¿Hasta qué año querés proyectar?" min="2023" max="2100"> <!-- Cambiar numeros fijos -->
       </div>
@@ -39,6 +42,7 @@
         <label for="ubicacion" class="form-label">Ubicación</label>
         <input type="text" class="form-control" id="territorio" name="territorio" required 
                placeholder="Lugar de interés (ej: Buenos Aires, Argentina)"> 
+
       </div>
 
       <!-- Grado de investigación -->
