@@ -9,7 +9,8 @@
     <h3 class="text-center heading-section">Crear Reportes</h3>
     <p class="text-center text-muted">Ingrese la información necesaria para realizar el reporte.</p>
     <!-- Formulario -->
-    <form class="styled-form">
+    <form class="styled-form" method="POST" action="{% url 'crear_reporte' %}">
+      {% csrf_token %}
       <!-- Tema de Interés -->
       <div class="mb-4">
         <label for="tema" class="form-label">Tema de Interés</label>
@@ -21,7 +22,7 @@
       <div class="mb-4">
         <label for="anio" class="form-label">Año de Estudio</label>
         <input type="number" class="form-control" id="anio" name="anio" required 
-               placeholder="¿Hasta qué año querés proyectar?" min="2023" max="2100">
+               placeholder="¿Hasta qué año querés proyectar?" min="2026" max="2100">
       </div>
 
       <!-- Grado de investigación -->
