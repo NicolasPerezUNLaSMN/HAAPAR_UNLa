@@ -15,6 +15,14 @@ body {
   overflow-x: hidden;
 }
 
+.heading-section {
+  font-weight: 750;
+  letter-spacing: -0.5px;
+  color: #004d3a;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
 /* ====================================================
    SIDEBAR
 ==================================================== */
@@ -252,6 +260,55 @@ input[type="text"]:focus {
 }
 
 /* ====================================================
+   PROYECTOS
+==================================================== */
+.proyectos {
+  margin-top: 20px;
+}
+
+.proyectos-table {
+  background-color: #fff;
+  color: #212529;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.proyectos-table th,
+.proyectos-table td {
+  background-color: #fff;
+  color: #212529;
+  border-color: #dee2e6;
+  padding: 16px;
+  vertical-align: middle;
+}
+
+.proyectos-table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+/* ====================================================
+   CARDS DETALLES
+==================================================== */
+.card-base {
+  background-color: #ffffff;
+  color: #212529;
+  border: 1px solid #dee2e6;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+  padding: 24px;
+}
+
+
+.proyecto-base .card-title a {
+  color: #006752;
+}
+
+.proyecto-base .card-text {
+  color: #444;
+}
+
+/* ====================================================
    BOTONES
 ==================================================== */
 .btn-primary {
@@ -294,17 +351,6 @@ input[type="text"]:focus {
 }
 
 /* ====================================================
-   PROYECTOS
-==================================================== */
-.proyectos {
-  margin-top: 20px;
-}
-
-.sidebar:not(.collapsed) .sidebar-link.proyectos:hover {
-  transform: none !important;
-}
-
-/* ====================================================
    TOGGLER DARK MODE
 ==================================================== */
 #toggle-theme {
@@ -340,13 +386,6 @@ input[type="text"]:focus {
   margin-bottom: 2rem;
 }
 
-.report-section h3 {
-  font-weight: 750; 
-  letter-spacing: -0.5px; 
-  color: #004d3a; 
-  text-transform: uppercase; 
-  margin-bottom: 0.5rem
-}
 
 /* ====================================================
    DARK MODE
@@ -382,7 +421,19 @@ body.dark-mode .btn-primary:hover {
   background: linear-gradient(90deg, #00c9a7 0%, #00bfa5 100%);
 }
 
-body.dark-mode .styled-form,
+body.dark-mode .styled-form{
+  background-color: #1e1e1e;
+  border: 1px solid #444;
+  border-radius: 16px;
+  box-shadow: none;
+}
+
+body.dark-mode .styled-form .form-control {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+  border-color: #444;
+}
+
 body.dark-mode .report-section {
   background-color: #181818;
   background: linear-gradient(145deg, #1f1f1f, #1f1f1f);
@@ -436,6 +487,11 @@ body.dark-mode .report-section h3 {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 
+body.dark-mode .heading-section {
+  color: #00c9a7d4;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
 body.dark-mode .styled-form .mb-4:not(:last-child) {
   border-bottom: none;
 }
@@ -466,6 +522,38 @@ body.dark-mode .user-menu .dropdown-item {
 body.dark-mode .user-menu .dropdown-item:hover {
   background-color: #333;
   color: #fff;
+}
+
+body.dark-mode .proyectos-table {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+  box-shadow: none;
+}
+
+body.dark-mode .proyectos-table th,
+body.dark-mode .proyectos-table td {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+  border-color: #444;
+}
+
+body.dark-mode .proyectos-table tbody tr:hover {
+  background-color: #333;
+}
+
+body.dark-mode .proyecto-base {
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+  border: 1px solid #1a1a1a;
+  box-shadow: none;
+}
+
+body.dark-mode .proyecto-base .card-title a {
+  color: #00c9a7;
+}
+
+body.dark-mode .proyecto-base .card-text {
+  color: #ccc;
 }
 
 

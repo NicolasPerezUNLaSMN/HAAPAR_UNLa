@@ -29,6 +29,7 @@ urlpatterns = [
     path('signup/', views.registro, name='registro'),
     path('logout/', views.cerrar_sesion, name='cerrar_sesion'),
     path('signin/', views.iniciar_sesion, name='iniciar_sesion'),
+
     path('crear-reporte/', views.crear_reporte, name='crear-reporte'),
     path('eliminar-proyecto/<int:id_tema>/', views.eliminar_proyecto, name='eliminar_proyecto'),
     path("variables/", views.variable_detalle, name="variable_detalle"),
@@ -36,6 +37,8 @@ urlpatterns = [
     path("variables/<int:pk>/editar/", views.editar_variable, name="editar_variable"),
     path("variables/crear/", views.crear_variable, name="crear_variable"),
 
+    path('perfil/', views.perfil, name='perfil'),
+    path('subsistemas/', views.subsistemas, name='subsistemas'),
 ]
 
 handler400 = views.error_400_view
