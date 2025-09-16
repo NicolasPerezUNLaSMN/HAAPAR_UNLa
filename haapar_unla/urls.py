@@ -24,13 +24,20 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.inicio, name='inicio'),
     path('proyectos/', views.listar_proyectos, name='listar_proyectos'),
-    path('proyecto-detalle/', views.proyecto_detalle, name='proyecto_detalle'),
+    path('proyecto-detalle/<int:tema_id>/', views.proyecto_detalle, name='proyecto_detalle'),
     path('variable-detalle/', views.variable_detalle, name='variable_detalle'),
     path('signup/', views.registro, name='registro'),
     path('logout/', views.cerrar_sesion, name='cerrar_sesion'),
     path('signin/', views.iniciar_sesion, name='iniciar_sesion'),
+
+    path('crear-reporte/', views.crear_reporte, name='crear-reporte'),
+    path('eliminar-proyecto/<int:id_tema>/', views.eliminar_proyecto, name='eliminar_proyecto'),
+    path("variables/", views.variable_detalle, name="variable_detalle"),
+    path("variables/<int:pk>/eliminar/", views.eliminar_variable, name="eliminar_variable"),
+    path("variables/<int:pk>/editar/", views.editar_variable, name="editar_variable"),
+    path("variables/crear/", views.crear_variable, name="crear_variable"),
+
     path('perfil/', views.perfil, name='perfil'),
-    path('crear-reporte/', views.crear_reporte, name='crear_reporte'),
     path('subsistemas/', views.subsistemas, name='subsistemas'),
 ]
 

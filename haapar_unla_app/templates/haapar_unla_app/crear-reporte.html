@@ -9,24 +9,38 @@
     <h3 class="text-center heading-section">Crear Reportes</h3>
     <p class="text-center text-muted">Ingrese la información necesaria para realizar el reporte.</p>
     <!-- Formulario -->
-    <form class="styled-form" method="POST" action="{% url 'crear_reporte' %}">
+
+    <form method="POST" action="{% url 'crear-reporte' %}" class="styled-form">
       {% csrf_token %}
+
       <!-- Tema de Interés -->
       <div class="mb-4">
-        <label for="tema" class="form-label">Tema de Interés</label>
-        <input type="text" class="form-control" id="tema" name="tema" required
+        <label for="nombre" class="form-label">Tema de Interés</label>
+        <input type="text" class="form-control" id="nombre" name="nombre" required
           placeholder="Describí brevemente el tema que querés explorar">
+      </div>
+
+      <!-- Descripción -->
+      <div class="mb-4">
+        <label for="descripcion" class="form-label">Descripción</label>
+        <textarea class="form-control" id="descripcion" name="descripcion" rows="3" required placeholder="Explicá brevemente de qué se trata el tema."></textarea>
       </div>
 
       <!-- Año -->
       <div class="mb-4">
-        <label for="anio" class="form-label">Año de Estudio</label>
-        <input type="number" class="form-control" id="anio" name="anio" required 
-               placeholder="¿Hasta qué año querés proyectar?" min="2026" max="2100">
+        <label for="horizonte" class="form-label">Año de Estudio</label>
+        <input type="text" class="form-control" id="horizonte" name="horizonte" required placeholder="¿Hasta qué año querés proyectar?">
+      </div>
+
+      <!-- Territorio -->
+      <div class="mb-4">
+        <label for="territorio" class="form-label">Territorio</label>
+        <input type="text" class="form-control" id="territorio" name="territorio" required placeholder="Ej: Argentina, Buenos Aires, Región Sur, etc.">
+
       </div>
 
       <!-- Grado de investigación -->
-      <div class="mb-4">
+      <!-- <div class="mb-4">
         <label class="form-label">Grado de Investigación</label>
         <div class="radio-group d-flex gap-3">
           <div class="form-check">
@@ -42,8 +56,8 @@
             <label class="form-check-label" for="profundo">Profundo</label>
           </div>
         </div>
-      </div>
-
+      </div> -->
+      
       <!-- Botón de envío -->
       <button type="submit" class="btn btn-primary">
         <i class="fa-solid fa-file-circle-plus me-2"></i> Crear proyecto
