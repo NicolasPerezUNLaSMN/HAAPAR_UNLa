@@ -1,0 +1,109 @@
+{% extends 'haapar_unla_app/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Mi Perfil</h2>
+
+    <div class="d-flex align-items-center mb-4">
+        <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
+             style="width: 60px; height: 60px; font-size: 20px; font-weight: bold;">
+            {{ initials }}
+        </div>
+        <div class="ms-3">
+            <h5>{{ user.first_name }} {{ user.last_name }}</h5>
+            <p class="text-muted">{{ user.email }}</p>
+        </div>
+    </div>
+
+    <!-- Mensajes de éxito/error -->
+    {% if messages %}
+      {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} mt-2">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <hr>
+
+    <!-- Editar perfil -->
+    <h4>
+      <a class="btn btn-link text-decoration-none" data-bs-toggle="collapse" href="#editProfileForm" role="button" aria-expanded="false" aria-controls="editProfileForm">
+        Editar perfil
+      </a>
+    </h4>
+
+    <div class="collapse" id="editProfileForm">
+      <div class="card card-body mb-4">
+        <form method="post">
+            {% csrf_token %}
+
+            <div class="mb-3">
+                {{ form.first_name.label_tag }}
+                {{ form.first_name }}
+            </div>
+
+            <div class="mb-3">
+                {{ form.last_name.label_tag }}
+                {{ form.last_name }}
+            </div>
+
+            <!-- Email solo como texto -->
+            <div class="mb-3">
+                <label>Email:</label>
+                <p class="form-control-plaintext">{{ user.email }}</p>
+            </div>
+
+            <button type="submit" name="update_profile" class="btn btn-primary">Guardar cambios</button>
+        </form>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- Cambiar contraseña -->
+    <h4>
+      <a class="btn btn-link text-decoration-none" data-bs-toggle="collapse" href="#changePasswordForm" role="button" aria-expanded="false" aria-controls="changePasswordForm">
+        Cambiar contraseña
+      </a>
+    </h4>
+
+    <div class="collapse" id="changePasswordForm">
+      <div class="card card-body mb-4">
+        <form method="post">
+            {% csrf_token %}
+            {{ pass_form.as_p }}
+            <button type="submit" name="change_password" class="btn btn-warning">Guardar nueva contraseña</button>
+        </form>
+      </div>
+    </div>
+
+    <hr>
+
+    <!-- Eliminar cuenta -->
+    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal">
+      Eliminar mi cuenta
+    </button>
+
+    <!--  Confirmación de Eliminar -->
+    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-danger text-white">
+            <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar eliminación</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+          </div>
+          <div class="modal-body">
+            <p>⚠️ ¿Seguro que deseas eliminar tu cuenta?</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+            <form method="post">
+              {% csrf_token %}
+              <button type="submit" name="delete_profile" class="btn btn-danger">Sí, eliminar</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+</div>
+{% endblock %}

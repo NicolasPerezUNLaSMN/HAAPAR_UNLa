@@ -1,22 +1,98 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth.forms import AuthenticationForm
-from django.contrib.auth import login, logout, authenticate
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
+from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
+from django.contrib.auth.decorators import login_required
 from .forms import SignUpForm
+from haapar_unla_app.models import Tema, Variable, Subsistema
+from django.contrib.auth.models import User
+from .forms import SignUpForm, User
+from django.contrib import messages
+from django import forms
+
+@login_required
+def crear_reporte(request):
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        descripcion = request.POST.get('descripcion')
+        horizonte = request.POST.get('horizonte')
+        territorio = request.POST.get('territorio')
+
+        #user = User.objects.get(username='Y')
+        
+        Tema.objects.create(
+            user=request.user,
+            nombre=nombre,
+            descripcion=descripcion,
+            horizonte=horizonte,
+            territorio=territorio
+        )
+        return redirect('crear-reporte')
+
+    return render(request, 'haapar_unla_app/crear-reporte.html')
+
+@login_required
+def eliminar_proyecto(request, id_tema):
+    tema = get_object_or_404(Tema, id_tema=id_tema, user=request.user)
+    if request.method == 'POST':
+        tema.activo = False
+        tema.save()
+        return redirect('listar_proyectos')
+
+
+
+
+class ProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email']
+
 
 def inicio(request):
     return render(request, 'haapar_unla_app/crear-reporte.html')
 
 
 def listar_proyectos(request):
-    return render(request, 'haapar_unla_app/listar-proyectos.html')
+    temas = Tema.objects.filter(user=request.user,activo=True)
+    return render(request, 'haapar_unla_app/listar-proyectos.html', {'temas': temas})
 
 
-def proyecto_detalle(request):
-    return render(request, 'haapar_unla_app/proyecto-detalle.html')
+def proyecto_detalle(request, tema_id):
+    tema = Tema.objects.get(id_tema=tema_id)
+    return render(request, 'haapar_unla_app/proyecto-detalle.html', {'tema': tema})
 
 
 def variable_detalle(request):
-    return render(request, 'haapar_unla_app/variable-detalle.html')
+    variables = Variable.objects.filter(activo=True)
+    return render(request, 'haapar_unla_app/variable-detalle.html' , {"variables": variables})
+
+def eliminar_variable(request, pk):
+    variable = get_object_or_404(Variable, pk=pk)
+    variable.activo = False  
+    variable.save()
+    return redirect("variable_detalle") 
+
+def editar_variable(request, pk):
+    variable = get_object_or_404(Variable, pk=pk)
+    if request.method == "POST":
+        variable.nombre = request.POST.get("nombre")
+        variable.nombre_corto = request.POST.get("nombre_corto")
+        variable.descripcion = request.POST.get("descripcion")
+        variable.save()
+        return redirect("variable_detalle")
+    return render(request, "haapar_unla_app/editar-variable.html", {"variable": variable})
+
+def crear_variable(request):
+    if request.method == "POST":
+        nombre = request.POST.get("nombre")
+        nombre_corto = request.POST.get("nombre_corto")
+        descripcion = request.POST.get("descripcion")
+        tipo = request.POST.get("tipo")
+        
+        subsistema = Subsistema.objects.first()
+        
+        Variable.objects.create(nombre=nombre, nombre_corto=nombre_corto, descripcion=descripcion, tipo=tipo,subsistema=subsistema)
+        return redirect("variable_detalle")
+    return render(request, "haapar_unla_app/crear-variable.html")
 
 def crear_reporte(request):
     if request.method == 'POST':
@@ -118,6 +194,52 @@ def iniciar_sesion(request):
             return redirect('inicio')
 
 
+@login_required
+def perfil(request):
+    user = request.user  
+    
+    if request.method == 'POST':
+   
+        if 'update_profile' in request.POST:
+            form = ProfileForm(request.POST, instance=user)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Perfil actualizado correctamente.')
+                return redirect('profile')
+        
+
+        elif 'change_password' in request.POST:
+            pass_form = PasswordChangeForm(user, request.POST)
+            if pass_form.is_valid():
+                user = pass_form.save()
+                update_session_auth_hash(request, user)  
+                messages.success(request, 'Contraseña cambiada con éxito.')
+                return redirect('profile')
+      
+        elif 'delete_profile' in request.POST:
+             user = request.user
+             user.is_active = False  
+             user.save()
+
+             messages.success(request, "Tu cuenta fue desactivada correctamente.")
+             logout(request)  
+             return redirect("inicio")  
+    
+    else:
+        form = ProfileForm(instance=user)
+        pass_form = PasswordChangeForm(user)
+    
+
+    initials = (user.first_name[:1] + user.last_name[:1]).upper() if user.first_name and user.last_name else user.username[:2].upper()
+    
+    return render(request, 'haapar_unla_app/perfil.html', {
+        'form': form,
+        'pass_form': pass_form,
+        'initials': initials,
+    })
+
+
+
 # Vista para manejar el error 400
 def error_400_view(request, exception):
     return render(request, 'haapar_unla_app/error/400.html', status=400)
@@ -136,3 +258,6 @@ def error_404_view(request, exception):
 # Vista para manejar el error 500
 def error_500_view(request):
     return render(request, 'haapar_unla_app/error/500.html', status=500)
+
+
+

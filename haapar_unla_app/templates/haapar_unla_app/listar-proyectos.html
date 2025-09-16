@@ -15,50 +15,60 @@ HAAPAR {% endblock %} {% block content %}
           <div class="table-responsive">
             <table class="table table-hover table-striped proyectos-table">
               <thead>
-                <tr>
-                  <th>Nombre del Tema</th>
-                  <th>Descripción</th>
-                  <th>Año de Estudio</th>
-                  <th>Precision</th>
-                  <th>Usuario</th>
-                  <th>Acciones</th>
+                <tr class="table-dark">
+                  <th class="text-center">Nombre del Tema</th>
+                  <th class="text-center">Descripción</th>
+                  <th class="text-center">Año de Estudio</th>
+                  <th class="text-center">Precision</th>
+                  <th class="text-center">Usuario</th>
+                  <th class="text-center">Detalle</th>
+                  <th class="text-center">Eliminar</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  <td>Jugadores Promesas en el Futbol</td>
-                  <td>
-                    Este estudio se enfoca en la identificación, evaluación y
-                    seguimiento de talentos jóvenes en el fútbol
-                  </td>
-                  <td>2040</td>
-                  <td>Baja</td>
-                  <td>Juan</td>
-                  <td>
-                    <!-- Enlace simple con parámetros GET -->
-                    <a href="{% url 'subsistemas' %}?tema=Jugadores Promesas en el Futbol&anio=2040&grado=bajo" 
-                       class="btn btn-sm btn-secondary">
-                      Ver detalles
-                    </a>
-                  </td>
-                </tr>
-                <tr>
-                  <td>Prospectiva Energética Regional</td>
-                  <td>
-                    Evaluación de fuentes de energía renovable y su integración
-                    en la matriz energética de la provincia.
-                  </td>
-                  <td>2050</td>
-                  <td>Alta</td>
-                  <td>Lucas</td>
-                  <td>
-                    <!-- Enlace simple con parámetros GET -->
-                    <a href="{% url 'subsistemas' %}?tema=Jugadores Promesas en el Futbol&anio=2040&grado=bajo" 
-                       class="btn btn-sm btn-secondary">
-                      Ver detalles
-                    </a>
-                  </td>
-                </tr>
+                {% for tema in temas %}
+                  <tr>
+                    <td class="text-center align-middle">{{ tema.nombre }}</td>
+                    <td class="text-center align-middle">{{ tema.descripcion }}</td>
+                    <td class="text-center align-middle">{{ tema.horizonte }}</td>
+                    <td class="text-center align-middle">—</td> <!-- precision -->
+                    <td class="text-center align-middle">{{ tema.user.username }}</td>
+                    <td class="text-center align-middle">
+                      <a href="{% url 'proyecto_detalle' tema.id_tema %}" class="btn btn-sm btn-secondary">Ver detalles</a>
+                    </td>
+                    <td class="text-center align-middle">
+                      <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmModal{{ tema.id_tema }}">
+                        <i class="fa-solid fa-trash"></i>
+                      </button>
+
+                      <div class="modal fade" id="confirmModal{{ tema.id_tema }}" tabindex="-1" aria-labelledby="confirmModalLabel{{ tema.id_tema }}" aria-hidden="true">
+                        <div class="modal-dialog">
+                          <div class="modal-content">
+                            <div class="modal-header" style="color: black;">
+                              <h5 class="modal-title" id="confirmModalLabel{{ tema.id_tema }}">Confirmar eliminación</h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                            </div>
+                            <div class="modal-body" style="color: black;">
+                              ¿Estás seguro de que quieres eliminar el proyecto <strong>{{ tema.nombre }}</strong>? 
+                              Esta acción no se puede deshacer.
+                            </div>
+                            <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                              <form method="POST" action="{% url 'eliminar_proyecto' tema.id_tema %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-danger">Eliminar</button>
+                              </form>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                {% empty %}
+                  <tr>
+                    <td colspan="6" class="text-center">No hay proyectos aún.</td>
+                  </tr>
+                {% endfor %}
               </tbody>
             </table>
           </div>
