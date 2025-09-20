@@ -39,6 +39,11 @@ urlpatterns = [
 
     path('perfil/', views.perfil, name='perfil'),
     path('subsistemas/', views.subsistemas, name='subsistemas'),
+
+    path('actor-detalle/<int:tema_id>/', views.actor_detalle, name='actor_detalle'),
+    path("actores/<int:pk>/eliminar/", views.eliminar_actor, name="eliminar_actor"),
+    path("actores/<int:pk>/editar/", views.editar_actor, name="editar_actor"),
+    path("actores/crear/<int:tema_id>/", views.crear_actor, name="crear_actor"),
 ]
 
 handler400 = views.error_400_view
