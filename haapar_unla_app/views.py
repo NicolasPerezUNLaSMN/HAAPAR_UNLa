@@ -2,16 +2,11 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
-from .forms import SignUpForm
-from haapar_unla_app.models import Tema, Variable, Subsistema
+from haapar_unla_app.models import Tema, Variable, Subsistema, Actor
 from django.contrib.auth.models import User
 from .forms import SignUpForm, User
 from django.contrib import messages
 from django import forms
-
-##Para actores
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Actor, Tema, Subsistema
 
 @login_required
 def crear_reporte(request):
@@ -41,9 +36,6 @@ def eliminar_proyecto(request, id_tema):
         tema.activo = False
         tema.save()
         return redirect('listar_proyectos')
-
-
-
 
 class ProfileForm(forms.ModelForm):
     class Meta:

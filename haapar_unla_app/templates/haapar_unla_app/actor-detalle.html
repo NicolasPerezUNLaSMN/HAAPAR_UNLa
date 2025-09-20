@@ -31,7 +31,7 @@
         </div>
         <div>
           <a href="{% url 'editar_actor' actor.id %}" class="btn btn-sm btn-outline-primary">
-            <i class="fa-solid fa-edit"></i> Editor
+            <i class="fa-solid fa-edit"></i> Editar
           </a>
           <form action="{% url 'eliminar_actor' actor.id %}" method="post" class="d-inline">
             {% csrf_token %}

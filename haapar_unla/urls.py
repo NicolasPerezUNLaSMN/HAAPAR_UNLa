@@ -23,12 +23,11 @@ from django.conf.urls import handler400, handler403, handler404, handler500
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.inicio, name='inicio'),
+    path('signup/', views.registro, name='registro'),
+    path('signin/', views.iniciar_sesion, name='iniciar_sesion'),
+    path('logout/', views.cerrar_sesion, name='cerrar_sesion'),
     path('proyectos/', views.listar_proyectos, name='listar_proyectos'),
     path('proyecto-detalle/<int:tema_id>/', views.proyecto_detalle, name='proyecto_detalle'),
-    path('variable-detalle/', views.variable_detalle, name='variable_detalle'),
-    path('signup/', views.registro, name='registro'),
-    path('logout/', views.cerrar_sesion, name='cerrar_sesion'),
-    path('signin/', views.iniciar_sesion, name='iniciar_sesion'),
 
     path('crear-reporte/', views.crear_reporte, name='crear-reporte'),
     path('eliminar-proyecto/<int:id_tema>/', views.eliminar_proyecto, name='eliminar_proyecto'),
