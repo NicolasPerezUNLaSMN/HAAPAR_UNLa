@@ -9,6 +9,10 @@ from .forms import SignUpForm, User
 from django.contrib import messages
 from django import forms
 
+##Para actores
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Actor, Tema, Subsistema
+
 @login_required
 def crear_reporte(request):
     if request.method == 'POST':
@@ -112,6 +116,7 @@ def crear_reporte(request):
     # Si es GET, mostrar el formulario vacío
     return render(request, 'haapar_unla_app/crear-reporte.html')
 
+##modifico este subsistema
 def subsistemas(request):
     if request.method == 'GET':
         # Recuperar parámetros de la URL
@@ -260,4 +265,74 @@ def error_500_view(request):
     return render(request, 'haapar_unla_app/error/500.html', status=500)
 
 
+##Vista para gestionar los actores del proyecto
 
+def actor_detalle(request, tema_id):
+    tema = get_object_or_404(Tema, id_tema=tema_id)
+    actores = Actor.objects.filter(tema=tema, activo=True)
+    
+    return render(request, 'haapar_unla_app/actor-detalle.html', {
+        'tema': tema,
+        'actores': actores
+    })
+
+
+def crear_actor(request, tema_id):
+    tema = get_object_or_404(Tema, id_tema=tema_id)
+    
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        descripcion = request.POST.get('descripcion')
+        puesto = request.POST.get('puesto')
+        subsistema_id = request.POST.get('subsistema')
+        emite = 'emite' in request.POST
+        recibe = 'recibe' in request.POST
+        influencia = request.POST.get('influencia')
+        
+        subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id)
+        
+        Actor.objects.create(
+            tema=tema,
+            subsistema=subsistema,
+            nombre=nombre,
+            descripcion=descripcion,
+            puesto=puesto,
+            emite=emite,
+            recibe=recibe,
+            influencia=influencia
+        )
+        
+        return redirect('actor_detalle', tema_id=tema_id)
+    
+    subsistemas = Subsistema.objects.filter(activo=True)
+    return render(request, 'haapar_unla_app/crear-actor.html', {
+        'tema': tema,
+        'subsistemas': subsistemas
+    })
+
+def editar_actor(request, pk):
+    actor = get_object_or_404(Actor, pk=pk)
+    
+    if request.method == 'POST':
+        actor.nombre = request.POST.get('nombre')
+        actor.descripcion = request.POST.get('descripcion')
+        actor.puesto = request.POST.get('puesto')
+        actor.emite = 'emite' in request.POST
+        actor.recibe = 'recibe' in request.POST
+        actor.influencia = request.POST.get('influencia')
+        actor.save()
+        
+        return redirect('actor_detalle', tema_id=actor.tema.id_tema)
+    
+    subsistemas = Subsistema.objects.filter(activo=True)
+    return render(request, 'haapar_unla_app/editar-actor.html', {
+        'actor': actor,
+        'subsistemas': subsistemas
+    })
+
+def eliminar_actor(request, pk):
+    actor = get_object_or_404(Actor, pk=pk)
+    tema_id = actor.tema.id_tema
+    actor.activo = False
+    actor.save()
+    return redirect('actor_detalle', tema_id=tema_id)
