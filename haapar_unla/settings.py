@@ -80,9 +80,9 @@ WSGI_APPLICATION = 'haapar_unla.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'haapar_unla',
-        'USER': os.environ.get('DB_USER'), # ¡IMPORTANTE!: No dejar credenciales directamente aquí.
-        'PASSWORD': os.environ.get('DB_PASSWORD'), # ¡IMPORTANTE!: No dejar credenciales directamente aquí.
+        'NAME': 'haapar',
+        'USER': 'postgres', # ¡IMPORTANTE!: No dejar credenciales directamente aquí.
+        'PASSWORD': 'root', # ¡IMPORTANTE!: No dejar credenciales directamente aquí.
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }
@@ -131,9 +131,14 @@ USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'haapar_unla_app/static')
 ]
+
+# Configuración de email para desarrollo.
+# Esto imprimirá los emails en la consola en lugar de enviarlos.
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+LOGIN_URL = 'iniciar_sesion'
