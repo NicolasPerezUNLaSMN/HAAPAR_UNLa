@@ -2,16 +2,14 @@
 - HAAPAR {% endblock %} {% block content %}
 
 <main class="main">
-  <!-- Titulo de la pagina -->
   <div class="page-title dark-background">
     <div class="container position-relative">
       <h1 class="text-center heading-section">Detalle del proyecto</h1>
-      <p class="text-center text-muted">Jugadores promesas del futbol mundial - 2040</p>
-      <p class="text-center fw-bold text-danger">ID 1</p>
+      <p class="text-center text-muted">{{ tema.nombre }}</p>
+      <p class="text-center fw-bold text-danger">ID {{ tema.id_tema }}</p>
     </div>
   </div>
 
-  <!-- Seccion del detalle del proyecto -->
   <section>
     <div class="container">
       <div class="row gy-4">
@@ -43,7 +41,7 @@
               </div>
               <h3 class="card-title text-info text-center">
                 <a
-                  href="#"
+                  href="{% url 'tendencia_detalle' tema.id_tema %}"
                   class="stretched-link text-decoration-none"
                   >Tendencias</a
                 >
@@ -67,7 +65,7 @@
                 <i class="fa-solid fa-people-roof"></i>
               </div>
               <h3 class="card-title text-info text-center">
-                <a href="{% url 'actor_detalle' tema.id_tema %}" 
+                <a href="{% url 'actor_detalle' tema.id_tema %}"
                    class="stretched-link text-decoration-none">Actores</a>
               </h3>
               <p class="card-text text-center">

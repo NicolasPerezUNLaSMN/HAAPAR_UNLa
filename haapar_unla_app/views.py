@@ -16,35 +16,9 @@ from django.core.mail import send_mail, BadHeaderError
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpResponse
 from django.db.models import Count
+from django.shortcuts import render, redirect, get_object_or_404
+from .models import Tema, TendenciaExterna, Subsistema, PESTEL
 
-@login_required
-def crear_reporte(request):
-    if request.method == 'POST':
-        nombre = request.POST.get('nombre')
-        descripcion = request.POST.get('descripcion')
-        horizonte = request.POST.get('horizonte')
-        territorio = request.POST.get('territorio')
-
-        #user = User.objects.get(username='Y')
-        
-        Tema.objects.create(
-            user=request.user,
-            nombre=nombre,
-            descripcion=descripcion,
-            horizonte=horizonte,
-            territorio=territorio
-        )
-        return redirect('crear-reporte')
-
-    return render(request, 'haapar_unla_app/crear-reporte.html')
-
-@login_required
-def eliminar_proyecto(request, id_tema):
-    tema = get_object_or_404(Tema, id_tema=id_tema, user=request.user)
-    if request.method == 'POST':
-        tema.activo = False
-        tema.save()
-        return redirect('listar_proyectos')
 
 class ProfileForm(forms.ModelForm):
     class Meta:
@@ -56,25 +30,58 @@ def inicio(request):
     return render(request, 'haapar_unla_app/crear-reporte.html')
 
 
+@login_required
 def listar_proyectos(request):
-    temas = Tema.objects.filter(user=request.user,activo=True)
+    temas = Tema.objects.filter(user=request.user, activo=True)
     return render(request, 'haapar_unla_app/listar-proyectos.html', {'temas': temas})
 
 
 def proyecto_detalle(request, tema_id):
-    tema = Tema.objects.get(id_tema=tema_id)
+    tema = get_object_or_404(Tema, id_tema=tema_id)
     return render(request, 'haapar_unla_app/proyecto-detalle.html', {'tema': tema})
+
+
+@login_required
+def crear_reporte(request):
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        descripcion = request.POST.get('descripcion')
+        horizonte = request.POST.get('horizonte')
+        territorio = request.POST.get('territorio')
+
+        # Se crea el proyecto (Tema) y se redirige
+        Tema.objects.create(
+            user=request.user,
+            nombre=nombre,
+            descripcion=descripcion,
+            horizonte=horizonte,
+            territorio=territorio
+        )
+        return redirect('crear-reporte')
+    return render(request, 'haapar_unla_app/crear-reporte.html')
+
+
+@login_required
+def eliminar_proyecto(request, id_tema):
+    tema = get_object_or_404(Tema, id_tema=id_tema, user=request.user)
+    if request.method == 'POST':
+        tema.activo = False
+        tema.save()
+        return redirect('listar_proyectos')
+    return render(request, 'haapar_unla_app/eliminar-proyecto-confirmacion.html', {'tema': tema})
 
 
 def variable_detalle(request):
     variables = Variable.objects.filter(activo=True)
-    return render(request, 'haapar_unla_app/variable-detalle.html' , {"variables": variables})
+    return render(request, 'haapar_unla_app/variable-detalle.html', {"variables": variables})
+
 
 def eliminar_variable(request, pk):
     variable = get_object_or_404(Variable, pk=pk)
-    variable.activo = False  
+    variable.activo = False
     variable.save()
-    return redirect("variable_detalle") 
+    return redirect("variable_detalle")
+
 
 def editar_variable(request, pk):
     variable = get_object_or_404(Variable, pk=pk)
@@ -86,6 +93,7 @@ def editar_variable(request, pk):
         return redirect("variable_detalle")
     return render(request, "haapar_unla_app/editar-variable.html", {"variable": variable})
 
+
 def crear_variable(request):
     if request.method == "POST":
         nombre = request.POST.get("nombre")
@@ -95,37 +103,17 @@ def crear_variable(request):
         
         subsistema = Subsistema.objects.first()
         
-        Variable.objects.create(nombre=nombre, nombre_corto=nombre_corto, descripcion=descripcion, tipo=tipo,subsistema=subsistema)
+        Variable.objects.create(nombre=nombre, nombre_corto=nombre_corto, descripcion=descripcion, tipo=tipo, subsistema=subsistema)
         return redirect("variable_detalle")
     return render(request, "haapar_unla_app/crear-variable.html")
 
-def crear_reporte(request):
-    if request.method == 'POST':
-        # Procesar los datos del formulario
-        tema = request.POST.get('tema')
-        anio = request.POST.get('anio')
-        grado = request.POST.get('grado')
-        
-        # Guardar los datos en la sesión para usarlos en la siguiente vista
-        request.session['reporte_tema'] = tema
-        request.session['reporte_anio'] = anio
-        request.session['reporte_grado'] = grado
-        
-        # Redirigir a la vista de subsistemas
-        return redirect('subsistemas')
-    
-    # Si es GET, mostrar el formulario vacío
-    return render(request, 'haapar_unla_app/crear-reporte.html')
 
-##modifico este subsistema
 def subsistemas(request):
     if request.method == 'GET':
-        # Recuperar parámetros de la URL
         tema = request.GET.get('tema', request.session.get('reporte_tema', 'TEMA NO ESPECIFICADO'))
         anio = request.GET.get('anio', request.session.get('reporte_anio', ''))
         grado = request.GET.get('grado', request.session.get('reporte_grado', ''))
         
-        # Guardar en sesión por si acaso
         request.session['reporte_tema'] = tema
         request.session['reporte_anio'] = anio
         request.session['reporte_grado'] = grado
@@ -138,27 +126,17 @@ def subsistemas(request):
 
 
 def registro(request):
-    """
-    Gestiona el registro de nuevos usuarios en la aplicación.
-
-    GET: Muestra el formulario de registro.
-    POST: Procesa el envío del formulario, valida las contraseñas,
-          crea el usuario, lo autentica e inicia sesión, o muestra errores.
-    """
     if request.method == 'POST':
         form = SignUpForm(request.POST)
         if form.is_valid():
-            # Los datos son válidos, crea el usuario
             user = form.save()
             login(request, user)
             return redirect("inicio")
         else:
-            # El formulario no es válido, renderiza la plantilla con los errores
             return render(request, 'haapar_unla_app/autenticacion/signup.html', {
                 'form': form,
             })
     else:
-        # Si la solicitud es GET, creamos una instancia vacía del formulario
         form = SignUpForm()
         return render(request, 'haapar_unla_app/autenticacion/signup.html', {
             'form': form
@@ -171,41 +149,27 @@ def cerrar_sesion(request):
 
 
 def iniciar_sesion(request):
-    """
-    Gestiona el inicio de sesión de usuarios en la aplicación.
-
-    GET: Muestra el formulario de inicio de sesión.
-    POST: Procesa el envío del formulario, autentica al usuario e inicia sesión,
-          o muestra un mensaje de error si las credenciales son incorrectas.
-    """
     if request.method == 'GET':
-        # Si la solicitud es GET, simplemente mostramos el formulario vacío
         return render(request, "haapar_unla_app/autenticacion/signin.html", {
-            'form': AuthenticationForm() # Pasamos una instancia del formulario de autenticación
+            'form': AuthenticationForm()
         })
-    else: # Si la solicitud es POST (se envió el formulario)
-        # print(request.POST)
-        # Intentamos autenticar al usuario usando las credenciales enviadas
+    else:
         user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
-        
         if user is None:
-            # Si authenticate devuelve None, significa que las credenciales son incorrectas
             return render(request, "haapar_unla_app/autenticacion/signin.html", {
                 'form': AuthenticationForm(),
                 'error': 'El usuario o la contraseña son incorrectas.'
             })
         else:
-            # Si authenticate devuelve un objeto de usuario, las credenciales son correctas
             login(request, user)
             return redirect('inicio')
 
 
 @login_required
 def perfil(request):
-    user = request.user  
+    user = request.user
     
     if request.method == 'POST':
-    
         if 'update_profile' in request.POST:
             form = ProfileForm(request.POST, instance=user)
             if form.is_valid():
@@ -217,23 +181,21 @@ def perfil(request):
             pass_form = PasswordChangeForm(user, request.POST)
             if pass_form.is_valid():
                 user = pass_form.save()
-                update_session_auth_hash(request, user)  
+                update_session_auth_hash(request, user)
                 messages.success(request, 'Contraseña cambiada con éxito.')
                 return redirect('perfil')
-      
+        
         elif 'delete_profile' in request.POST:
             user = request.user
-            user.is_active = False  
+            user.is_active = False
             user.save()
-
             messages.success(request, "Tu cuenta fue desactivada correctamente.")
-            logout(request)  
-            return redirect("inicio")  
+            logout(request)
+            return redirect("inicio")
     
     else:
         form = ProfileForm(instance=user)
         pass_form = PasswordChangeForm(user)
-    
 
     initials = (user.first_name[:1] + user.last_name[:1]).upper() if user.first_name and user.last_name else user.username[:2].upper()
     
@@ -244,32 +206,25 @@ def perfil(request):
     })
 
 
-# Vista para manejar el error 400
 def error_400_view(request, exception):
     return render(request, 'haapar_unla_app/error/400.html', status=400)
 
 
-# Vista para manejar el error 403
 def error_403_view(request, exception):
     return render(request, 'haapar_unla_app/error/403.html', status=403)
 
 
-# Vista para manejar el error 404
 def error_404_view(request, exception):
     return render(request, 'haapar_unla_app/error/404.html', status=404)
 
 
-# Vista para manejar el error 500
 def error_500_view(request):
     return render(request, 'haapar_unla_app/error/500.html', status=500)
 
 
-##Vista para gestionar los actores del proyecto
-
 def actor_detalle(request, tema_id):
     tema = get_object_or_404(Tema, id_tema=tema_id)
     actores = Actor.objects.filter(tema=tema, activo=True)
-    
     return render(request, 'haapar_unla_app/actor-detalle.html', {
         'tema': tema,
         'actores': actores
@@ -278,7 +233,6 @@ def actor_detalle(request, tema_id):
 
 def crear_actor(request, tema_id):
     tema = get_object_or_404(Tema, id_tema=tema_id)
-    
     if request.method == 'POST':
         nombre = request.POST.get('nombre')
         descripcion = request.POST.get('descripcion')
@@ -300,7 +254,6 @@ def crear_actor(request, tema_id):
             recibe=recibe,
             influencia=influencia
         )
-        
         return redirect('actor_detalle', tema_id=tema_id)
     
     subsistemas = Subsistema.objects.filter(activo=True)
@@ -309,9 +262,9 @@ def crear_actor(request, tema_id):
         'subsistemas': subsistemas
     })
 
+
 def editar_actor(request, pk):
     actor = get_object_or_404(Actor, pk=pk)
-    
     if request.method == 'POST':
         actor.nombre = request.POST.get('nombre')
         actor.descripcion = request.POST.get('descripcion')
@@ -329,6 +282,7 @@ def editar_actor(request, pk):
         'subsistemas': subsistemas
     })
 
+
 def eliminar_actor(request, pk):
     actor = get_object_or_404(Actor, pk=pk)
     tema_id = actor.tema.id_tema
@@ -336,21 +290,14 @@ def eliminar_actor(request, pk):
     actor.save()
     return redirect('actor_detalle', tema_id=tema_id)
 
-# --- NUEVAS VISTAS IMPLEMENTADAS ---
 
-# VISTA DE TENDENCIAS
+# --- VISTAS DE TENDENCIAS ---
 @login_required
 def listar_tendencias(request):
-    """
-    Muestra una lista de tendencias externas, agrupadas por subsistema
-    para dar una idea general de la cantidad por cada uno.
-    """
-    # Consulta avanzada para obtener el conteo de TendenciasExternas por Subsistema
     tendencias_por_subsistema = Subsistema.objects.annotate(
         num_tendencias=Count('tendenciaexterna', distinct=True)
     ).filter(num_tendencias__gt=0)
     
-    # También se listan todas las tendencias para una vista detallada
     todas_las_tendencias = TendenciaExterna.objects.filter(activo=True)
     
     context = {
@@ -360,12 +307,96 @@ def listar_tendencias(request):
     
     return render(request, 'haapar_unla_app/tendencias.html', context)
 
-# VISTAS DE RESTABLECIMIENTO DE CONTRASEÑA
+
+@login_required
+def tendencia_detalle(request, tema_id):
+    tema = get_object_or_404(Tema, id_tema=tema_id)
+    tendencias = TendenciaExterna.objects.filter(tema=tema, activo=True)
+    return render(request, 'haapar_unla_app/tendencia-detalle.html', {
+        'tema': tema,
+        'tendencias': tendencias
+    })
+
+
+@login_required
+def crear_tendencia(request, tema_id):
+    tema = get_object_or_404(Tema, id_tema=tema_id)
+    
+    subsistemas = Subsistema.objects.filter(sistema__tema=tema, activo=True)
+    
+    if request.method == 'POST':
+        # Captura los datos del formulario, incluyendo el subsistema
+        subsistema_id = request.POST.get('subsistema')
+        subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id)
+        
+        nombre = request.POST.get('nombre')
+        nombre_corto = request.POST.get('nombre_corto')
+        descripcion = request.POST.get('descripcion')
+        
+        # Crea y guarda la nueva tendencia en la base de datos
+        tendencia_nueva = TendenciaExterna(
+            tema=tema,
+            subsistema=subsistema,
+            nombre=nombre,
+            nombre_corto=nombre_corto,
+            descripcion=descripcion,
+        )
+        tendencia_nueva.save()
+        
+        # Redirige a la página de detalle de tendencias de ese proyecto
+        return redirect('tendencia_detalle', tema_id=tema.id_tema)
+    
+    # Para solicitudes GET, muestra el formulario
+    context = {
+        'tema': tema,
+        'subsistemas': subsistemas,
+    }
+    return render(request, 'haapar_unla_app/crear-tendencia.html', context)
+    
+    # Para solicitudes GET, muestra el formulario
+    context = {
+        'tema': tema,
+        'subsistemas': subsistemas,
+        'tipos_pestel': tipos_pestel,
+    }
+    return render(request, 'haapar_unla_app/crear-tendencia.html', context)
+    
+    # Para solicitudes GET, muestra el formulario
+    context = {
+        'tema': tema,
+        'subsistemas': subsistemas,
+        'tipos_pestel': tipos_pestel,
+    }
+    return render(request, 'haapar_unla_app/crear-tendencia.html', context)
+
+
+@login_required
+def editar_tendencia(request, pk):
+    tendencia = get_object_or_404(TendenciaExterna, pk=pk)
+    if request.method == 'POST':
+        tendencia.nombre = request.POST.get('nombre')
+        tendencia.descripcion = request.POST.get('descripcion')
+        tendencia.save()
+        return redirect('tendencia_detalle', tema_id=tendencia.tema.id_tema)
+    
+    subsistemas = Subsistema.objects.filter(activo=True)
+    return render(request, 'haapar_unla_app/editar-tendencia.html', {
+        'tendencia': tendencia,
+        'subsistemas': subsistemas
+    })
+
+
+@login_required
+def eliminar_tendencia(request, pk):
+    tendencia = get_object_or_404(TendenciaExterna, pk=pk)
+    tema_id = tendencia.tema.id_tema
+    tendencia.activo = False
+    tendencia.save()
+    return redirect('tendencia_detalle', tema_id=tema_id)
+
+# --- VISTAS DE RESTABLECIMIENTO DE CONTRASEÑA ---
 
 def password_reset_request(request):
-    """
-    Solicita el email del usuario para enviar el enlace de restablecimiento.
-    """
     if request.method == "POST":
         password_reset_form = PasswordResetForm(request.POST)
         if password_reset_form.is_valid():
@@ -389,16 +420,13 @@ def password_reset_request(request):
                         send_mail(subject, email_message, 'admin@example.com', [user.email], fail_silently=False)
                     except BadHeaderError:
                         return HttpResponse('Invalid header found.')
-                    messages.success(request, 'Se ha enviado un correo con las instrucciones para restablecer su contraseña.')
-                    return redirect('password_reset_done')
+                messages.success(request, 'Se ha enviado un correo con las instrucciones para restablecer su contraseña.')
+                return redirect('password_reset_done')
             messages.error(request, 'El correo electrónico no está registrado.')
     password_reset_form = PasswordResetForm()
     return render(request, "haapar_unla_app/autenticacion/password_reset.html", {"password_reset_form": password_reset_form})
 
 def password_reset_confirm(request, uidb64, token):
-    """
-    Valida el token y permite al usuario establecer una nueva contraseña.
-    """
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(pk=uid)
@@ -420,13 +448,7 @@ def password_reset_confirm(request, uidb64, token):
         return redirect('password_reset_request')
 
 def password_reset_done(request):
-    """
-    Página de confirmación después de enviar el correo de restablecimiento.
-    """
     return render(request, 'haapar_unla_app/autenticacion/password_reset_done.html')
 
 def password_reset_complete(request):
-    """
-    Página de confirmación después de que la contraseña ha sido cambiada con éxito.
-    """
     return render(request, 'haapar_unla_app/autenticacion/password_reset_complete.html')

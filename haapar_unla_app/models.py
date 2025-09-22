@@ -87,6 +87,8 @@ class Influencia(models.Model):
 
 class TendenciaExterna(models.Model):
     id_tendencia_externa = models.AutoField(primary_key=True, verbose_name='ID Tendencia Externa')
+    # ESTO ES LO QUE FALTABA
+    tema = models.ForeignKey(Tema, on_delete=models.CASCADE, related_name='tendencias_externas')
     subsistema= models.ForeignKey(Subsistema, on_delete=models.CASCADE)
     nombre = models.CharField(max_length=255)
     nombre_corto = models.CharField(max_length=50)
@@ -110,7 +112,6 @@ class IndicadorTendencia(models.Model):
 
 class VariableTendencia(models.Model):
     id_variable_tendencia = models.AutoField(primary_key=True, verbose_name='ID Variable-Tendencia')
-
     variable = models.ForeignKey(Variable, on_delete=models.CASCADE)
     tendencia = models.ForeignKey(TendenciaExterna, on_delete=models.CASCADE)
     impacto = models.DecimalField(max_digits=5, decimal_places=2)

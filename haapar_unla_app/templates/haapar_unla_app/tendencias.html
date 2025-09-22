@@ -1,46 +1,74 @@
 {% extends 'haapar_unla_app/base.html' %}
-{% block title %}Tendencias{% endblock %}
-
+{% block title %} Tendencias Externas - HAAPAR {% endblock %}
 {% block content %}
-<div class="container mt-5">
-    <h2 class="mb-4">Tendencias del Proyecto</h2>
-    <p>Aquí puedes visualizar las tendencias externas asociadas a los subsistemas del proyecto.</p>
 
-    {% if tendencias_por_subsistema %}
+<main class="main">
+    <div class="page-title dark-background">
+        <div class="container position-relative">
+            <h1 class="text-center heading-section">Análisis de Tendencias Externas</h1>
+            <p class="text-center text-muted">Lista de tendencias identificadas en todos los proyectos.</p>
+        </div>
+    </div>
+
+    <div class="container mt-4">
+        {% if todas_las_tendencias %}
         <div class="row">
-        {% for subsistema in tendencias_por_subsistema %}
-            <div class="col-md-6 mb-4">
-                <div class="card">
+            <div class="col-lg-8">
+                <h2 class="mb-3">Todas las Tendencias</h2>
+                {% for tendencia in todas_las_tendencias %}
+                <div class="card mb-3">
                     <div class="card-body">
-                        <h5 class="card-title">{{ subsistema.nombre }}</h5>
-                        <p class="card-text">{{ subsistema.descripcion }}</p>
-                        <p class="card-text"><small class="text-muted">Cantidad de Tendencias: {{ subsistema.num_tendencias }}</small></p>
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="card-title">{{ tendencia.nombre }}</h5>
+                                <p class="card-text text-muted">{{ tendencia.descripcion }}</p>
+                                <p class="card-text">
+                                    <span class="badge 
+                                        {% if tendencia.tipo_pestel == 'P' %}bg-secondary
+                                        {% elif tendencia.tipo_pestel == 'E' %}bg-primary
+                                        {% elif tendencia.tipo_pestel == 'S' %}bg-info
+                                        {% elif tendencia.tipo_pestel == 'T' %}bg-warning
+                                        {% elif tendencia.tipo_pestel == 'L' %}bg-danger
+                                        {% elif tendencia.tipo_pestel == 'A' %}bg-success
+                                        {% else %}bg-light text-dark{% endif %}">
+                                        {% if tendencia.tipo_pestel == 'P' %}Política
+                                        {% elif tendencia.tipo_pestel == 'E' %}Económica
+                                        {% elif tendencia.tipo_pestel == 'S' %}Social
+                                        {% elif tendencia.tipo_pestel == 'T' %}Tecnológica
+                                        {% elif tendencia.tipo_pestel == 'L' %}Legal
+                                        {% elif tendencia.tipo_pestel == 'A' %}Ambiental
+                                        {% else %}Sin Categoría{% endif %}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="col-lg-4">
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h5 class="card-title">Tendencias por Subsistema</h5>
+                        <ul class="list-group list-group-flush">
+                            {% for subsistema in tendencias_por_subsistema %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                {{ subsistema.nombre }}
+                                <span class="badge bg-primary rounded-pill">{{ subsistema.num_tendencias }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
                     </div>
                 </div>
             </div>
-        {% endfor %}
         </div>
-    {% else %}
-        <p class="text-center">No se encontraron tendencias asociadas a los subsistemas.</p>
-    {% endif %}
+        {% else %}
+        <div class="alert alert-info text-center">
+            Aún no se han registrado tendencias externas.
+        </div>
+        {% endif %}
+    </div>
+</main>
 
-    <hr class="mt-5">
-    
-    <h3 class="mb-4">Todas las Tendencias Registradas</h3>
-    {% if todas_las_tendencias %}
-        <ul class="list-group">
-            {% for tendencia in todas_las_tendencias %}
-                <li class="list-group-item">
-                    <h5>{{ tendencia.nombre }}</h5>
-                    <p class="mb-1"><strong>Nombre Corto:</strong> {{ tendencia.nombre_corto }}</p>
-                    <p class="mb-1"><strong>Tipo de Dato:</strong> {{ tendencia.tipo_dato }}</p>
-                    <p class="mb-0"><strong>Descripción:</strong> {{ tendencia.descripcion }}</p>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p class="text-center">No hay tendencias externas registradas en el sistema.</p>
-    {% endif %}
-
-</div>
 {% endblock %}
