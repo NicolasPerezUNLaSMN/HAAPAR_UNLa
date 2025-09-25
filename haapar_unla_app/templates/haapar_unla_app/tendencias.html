@@ -1,0 +1,46 @@
+{% extends 'haapar_unla_app/base.html' %}
+{% block title %}Tendencias{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Tendencias del Proyecto</h2>
+    <p>Aquí puedes visualizar las tendencias externas asociadas a los subsistemas del proyecto.</p>
+
+    {% if tendencias_por_subsistema %}
+        <div class="row">
+        {% for subsistema in tendencias_por_subsistema %}
+            <div class="col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ subsistema.nombre }}</h5>
+                        <p class="card-text">{{ subsistema.descripcion }}</p>
+                        <p class="card-text"><small class="text-muted">Cantidad de Tendencias: {{ subsistema.num_tendencias }}</small></p>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+        </div>
+    {% else %}
+        <p class="text-center">No se encontraron tendencias asociadas a los subsistemas.</p>
+    {% endif %}
+
+    <hr class="mt-5">
+    
+    <h3 class="mb-4">Todas las Tendencias Registradas</h3>
+    {% if todas_las_tendencias %}
+        <ul class="list-group">
+            {% for tendencia in todas_las_tendencias %}
+                <li class="list-group-item">
+                    <h5>{{ tendencia.nombre }}</h5>
+                    <p class="mb-1"><strong>Nombre Corto:</strong> {{ tendencia.nombre_corto }}</p>
+                    <p class="mb-1"><strong>Tipo de Dato:</strong> {{ tendencia.tipo_dato }}</p>
+                    <p class="mb-0"><strong>Descripción:</strong> {{ tendencia.descripcion }}</p>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p class="text-center">No hay tendencias externas registradas en el sistema.</p>
+    {% endif %}
+
+</div>
+{% endblock %}

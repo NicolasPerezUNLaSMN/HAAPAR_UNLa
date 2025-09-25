@@ -1,12 +1,21 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm, PasswordResetForm, SetPasswordForm
 from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
-from haapar_unla_app.models import Tema, Variable, Subsistema, Actor
+from haapar_unla_app.models import Tema, Variable, Subsistema, Actor, TendenciaExterna
 from django.contrib.auth.models import User
 from .forms import SignUpForm, User
 from django.contrib import messages
 from django import forms
+from django.urls import reverse_lazy
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.utils.encoding import force_str, force_bytes
+from django.template.loader import render_to_string
+from django.core.mail import send_mail, BadHeaderError
+from django.contrib.sites.shortcuts import get_current_site
+from django.http import HttpResponse
+from django.db.models import Count
 
 @login_required
 def crear_reporte(request):
@@ -196,31 +205,30 @@ def perfil(request):
     user = request.user  
     
     if request.method == 'POST':
-   
+    
         if 'update_profile' in request.POST:
             form = ProfileForm(request.POST, instance=user)
             if form.is_valid():
                 form.save()
                 messages.success(request, 'Perfil actualizado correctamente.')
-                return redirect('profile')
+                return redirect('perfil')
         
-
         elif 'change_password' in request.POST:
             pass_form = PasswordChangeForm(user, request.POST)
             if pass_form.is_valid():
                 user = pass_form.save()
                 update_session_auth_hash(request, user)  
                 messages.success(request, 'Contraseña cambiada con éxito.')
-                return redirect('profile')
+                return redirect('perfil')
       
         elif 'delete_profile' in request.POST:
-             user = request.user
-             user.is_active = False  
-             user.save()
+            user = request.user
+            user.is_active = False  
+            user.save()
 
-             messages.success(request, "Tu cuenta fue desactivada correctamente.")
-             logout(request)  
-             return redirect("inicio")  
+            messages.success(request, "Tu cuenta fue desactivada correctamente.")
+            logout(request)  
+            return redirect("inicio")  
     
     else:
         form = ProfileForm(instance=user)
@@ -234,7 +242,6 @@ def perfil(request):
         'pass_form': pass_form,
         'initials': initials,
     })
-
 
 
 # Vista para manejar el error 400
@@ -328,3 +335,98 @@ def eliminar_actor(request, pk):
     actor.activo = False
     actor.save()
     return redirect('actor_detalle', tema_id=tema_id)
+
+# --- NUEVAS VISTAS IMPLEMENTADAS ---
+
+# VISTA DE TENDENCIAS
+@login_required
+def listar_tendencias(request):
+    """
+    Muestra una lista de tendencias externas, agrupadas por subsistema
+    para dar una idea general de la cantidad por cada uno.
+    """
+    # Consulta avanzada para obtener el conteo de TendenciasExternas por Subsistema
+    tendencias_por_subsistema = Subsistema.objects.annotate(
+        num_tendencias=Count('tendenciaexterna', distinct=True)
+    ).filter(num_tendencias__gt=0)
+    
+    # También se listan todas las tendencias para una vista detallada
+    todas_las_tendencias = TendenciaExterna.objects.filter(activo=True)
+    
+    context = {
+        'tendencias_por_subsistema': tendencias_por_subsistema,
+        'todas_las_tendencias': todas_las_tendencias,
+    }
+    
+    return render(request, 'haapar_unla_app/tendencias.html', context)
+
+# VISTAS DE RESTABLECIMIENTO DE CONTRASEÑA
+
+def password_reset_request(request):
+    """
+    Solicita el email del usuario para enviar el enlace de restablecimiento.
+    """
+    if request.method == "POST":
+        password_reset_form = PasswordResetForm(request.POST)
+        if password_reset_form.is_valid():
+            data = password_reset_form.cleaned_data['email']
+            associated_users = User.objects.filter(email=data)
+            if associated_users.exists():
+                for user in associated_users:
+                    subject = "Restablecimiento de Contraseña Solicitado"
+                    email_template_name = "haapar_unla_app/autenticacion/password_reset_email.txt"
+                    c = {
+                        "email": user.email,
+                        'domain': get_current_site(request).domain,
+                        'site_name': 'HAAPAR UNLA',
+                        "uid": urlsafe_base64_encode(force_bytes(user.pk)),
+                        "user": user,
+                        'token': default_token_generator.make_token(user),
+                        'protocol': 'http',
+                    }
+                    email_message = render_to_string(email_template_name, c)
+                    try:
+                        send_mail(subject, email_message, 'admin@example.com', [user.email], fail_silently=False)
+                    except BadHeaderError:
+                        return HttpResponse('Invalid header found.')
+                    messages.success(request, 'Se ha enviado un correo con las instrucciones para restablecer su contraseña.')
+                    return redirect('password_reset_done')
+            messages.error(request, 'El correo electrónico no está registrado.')
+    password_reset_form = PasswordResetForm()
+    return render(request, "haapar_unla_app/autenticacion/password_reset.html", {"password_reset_form": password_reset_form})
+
+def password_reset_confirm(request, uidb64, token):
+    """
+    Valida el token y permite al usuario establecer una nueva contraseña.
+    """
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        if request.method == 'POST':
+            form = SetPasswordForm(user, request.POST)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Tu contraseña ha sido restablecida. Ya puedes iniciar sesión.')
+                return redirect('password_reset_complete')
+        else:
+            form = SetPasswordForm(user)
+        return render(request, 'haapar_unla_app/autenticacion/password_reset_confirm.html', {'form': form})
+    else:
+        messages.error(request, 'El enlace de restablecimiento es inválido o ha expirado.')
+        return redirect('password_reset_request')
+
+def password_reset_done(request):
+    """
+    Página de confirmación después de enviar el correo de restablecimiento.
+    """
+    return render(request, 'haapar_unla_app/autenticacion/password_reset_done.html')
+
+def password_reset_complete(request):
+    """
+    Página de confirmación después de que la contraseña ha sido cambiada con éxito.
+    """
+    return render(request, 'haapar_unla_app/autenticacion/password_reset_complete.html')
