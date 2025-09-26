@@ -80,9 +80,9 @@ WSGI_APPLICATION = 'haapar_unla.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'haapar',
-        'USER': 'postgres', # ¡IMPORTANTE!: No dejar credenciales directamente aquí.
-        'PASSWORD': 'root', # ¡IMPORTANTE!: No dejar credenciales directamente aquí.
+        'NAME': os.environ.get('DB_NAME'), # ¡IMPORTANTE!: No dejar credenciales directamente aquí.
+        'USER': os.environ.get('DB_USER'), # ¡IMPORTANTE!: No dejar credenciales directamente aquí.
+        'PASSWORD': os.environ.get('DB_PASSWORD'), # ¡IMPORTANTE!: No dejar credenciales directamente aquí.
         'HOST': '127.0.0.1',
         'PORT': '5432',
     }

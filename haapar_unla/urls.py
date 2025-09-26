@@ -1,5 +1,5 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
 from haapar_unla_app import views
 
 urlpatterns = [

@@ -92,7 +92,7 @@ class TendenciaExterna(models.Model):
     subsistema= models.ForeignKey(Subsistema, on_delete=models.CASCADE)
     nombre = models.CharField(max_length=255)
     nombre_corto = models.CharField(max_length=50)
-    tipo_dato = models.CharField(max_length=50)
+    tipo_dato = models.CharField(max_length=50, blank=True) # ← permitir vacío
     descripcion = models.TextField()
     activo = models.BooleanField(default=True)
     

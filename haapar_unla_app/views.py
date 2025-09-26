@@ -1,13 +1,12 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm, PasswordResetForm, SetPasswordForm
-from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
+from django.contrib.auth import login, logout, authenticate, update_session_auth_hash, get_user_model
 from django.contrib.auth.decorators import login_required
 from haapar_unla_app.models import Tema, Variable, Subsistema, Actor, TendenciaExterna
-from django.contrib.auth.models import User
-from .forms import SignUpForm, User
+#from django.contrib.auth.models import User
+from .forms import SignUpForm
 from django.contrib import messages
 from django import forms
-from django.urls import reverse_lazy
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.encoding import force_str, force_bytes
@@ -15,8 +14,9 @@ from django.template.loader import render_to_string
 from django.core.mail import send_mail, BadHeaderError
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpResponse
-from django.db.models import Count
+from django.db.models import Count, Q
 
+User = get_user_model()
 
 # ---------------------------
 # FORMULARIO PERFIL
@@ -124,6 +124,22 @@ def crear_variable(request):
 # SUBSISTEMAS
 # ---------------------------
 def subsistemas(request):
+    tema = request.session.get('reporte_tema', 'TEMA NO ESPECIFICADO')
+    anio = request.session.get('reporte_anio', '')
+    grado = request.session.get('reporte_grado', '')
+
+    if request.method == 'GET':
+        tema = request.GET.get('tema', tema)
+        anio = request.GET.get('anio', anio)
+        grado = request.GET.get('grado', grado)
+        request.session['reporte_tema'] = tema
+        request.session['reporte_anio'] = anio
+        request.session['reporte_grado'] = grado
+
+    return render(request, 'haapar_unla_app/subsistemas.html', {'tema': tema, 'anio': anio, 'grado': grado})
+
+"""
+def subsistemas(request):
     if request.method == 'GET':
         tema = request.GET.get('tema', request.session.get('reporte_tema', 'TEMA NO ESPECIFICADO'))
         anio = request.GET.get('anio', request.session.get('reporte_anio', ''))
@@ -137,7 +153,8 @@ def subsistemas(request):
         'tema': tema,
         'anio': anio,
         'grado': grado
-    })
+    }) 
+"""
 
 
 # ---------------------------
@@ -323,7 +340,7 @@ def eliminar_actor(request, pk):
 @login_required
 def listar_tendencias(request):
     tendencias_por_subsistema = Subsistema.objects.annotate(
-        num_tendencias=Count('tendenciaexterna', distinct=True)
+        num_tendencias=Count('tendenciaexterna', filter=Q(tendenciaexterna__activo=True), distinct=True)
     ).filter(num_tendencias__gt=0)
 
     todas_las_tendencias = TendenciaExterna.objects.filter(activo=True)
