@@ -16,19 +16,20 @@ from django.core.mail import send_mail, BadHeaderError
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpResponse
 from django.db.models import Count
-<<<<<<< HEAD
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Tema, TendenciaExterna, Subsistema, PESTEL
-=======
->>>>>>> dev
 
 
+# ---------------------------
+# FORMULARIO PERFIL
+# ---------------------------
 class ProfileForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email']
 
 
+# ---------------------------
+# PROYECTOS
+# ---------------------------
 def inicio(request):
     return render(request, 'haapar_unla_app/crear-reporte.html')
 
@@ -52,7 +53,6 @@ def crear_reporte(request):
         horizonte = request.POST.get('horizonte')
         territorio = request.POST.get('territorio')
 
-        # Se crea el proyecto (Tema) y se redirige
         Tema.objects.create(
             user=request.user,
             nombre=nombre,
@@ -74,6 +74,9 @@ def eliminar_proyecto(request, id_tema):
     return render(request, 'haapar_unla_app/eliminar-proyecto-confirmacion.html', {'tema': tema})
 
 
+# ---------------------------
+# VARIABLES
+# ---------------------------
 def variable_detalle(request):
     variables = Variable.objects.filter(activo=True)
     return render(request, 'haapar_unla_app/variable-detalle.html', {"variables": variables})
@@ -103,24 +106,33 @@ def crear_variable(request):
         nombre_corto = request.POST.get("nombre_corto")
         descripcion = request.POST.get("descripcion")
         tipo = request.POST.get("tipo")
-        
+
         subsistema = Subsistema.objects.first()
-        
-        Variable.objects.create(nombre=nombre, nombre_corto=nombre_corto, descripcion=descripcion, tipo=tipo, subsistema=subsistema)
+
+        Variable.objects.create(
+            nombre=nombre,
+            nombre_corto=nombre_corto,
+            descripcion=descripcion,
+            tipo=tipo,
+            subsistema=subsistema
+        )
         return redirect("variable_detalle")
     return render(request, "haapar_unla_app/crear-variable.html")
 
 
+# ---------------------------
+# SUBSISTEMAS
+# ---------------------------
 def subsistemas(request):
     if request.method == 'GET':
         tema = request.GET.get('tema', request.session.get('reporte_tema', 'TEMA NO ESPECIFICADO'))
         anio = request.GET.get('anio', request.session.get('reporte_anio', ''))
         grado = request.GET.get('grado', request.session.get('reporte_grado', ''))
-        
+
         request.session['reporte_tema'] = tema
         request.session['reporte_anio'] = anio
         request.session['reporte_grado'] = grado
-    
+
     return render(request, 'haapar_unla_app/subsistemas.html', {
         'tema': tema,
         'anio': anio,
@@ -128,6 +140,9 @@ def subsistemas(request):
     })
 
 
+# ---------------------------
+# AUTENTICACIÓN
+# ---------------------------
 def registro(request):
     if request.method == 'POST':
         form = SignUpForm(request.POST)
@@ -168,10 +183,13 @@ def iniciar_sesion(request):
             return redirect('inicio')
 
 
+# ---------------------------
+# PERFIL
+# ---------------------------
 @login_required
 def perfil(request):
     user = request.user
-    
+
     if request.method == 'POST':
         if 'update_profile' in request.POST:
             form = ProfileForm(request.POST, instance=user)
@@ -179,7 +197,7 @@ def perfil(request):
                 form.save()
                 messages.success(request, 'Perfil actualizado correctamente.')
                 return redirect('perfil')
-        
+
         elif 'change_password' in request.POST:
             pass_form = PasswordChangeForm(user, request.POST)
             if pass_form.is_valid():
@@ -187,21 +205,20 @@ def perfil(request):
                 update_session_auth_hash(request, user)
                 messages.success(request, 'Contraseña cambiada con éxito.')
                 return redirect('perfil')
-        
+
         elif 'delete_profile' in request.POST:
-            user = request.user
             user.is_active = False
             user.save()
             messages.success(request, "Tu cuenta fue desactivada correctamente.")
             logout(request)
             return redirect("inicio")
-    
+
     else:
         form = ProfileForm(instance=user)
         pass_form = PasswordChangeForm(user)
 
     initials = (user.first_name[:1] + user.last_name[:1]).upper() if user.first_name and user.last_name else user.username[:2].upper()
-    
+
     return render(request, 'haapar_unla_app/perfil.html', {
         'form': form,
         'pass_form': pass_form,
@@ -209,6 +226,9 @@ def perfil(request):
     })
 
 
+# ---------------------------
+# ERRORES
+# ---------------------------
 def error_400_view(request, exception):
     return render(request, 'haapar_unla_app/error/400.html', status=400)
 
@@ -225,6 +245,9 @@ def error_500_view(request):
     return render(request, 'haapar_unla_app/error/500.html', status=500)
 
 
+# ---------------------------
+# ACTORES
+# ---------------------------
 def actor_detalle(request, tema_id):
     tema = get_object_or_404(Tema, id_tema=tema_id)
     actores = Actor.objects.filter(tema=tema, activo=True)
@@ -244,9 +267,9 @@ def crear_actor(request, tema_id):
         emite = 'emite' in request.POST
         recibe = 'recibe' in request.POST
         influencia = request.POST.get('influencia')
-        
+
         subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id)
-        
+
         Actor.objects.create(
             tema=tema,
             subsistema=subsistema,
@@ -258,7 +281,7 @@ def crear_actor(request, tema_id):
             influencia=influencia
         )
         return redirect('actor_detalle', tema_id=tema_id)
-    
+
     subsistemas = Subsistema.objects.filter(activo=True)
     return render(request, 'haapar_unla_app/crear-actor.html', {
         'tema': tema,
@@ -276,9 +299,9 @@ def editar_actor(request, pk):
         actor.recibe = 'recibe' in request.POST
         actor.influencia = request.POST.get('influencia')
         actor.save()
-        
+
         return redirect('actor_detalle', tema_id=actor.tema.id_tema)
-    
+
     subsistemas = Subsistema.objects.filter(activo=True)
     return render(request, 'haapar_unla_app/editar-actor.html', {
         'actor': actor,
@@ -294,20 +317,22 @@ def eliminar_actor(request, pk):
     return redirect('actor_detalle', tema_id=tema_id)
 
 
-# --- VISTAS DE TENDENCIAS ---
+# ---------------------------
+# TENDENCIAS
+# ---------------------------
 @login_required
 def listar_tendencias(request):
     tendencias_por_subsistema = Subsistema.objects.annotate(
         num_tendencias=Count('tendenciaexterna', distinct=True)
     ).filter(num_tendencias__gt=0)
-    
+
     todas_las_tendencias = TendenciaExterna.objects.filter(activo=True)
-    
+
     context = {
         'tendencias_por_subsistema': tendencias_por_subsistema,
         'todas_las_tendencias': todas_las_tendencias,
     }
-    
+
     return render(request, 'haapar_unla_app/tendencias.html', context)
 
 
@@ -324,51 +349,29 @@ def tendencia_detalle(request, tema_id):
 @login_required
 def crear_tendencia(request, tema_id):
     tema = get_object_or_404(Tema, id_tema=tema_id)
-    
-    subsistemas = Subsistema.objects.filter(sistema__tema=tema, activo=True)
-    
+    subsistemas = Subsistema.objects.filter(activo=True)
+
     if request.method == 'POST':
-        # Captura los datos del formulario, incluyendo el subsistema
         subsistema_id = request.POST.get('subsistema')
         subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id)
-        
+
         nombre = request.POST.get('nombre')
         nombre_corto = request.POST.get('nombre_corto')
         descripcion = request.POST.get('descripcion')
-        
-        # Crea y guarda la nueva tendencia en la base de datos
-        tendencia_nueva = TendenciaExterna(
+
+        TendenciaExterna.objects.create(
             tema=tema,
             subsistema=subsistema,
             nombre=nombre,
             nombre_corto=nombre_corto,
-            descripcion=descripcion,
+            descripcion=descripcion
         )
-        tendencia_nueva.save()
-        
-        # Redirige a la página de detalle de tendencias de ese proyecto
+
         return redirect('tendencia_detalle', tema_id=tema.id_tema)
-    
-    # Para solicitudes GET, muestra el formulario
+
     context = {
         'tema': tema,
         'subsistemas': subsistemas,
-    }
-    return render(request, 'haapar_unla_app/crear-tendencia.html', context)
-    
-    # Para solicitudes GET, muestra el formulario
-    context = {
-        'tema': tema,
-        'subsistemas': subsistemas,
-        'tipos_pestel': tipos_pestel,
-    }
-    return render(request, 'haapar_unla_app/crear-tendencia.html', context)
-    
-    # Para solicitudes GET, muestra el formulario
-    context = {
-        'tema': tema,
-        'subsistemas': subsistemas,
-        'tipos_pestel': tipos_pestel,
     }
     return render(request, 'haapar_unla_app/crear-tendencia.html', context)
 
@@ -381,7 +384,7 @@ def editar_tendencia(request, pk):
         tendencia.descripcion = request.POST.get('descripcion')
         tendencia.save()
         return redirect('tendencia_detalle', tema_id=tendencia.tema.id_tema)
-    
+
     subsistemas = Subsistema.objects.filter(activo=True)
     return render(request, 'haapar_unla_app/editar-tendencia.html', {
         'tendencia': tendencia,
@@ -397,8 +400,10 @@ def eliminar_tendencia(request, pk):
     tendencia.save()
     return redirect('tendencia_detalle', tema_id=tema_id)
 
-# --- VISTAS DE RESTABLECIMIENTO DE CONTRASEÑA ---
 
+# ---------------------------
+# PASSWORD RESET
+# ---------------------------
 def password_reset_request(request):
     if request.method == "POST":
         password_reset_form = PasswordResetForm(request.POST)
@@ -429,6 +434,7 @@ def password_reset_request(request):
     password_reset_form = PasswordResetForm()
     return render(request, "haapar_unla_app/autenticacion/password_reset.html", {"password_reset_form": password_reset_form})
 
+
 def password_reset_confirm(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
@@ -450,8 +456,10 @@ def password_reset_confirm(request, uidb64, token):
         messages.error(request, 'El enlace de restablecimiento es inválido o ha expirado.')
         return redirect('password_reset_request')
 
+
 def password_reset_done(request):
     return render(request, 'haapar_unla_app/autenticacion/password_reset_done.html')
+
 
 def password_reset_complete(request):
     return render(request, 'haapar_unla_app/autenticacion/password_reset_complete.html')
