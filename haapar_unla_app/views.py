@@ -16,8 +16,11 @@ from django.core.mail import send_mail, BadHeaderError
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpResponse
 from django.db.models import Count
+<<<<<<< HEAD
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Tema, TendenciaExterna, Subsistema, PESTEL
+=======
+>>>>>>> dev
 
 
 class ProfileForm(forms.ModelForm):
