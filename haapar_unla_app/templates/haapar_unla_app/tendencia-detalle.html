@@ -1,0 +1,80 @@
+{% extends 'haapar_unla_app/base.html' %} 
+{% block title %} Tendencias del Proyecto - HAAPAR {% endblock %} 
+{% block content %}
+
+<main class="main">
+  <div class="page-title dark-background">
+    <div class="container position-relative">
+      <h1 class="text-center heading-section">TENDENCIAS DEL PROYECTO</h1>
+      <p class="text-center text-muted">{{ tema.nombre }}</p>
+      <p class="text-center fw-bold text-danger">ID {{ tema.id_tema }}</p>
+    </div>
+  </div>
+
+  <div class="container mt-4">
+    {% for tendencia in tendencias %}
+    <div class="card mb-4">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <div>
+          <span class="fw-bold">{{ forloop.counter }}</span>
+          <span class="ms-2 fw-bold text-primary">{{ tendencia.nombre }}</span>
+          <span class="badge 
+            {% if tendencia.tipo_pestel == 'P' %}bg-secondary
+            {% elif tendencia.tipo_pestel == 'E' %}bg-primary
+            {% elif tendencia.tipo_pestel == 'S' %}bg-info
+            {% elif tendencia.tipo_pestel == 'T' %}bg-warning
+            {% elif tendencia.tipo_pestel == 'L' %}bg-danger
+            {% elif tendencia.tipo_pestel == 'A' %}bg-success
+            {% else %}bg-light text-dark{% endif %} ms-2">
+            {% if tendencia.tipo_pestel == 'P' %}Política
+            {% elif tendencia.tipo_pestel == 'E' %}Económica
+            {% elif tendencia.tipo_pestel == 'S' %}Social
+            {% elif tendencia.tipo_pestel == 'T' %}Tecnológica
+            {% elif tendencia.tipo_pestel == 'L' %}Legal
+            {% elif tendencia.tipo_pestel == 'A' %}Ambiental
+            {% else %}Sin Categoría{% endif %}
+          </span>
+        </div>
+        <div>
+          {% if tendencia.pk %}
+          <a href="{% url 'editar_tendencia' tendencia.pk %}" class="btn btn-sm btn-outline-primary">
+            <i class="fa-solid fa-edit"></i> Editar
+          </a>
+          <form action="{% url 'eliminar_tendencia' tendencia.pk %}" method="post" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-sm btn-outline-danger ms-1" 
+                    onclick="return confirm('¿Estás seguro de que quieres eliminar esta tendencia?')">
+              <i class="fa-solid fa-trash"></i> Eliminar
+            </button>
+          </form>
+          {% else %}
+          <p class="text-danger">Error: Tendencia incompleta</p>
+          {% endif %}
+        </div>
+      </div>
+      <div class="card-body">
+        <p class="text-muted mb-2">
+          <strong>Nombre Corto:</strong> {{ tendencia.nombre_corto }}
+        </p>
+        <p><strong>Descripción:</strong> {{ tendencia.descripcion }}</p>
+      </div>
+    </div>
+    {% empty %}
+    <div class="alert alert-info text-center">
+      No hay tendencias definidas para este proyecto. 
+      <a href="{% url 'crear_tendencia' tema.id_tema %}" class="alert-link">Agrega la primera tendencia</a>.
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="container mt-4 text-center">
+    <a href="{% url 'crear_tendencia' tema.id_tema %}" class="btn btn-success me-2">
+      <i class="fa-solid fa-plus"></i> Agregar Tendencia
+    </a>
+    <a href="{% url 'proyecto_detalle' tema.id_tema %}" class="btn btn-secondary">
+      <i class="fa-solid fa-arrow-left"></i> Volver al proyecto
+    </a>
+  </div>
+</main>
+
+{% endblock %}
