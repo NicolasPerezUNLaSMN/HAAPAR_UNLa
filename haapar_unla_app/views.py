@@ -381,6 +381,7 @@ def crear_tendencia(request, tema_id):
             subsistema=subsistema,
             nombre=nombre,
             nombre_corto=nombre_corto,
+            descripcion=descripcion
         )
 
         return redirect('tendencia_detalle', tema_id=tema.id_tema)
