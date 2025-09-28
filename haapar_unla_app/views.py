@@ -30,7 +30,7 @@ def crear_reporte(request):
         
         request.session['reporte_tema'] =tema.id_tema
         
-        return redirect('Subsistema')
+        return redirect('subsistemas', tema_id=tema.id_tema)
 
     return render(request, 'haapar_unla_app/crear-reporte.html')
 
@@ -41,7 +41,6 @@ def eliminar_proyecto(request, id_tema):
         tema.activo = False
         tema.save()
         return redirect('listar_proyectos')
-
 
 
 
