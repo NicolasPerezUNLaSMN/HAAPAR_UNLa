@@ -45,6 +45,7 @@ urlpatterns = [
     path("tema/<int:tema_id>/subsistemas/", views.subsistemas, name="subsistemas"),
     path("tema/<int:tema_id>/crear-subsistema/", views.crear_subsistema, name="crear_subsistema"),
     path('subsistema/<int:sub_id>/eliminar/', views.eliminar_subsistema, name='eliminar_subsistema'),
+    path('proyecto/<int:subsistema_id>/', views.proyecto_detalle, name='proyecto_detalle'),
     
 ]
 

@@ -60,15 +60,19 @@ def listar_proyectos(request):
 
 
 @login_required
-def proyecto_detalle(request, tema_id):
-    tema = get_object_or_404(Tema, pk=tema_id)
-    subsistemas = Subsistema.objects.filter(sistema__tema=tema, activo=True)
+def proyecto_detalle(request, subsistema_id):
+    subsistema = get_object_or_404(Subsistema, pk=subsistema_id, activo=True)
+    tema = subsistema.sistema.tema  # accedés al Tema a través del Sistema
 
     return render(
         request,
-        "haapar_unla_app/subsistemas.html",
-        {"tema": tema, "subsistemas": subsistemas}
+        "haapar_unla_app/proyecto-detalle.html",
+        {
+            "tema": tema,
+            "subsistema": subsistema,
+        }
     )
+
 
 
 def variable_detalle(request):

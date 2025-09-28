@@ -6,7 +6,6 @@
   <div class="report-section p-4 bg-white rounded shadow-sm" style="max-width: 700px; width: 100%;">
     <section class="report-section text-center">
       
-      <!-- Título con color verde oscuro -->
       <h3 class="mb-4 verde-oscuro">TEMA: <span class="verde-oscuro">{{ tema.nombre }}</span></h3>
       
       {% for sistema in sistemas %}
@@ -16,7 +15,10 @@
           {% for sub in sistema.subsistema_set.all %}
             <div class="subsistema-item d-flex justify-content-between align-items-center">
               <div class="d-flex align-items-center">
-                <i class="fas fa-layer-group me-2"></i> {{ sub.nombre }}
+                <i class="fas fa-layer-group me-2"></i>
+                <a href="{% url 'proyecto_detalle' sub.id_subsistema %}" class="text-decoration-none">
+                  {{ sub.nombre }}
+                </a>
               </div>
               <form method="post" 
                     action="{% url 'eliminar_subsistema' sub.id_subsistema %}"
@@ -32,7 +34,7 @@
           {% endfor %}
         </div>
       {% empty %}
-        <p>No hay sistemas en este tema.</p>
+        <p class="text-muted">No hay sistemas en este tema.</p>
       {% endfor %}
       
       <!-- Botón de agregar subsistema -->
@@ -48,69 +50,18 @@
 </div>
 
 <style>
-.verde-oscuro {
-  color: #1a6c2c !important;
-}
-
-.subsistemas-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.subsistema-item {
-  background: #f8f9fa;
-  padding: 16px 20px;
-  border-radius: 8px;
-  border: 1px solid #dee2e6;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  width: 100%;
-}
-
-.subsistema-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  background: #e9ecef;
-}
-
-.eliminar-btn {
-  padding: 0.25rem 0.5rem;
-  font-size: 0.75rem;
-}
-
-.agregar-btn {
-  padding: 10px 20px;
-  font-weight: 500;
-  border: none;
-  transition: all 0.3s ease;
-}
-
-.agregar-btn:hover {
-  background-color: #145a32 !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-
-/* Estilos responsivos */
+.verde-oscuro { color: #1a6c2c !important; }
+.subsistemas-list { display: flex; flex-direction: column; gap: 12px; }
+.subsistema-item { background: #f8f9fa; padding: 16px 20px; border-radius: 8px; border: 1px solid #dee2e6; font-weight: 500; transition: all 0.3s ease; width: 100%; }
+.subsistema-item:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); background: #e9ecef; }
+.eliminar-btn { padding: 0.25rem 0.5rem; font-size: 0.75rem; }
+.agregar-btn { padding: 10px 20px; font-weight: 500; border: none; transition: all 0.3s ease; }
+.agregar-btn:hover { background-color: #145a32 !important; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
 @media (max-width: 768px) {
-  .container {
-    padding: 0 15px;
-  }
-  
-  .report-section {
-    padding: 20px !important;
-  }
-  
-  .subsistema-item {
-    padding: 14px 16px;
-    font-size: 0.95rem;
-  }
-  
-  .eliminar-btn {
-    padding: 0.2rem 0.4rem;
-    font-size: 0.7rem;
-  }
+  .container { padding: 0 15px; }
+  .report-section { padding: 20px !important; }
+  .subsistema-item { padding: 14px 16px; font-size: 0.95rem; }
+  .eliminar-btn { padding: 0.2rem 0.4rem; font-size: 0.7rem; }
 }
 </style>
 {% endblock %}
