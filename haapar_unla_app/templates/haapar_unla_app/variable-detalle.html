@@ -6,6 +6,10 @@
     <div class="container position-relative">
       <h1 class="text-center heading-section">Variables del proyecto</h1>
       <p class="text-center text-muted">Jugadores promesas del futbol mundial - 2040</p>
+
+      <div class="text-center mt-3">
+        <a href="{% url 'historial_variables' %}" class="btn btn-info btn-sm">🕘 Ver Historial General</a>
+      </div>
     </div>
   </div>
 
@@ -19,7 +23,9 @@
             <div class="card-body">
               <div class="d-flex align-items-center mb-2">
                 <span class="badge bg-primary me-2">{{ forloop.counter }}</span>
-                <p class="card-text mb-0 text-white">// Nombre: {{ variable.nombre }} // Nombre Corto: {{ variable.nombre_corto }}</p>
+                <p class="card-text mb-0 text-white">
+                  // Nombre: {{ variable.nombre }} // Nombre Corto: {{ variable.nombre_corto }}
+                </p>
               </div>
               <h5 class="card-title text-info">Tipo: {{ variable.get_tipo_display }}</h5>
               <p class="card-text">
