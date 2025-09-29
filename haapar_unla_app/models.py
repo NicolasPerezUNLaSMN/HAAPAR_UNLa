@@ -87,10 +87,12 @@ class Influencia(models.Model):
 
 class TendenciaExterna(models.Model):
     id_tendencia_externa = models.AutoField(primary_key=True, verbose_name='ID Tendencia Externa')
+    # ESTO ES LO QUE FALTABA
+    tema = models.ForeignKey(Tema, on_delete=models.CASCADE, related_name='tendencias_externas')
     subsistema= models.ForeignKey(Subsistema, on_delete=models.CASCADE)
     nombre = models.CharField(max_length=255)
     nombre_corto = models.CharField(max_length=50)
-    tipo_dato = models.CharField(max_length=50)
+    tipo_dato = models.CharField(max_length=50, blank=True) # ← permitir vacío
     descripcion = models.TextField()
     activo = models.BooleanField(default=True)
     
@@ -110,7 +112,6 @@ class IndicadorTendencia(models.Model):
 
 class VariableTendencia(models.Model):
     id_variable_tendencia = models.AutoField(primary_key=True, verbose_name='ID Variable-Tendencia')
-
     variable = models.ForeignKey(Variable, on_delete=models.CASCADE)
     tendencia = models.ForeignKey(TendenciaExterna, on_delete=models.CASCADE)
     impacto = models.DecimalField(max_digits=5, decimal_places=2)
@@ -158,3 +159,33 @@ class RelacionActor(models.Model):
 
     def __str__(self):
         return f"{self.actor_clave} - {self.subsistema} (Influencia: {self.influencia})"
+
+##Clase de actor
+    
+class Actor(models.Model):
+    TIPO_INFLUENCIA = [
+        (1, 'Baja'),
+        (2, 'Media'),
+        (3, 'Alta'),
+    ]
+    
+    subsistema = models.ForeignKey(Subsistema, on_delete=models.CASCADE)
+    tema = models.ForeignKey(Tema, on_delete=models.CASCADE)
+    nombre = models.CharField(max_length=200)
+    descripcion = models.TextField()
+    puesto = models.CharField(max_length=100)
+    emite = models.BooleanField(default=False)
+    recibe = models.BooleanField(default=False)
+    influencia = models.IntegerField(choices=TIPO_INFLUENCIA, default=2)
+    activo = models.BooleanField(default=True)
+    
+    def __str__(self):
+        return self.nombre
+
+class RelacionActor(models.Model):
+    actor = models.ForeignKey(Actor, on_delete=models.CASCADE)  # Cambiado de actor_clave a actor
+    subsistema = models.ForeignKey(Subsistema, on_delete=models.CASCADE)
+    influencia = models.IntegerField(default=2)
+    
+    def __str__(self):
+        return f"{self.actor} - {self.subsistema}"

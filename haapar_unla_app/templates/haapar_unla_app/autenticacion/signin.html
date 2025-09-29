@@ -7,11 +7,12 @@
   <div class="page-title">
     <div class="container position-relative">
       <h3 class="text-center heading-section">Iniciar Sesion</h3>
+      <p class="text-center text-muted">Bienvenido de vuelta a HAAPAR</p>
     </div>
   </div>
   <div class="row">
     <div class="col-md-6 offset-md-3 mt-5">
-      <form action="/signin/" method="POST" class="styled-form">
+      <form action="{% url 'iniciar_sesion' %}" method="POST" class="styled-form">  {# Corregido: Usamos 'url' en vez de hardcodear la URL #}
 
         {# Muestra el mensaje de error si existe #}
         {% if error %}
@@ -33,6 +34,9 @@
         <button type="submit" class="btn btn-primary mt-3">
           Iniciar Sesion
         </button>
+
+        {# NUEVO: Enlace para "Olvidé mi contraseña" #}
+        <p class="text-center mt-3"><a href="{% url 'password_reset_request' %}">¿Olvidaste tu contraseña?</a></p>
       </form>
     </div>
   </div>

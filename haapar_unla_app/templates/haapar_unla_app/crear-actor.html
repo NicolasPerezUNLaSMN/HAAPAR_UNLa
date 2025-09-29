@@ -1,0 +1,82 @@
+{% extends 'haapar_unla_app/base.html' %} 
+{% block title %} Crear Actor - HAAPAR {% endblock %} 
+{% block content %}
+
+<main class="main">
+  <div class="page-title dark-background">
+    <div class="container position-relative">
+      <h1 class="text-center heading-section">Crear Nuevo Actor</h1>
+      <p class="text-center text-muted">{{ tema.nombre }}</p>
+    </div>
+  </div>
+
+  <div class="container mt-4">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-header">
+            <h5 class="card-title mb-0">Información del Actor</h5>
+          </div>
+          <div class="card-body">
+            <form method="post" action="{% url 'crear_actor' tema.id_tema %}">
+              {% csrf_token %}
+              <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre del Actor</label>
+                <input type="text" class="form-control" id="nombre" name="nombre" required>
+              </div>
+              
+              <div class="mb-3">
+                <label for="descripcion" class="form-label">Descripción</label>
+                <textarea class="form-control" id="descripcion" name="descripcion" rows="3" required></textarea>
+              </div>
+              
+              <div class="mb-3">
+                <label for="puesto" class="form-label">Puesto/Rol</label>
+                <input type="text" class="form-control" id="puesto" name="puesto" required>
+              </div>
+              
+              <div class="mb-3">
+                <label for="subsistema" class="form-label">Subsistema</label>
+                <select class="form-select" id="subsistema" name="subsistema" required>
+                  <option value="">Seleccionar subsistema</option>
+                  {% for subsistema in subsistemas %}
+                  <option value="{{ subsistema.id_subsistema }}">{{ subsistema.nombre }}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              
+              <div class="mb-3">
+                <label class="form-label">Relaciones</label>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="emite" name="emite">
+                  <label class="form-check-label" for="emite">Emite</label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="recibe" name="recibe">
+                  <label class="form-check-label" for="recibe">Recibe</label>
+                </div>
+              </div>
+              
+              <div class="mb-3">
+                <label for="influencia" class="form-label">Nivel de Influencia</label>
+                <select class="form-select" id="influencia" name="influencia" required>
+                  <option value="">Seleccionar nivel</option>
+                  <option value="1">Baja</option>
+                  <option value="2">Media</option>
+                  <option value="3">Alta</option>
+                </select>
+              </div>
+              
+              <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{% url 'actor_detalle' tema.id_tema %}" class="btn btn-secondary me-md-2">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Crear Actor</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+{% endblock %}
