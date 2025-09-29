@@ -60,9 +60,18 @@ def listar_proyectos(request):
 
 
 @login_required
-def proyecto_detalle(request, subsistema_id):
-    subsistema = get_object_or_404(Subsistema, pk=subsistema_id, activo=True)
-    tema = subsistema.sistema.tema  # accedés al Tema a través del Sistema
+def proyecto_detalle(request, tema_id, subsistema_id=None):
+    tema = get_object_or_404(Tema, pk=tema_id, activo=True)
+    
+    subsistema = None
+    subsistemas = None
+    variables = []
+
+    if subsistema_id:
+        subsistema = get_object_or_404(Subsistema, pk=subsistema_id, activo=True)
+        variables = Variable.objects.filter(subsistema=subsistema, activo=True)
+    else:
+        subsistemas = Subsistema.objects.filter(sistema__tema=tema, activo=True)
 
     return render(
         request,
@@ -70,20 +79,35 @@ def proyecto_detalle(request, subsistema_id):
         {
             "tema": tema,
             "subsistema": subsistema,
+            "subsistemas": subsistemas,
+            "variables": variables,
+        }
+    )
+    
+@login_required
+def variable_detalle(request, subsistema_id):
+    subsistema = get_object_or_404(Subsistema, pk=subsistema_id, activo=True)
+    variables = Variable.objects.filter(subsistema=subsistema, activo=True)
+    tema = subsistema.sistema.tema
+
+    return render(
+        request,
+        'haapar_unla_app/variable-detalle.html',
+        {
+            "subsistema": subsistema,
+            "variables": variables,
+            "tema": tema,
         }
     )
 
-
-
-def variable_detalle(request):
-    variables = Variable.objects.filter(activo=True)
-    return render(request, 'haapar_unla_app/variable-detalle.html' , {"variables": variables})
-
 @login_required
 def eliminar_variable(request, pk):
-    variable = get_object_or_404(Variable, pk=pk)
+    variable = get_object_or_404(Variable, pk=pk, activo=True)
+    subsistema_id = variable.subsistema.id_subsistema
+
     variable.activo = False  
     variable.save()
+
 
     Evaluacion.objects.create(
         variable=variable,
@@ -94,17 +118,19 @@ def eliminar_variable(request, pk):
         accion='ELIMINADO'
     )
 
-    return redirect("variable_detalle")
-
+    return redirect("variable_detalle", subsistema_id=subsistema_id)
 
 @login_required
 def editar_variable(request, pk):
-    variable = get_object_or_404(Variable, pk=pk)
+    variable = get_object_or_404(Variable, pk=pk, activo=True)
+
+    subsistema_id = variable.subsistema.id_subsistema
 
     if request.method == "POST":
         variable.nombre = request.POST.get("nombre")
         variable.nombre_corto = request.POST.get("nombre_corto")
         variable.descripcion = request.POST.get("descripcion")
+        variable.tipo = request.POST.get("tipo")
         variable.save()
 
         Evaluacion.objects.create(
@@ -116,23 +142,24 @@ def editar_variable(request, pk):
             accion='MODIFICADO'
         )
 
-        return redirect("variable_detalle")
+        return redirect("variable_detalle", subsistema_id=subsistema_id)
 
     return render(
         request,
         "haapar_unla_app/editar-variable.html",
-        {"variable": variable}
+        {"variable": variable, "subsistema_id": variable.subsistema.id_subsistema}
     )
 
+
 @login_required
-def crear_variable(request):
+def crear_variable(request, subsistema_id):
+    subsistema = get_object_or_404(Subsistema, pk=subsistema_id, activo=True)
+
     if request.method == "POST":
         nombre = request.POST.get("nombre")
         nombre_corto = request.POST.get("nombre_corto")
         descripcion = request.POST.get("descripcion")
         tipo = request.POST.get("tipo")
-        
-        subsistema = Subsistema.objects.first()
         
         variable = Variable.objects.create(
             nombre=nombre,
@@ -141,7 +168,7 @@ def crear_variable(request):
             tipo=tipo,
             subsistema=subsistema
         )
-        
+
         Evaluacion.objects.create(
             variable=variable,
             importancia=0,
@@ -151,18 +178,25 @@ def crear_variable(request):
             accion='CREADO'
         )
         
-        return redirect("variable_detalle")
-    
-    return render(request, "haapar_unla_app/crear-variable.html")
+        return redirect("variable_detalle", subsistema_id=subsistema.id_subsistema)
+
+    return render(
+        request,
+        "haapar_unla_app/crear-variable.html",
+        {"subsistema": subsistema}
+    )
 
 @login_required
-def historial_variables(request):
-    historial = Evaluacion.objects.select_related('variable', 'usuario_creador').order_by('-fecha_modificacion')
-    
+def historial_variables(request, subsistema_id):
+    historial = Evaluacion.objects.select_related('variable', 'usuario_creador').filter(variable__subsistema_id=subsistema_id).order_by('-fecha_modificacion')
+
     return render(
         request,
         "haapar_unla_app/historial-variable.html",
-        {"historial": historial}
+        {
+            "historial": historial,
+            "subsistema_id": subsistema_id
+        }
     )
 
 @login_required

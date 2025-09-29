@@ -16,9 +16,9 @@
             <div class="subsistema-item d-flex justify-content-between align-items-center">
               <div class="d-flex align-items-center">
                 <i class="fas fa-layer-group me-2"></i>
-                <a href="{% url 'proyecto_detalle' sub.id_subsistema %}" class="text-decoration-none">
-                  {{ sub.nombre }}
-                </a>
+                  <a href="{% url 'proyecto_detalle' tema.id_tema sub.id_subsistema %}" class="text-decoration-none">
+                    {{ sub.nombre }}
+                  </a>
               </div>
               <form method="post" 
                     action="{% url 'eliminar_subsistema' sub.id_subsistema %}"

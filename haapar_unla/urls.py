@@ -32,12 +32,12 @@ urlpatterns = [
 
     path('crear-reporte/', views.crear_reporte, name='crear-reporte'),
     path('eliminar-proyecto/<int:id_tema>/', views.eliminar_proyecto, name='eliminar_proyecto'),
-    path("variables/", views.variable_detalle, name="variable_detalle"),
+    path('variables/<int:subsistema_id>/', views.variable_detalle, name='variable_detalle'),
     path("variables/<int:pk>/eliminar/", views.eliminar_variable, name="eliminar_variable"),
     path("variables/<int:pk>/editar/", views.editar_variable, name="editar_variable"),
-    path("variables/crear/", views.crear_variable, name="crear_variable"),
-    path('variables/historial/', views.historial_variables, name='historial_variables'),
-
+    path('variables/crear/<int:subsistema_id>/', views.crear_variable, name='crear_variable'),
+    path('variables/historial/<int:subsistema_id>/', views.historial_variables, name='historial_variables_subsistema'),
+   
     path('perfil/', views.perfil, name='perfil'),
     path('subsistemas/', views.subsistemas, name='Subsistema'),
     #path('subsistemas/crear/<int:sistema_id>/', views.crear_sistema, name='crear_subsistema'),
@@ -45,7 +45,7 @@ urlpatterns = [
     path("tema/<int:tema_id>/subsistemas/", views.subsistemas, name="subsistemas"),
     path("tema/<int:tema_id>/crear-subsistema/", views.crear_subsistema, name="crear_subsistema"),
     path('subsistema/<int:sub_id>/eliminar/', views.eliminar_subsistema, name='eliminar_subsistema'),
-    path('proyecto/<int:subsistema_id>/', views.proyecto_detalle, name='proyecto_detalle'),
+    path('proyecto/<int:tema_id>/<int:subsistema_id>/', views.proyecto_detalle, name='proyecto_detalle')
     
 ]
 
