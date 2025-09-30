@@ -34,7 +34,7 @@ HAAPAR {% endblock %} {% block content %}
                     <td class="text-center align-middle">—</td> <!-- precision -->
                     <td class="text-center align-middle">{{ tema.user.username }}</td>
                     <td class="text-center align-middle">
-                      <a href="{% url 'proyecto_detalle' tema.id_tema %}" class="btn btn-sm btn-secondary">Ver detalles</a>
+                      <a href="{% url 'subsistemas' tema.id_tema %}" class="btn btn-secondary">Ver detalles</a>
                     </td>
                     <td class="text-center align-middle">
                       <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmModal{{ tema.id_tema }}">
@@ -75,7 +75,8 @@ HAAPAR {% endblock %} {% block content %}
 
           <div class="text-center mt-4">
             <div class="gap-2">
-              <a href="{% url 'inicio' %}" class="btn btn-success">Crear Nuevo proyecto</a>
+              <a href="{% url 'inicio' %}" class="btn btn-primary">Crear Nuevo Proyecto</a>
+
             </div>
           </div>
         </div>

@@ -121,18 +121,26 @@ class VariableTendencia(models.Model):
 
 
 class Evaluacion(models.Model):
+    
+    ACCIONES = [
+        ('CREADO', 'Creado'),
+        ('ELIMINADO', 'Eliminado'),
+        ('MODIFICADO', 'Modificado'),
+    ]
     id_evaluacion = models.AutoField(primary_key=True, verbose_name='ID Evaluacion')
     importancia = models.IntegerField(verbose_name='Importancia', choices=[(i, i) for i in range(0, 11)])
     incertidumbre = models.IntegerField(verbose_name='Incertidumbre', choices=[(i, i) for i in range(0, 11)])
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
-    variable = models.ForeignKey(Variable, on_delete=models.CASCADE)
+    variable = models.ForeignKey(Variable, on_delete=models.SET_NULL, null=True, blank=True)
     usuario_creador = models.ForeignKey(User, on_delete=models.CASCADE, related_name='usuario_creador')
     usuario_modificador = models.ForeignKey(User, on_delete=models.CASCADE, related_name='usuario_mod')
+    accion = models.CharField(max_length=20, choices=ACCIONES, default='CREADO')
     
     def __str__(self):
         return f"Evaluación de {self.variable}"
     
+
 class ActorClave(models.Model):
     id_actor_clave = models.AutoField(primary_key=True, verbose_name='ID Actor Clave')
     subsistema = models.ForeignKey(Subsistema, on_delete=models.CASCADE)

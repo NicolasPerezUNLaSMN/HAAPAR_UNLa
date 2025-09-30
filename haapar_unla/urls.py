@@ -3,36 +3,49 @@ from django.urls import path
 from haapar_unla_app import views
 
 urlpatterns = [
+    # Admin
     path('admin/', admin.site.urls),
+
+    # Autenticación
     path('', views.inicio, name='inicio'),
     path('signup/', views.registro, name='registro'),
     path('signin/', views.iniciar_sesion, name='iniciar_sesion'),
     path('logout/', views.cerrar_sesion, name='cerrar_sesion'),
+
+    # Proyectos
     path('proyectos/', views.listar_proyectos, name='listar_proyectos'),
-    path('proyecto-detalle/<int:tema_id>/', views.proyecto_detalle, name='proyecto_detalle'),
-    
-    path('crear-reporte/', views.crear_reporte, name='crear-reporte'),
+    path('proyecto/<int:tema_id>/<int:subsistema_id>/', views.proyecto_detalle, name='proyecto_detalle'),
     path('eliminar-proyecto/<int:id_tema>/', views.eliminar_proyecto, name='eliminar_proyecto'),
-    path("variables/", views.variable_detalle, name="variable_detalle"),
+    path('crear-reporte/', views.crear_reporte, name='crear-reporte'),
+
+    # Variables (todas ligadas a un subsistema específico)
+    path('variables/<int:subsistema_id>/', views.variable_detalle, name='variable_detalle'),
     path("variables/<int:pk>/eliminar/", views.eliminar_variable, name="eliminar_variable"),
     path("variables/<int:pk>/editar/", views.editar_variable, name="editar_variable"),
-    path("variables/crear/", views.crear_variable, name="crear_variable"),
+    path('variables/crear/<int:subsistema_id>/', views.crear_variable, name='crear_variable'),
+    path('variables/historial/<int:subsistema_id>/', views.historial_variables, name='historial_variables_subsistema'),
 
+    # Perfil
     path('perfil/', views.perfil, name='perfil'),
-    path('subsistemas/', views.subsistemas, name='subsistemas'),
 
+    # Subsistemas
+    path("tema/<int:tema_id>/subsistemas/", views.subsistemas, name="subsistemas"),
+    path("tema/<int:tema_id>/crear-subsistema/", views.crear_subsistema, name="crear_subsistema"),
+    path('subsistema/<int:sub_id>/eliminar/', views.eliminar_subsistema, name='eliminar_subsistema'),
+
+    # Actores (si vas a manejarlos por tema)
     path('actor-detalle/<int:tema_id>/', views.actor_detalle, name='actor_detalle'),
     path("actores/<int:pk>/eliminar/", views.eliminar_actor, name="eliminar_actor"),
     path("actores/<int:pk>/editar/", views.editar_actor, name="editar_actor"),
     path("actores/crear/<int:tema_id>/", views.crear_actor, name="crear_actor"),
-    
-    # URLS PARA "OLVIDE MI CONTRASEÑA"
+
+    # Olvidé mi contraseña
     path('olvide-contrasena/', views.password_reset_request, name='password_reset_request'),
     path('restablecer/<uidb64>/<token>/', views.password_reset_confirm, name='password_reset_confirm'),
     path('password_reset_done/', views.password_reset_done, name='password_reset_done'),
     path('password_reset_complete/', views.password_reset_complete, name='password_reset_complete'),
 
-    # URLS PARA VISTAS Y GESTIÓN DE TENDENCIAS
+    # Tendencias
     path('tendencias/', views.listar_tendencias, name='listar_tendencias'),
     path('tendencias-detalle/<int:tema_id>/', views.tendencia_detalle, name='tendencia_detalle'),
     path('tendencias/crear/<int:tema_id>/', views.crear_tendencia, name='crear_tendencia'),

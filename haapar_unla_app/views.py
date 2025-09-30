@@ -1,10 +1,13 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm, PasswordResetForm, SetPasswordForm
-from django.contrib.auth import login, logout, authenticate, update_session_auth_hash, get_user_model
+from django.contrib.auth.forms import (
+    AuthenticationForm, PasswordChangeForm,
+    PasswordResetForm, SetPasswordForm
+)
+from django.contrib.auth import (
+    login, logout, authenticate,
+    update_session_auth_hash, get_user_model
+)
 from django.contrib.auth.decorators import login_required
-from haapar_unla_app.models import Tema, Variable, Subsistema, Actor, TendenciaExterna
-#from django.contrib.auth.models import User
-from .forms import SignUpForm
 from django.contrib import messages
 from django import forms
 from django.contrib.auth.tokens import default_token_generator
@@ -14,7 +17,13 @@ from django.template.loader import render_to_string
 from django.core.mail import send_mail, BadHeaderError
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpResponse
-from django.db.models import Count, Q
+from django.db.models import Prefetch, Count, Q
+
+from .forms import SignUpForm
+from haapar_unla_app.models import (
+    Tema, Sistema, Subsistema, Variable,
+    Evaluacion, Actor, TendenciaExterna
+)
 
 User = get_user_model()
 
@@ -28,9 +37,33 @@ class ProfileForm(forms.ModelForm):
 
 
 # ---------------------------
-# PROYECTOS
+# INICIO
 # ---------------------------
 def inicio(request):
+    return render(request, 'haapar_unla_app/crear-reporte.html')
+
+
+# ---------------------------
+# PROYECTOS
+# ---------------------------
+@login_required
+def crear_reporte(request):
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        descripcion = request.POST.get('descripcion')
+        horizonte = request.POST.get('horizonte')
+        territorio = request.POST.get('territorio')
+
+        tema = Tema.objects.create(
+            user=request.user,
+            nombre=nombre,
+            descripcion=descripcion,
+            horizonte=horizonte,
+            territorio=territorio
+        )
+        request.session['reporte_tema'] = tema.id_tema
+        return redirect('subsistemas', tema_id=tema.id_tema)
+
     return render(request, 'haapar_unla_app/crear-reporte.html')
 
 
@@ -40,28 +73,23 @@ def listar_proyectos(request):
     return render(request, 'haapar_unla_app/listar-proyectos.html', {'temas': temas})
 
 
-def proyecto_detalle(request, tema_id):
-    tema = get_object_or_404(Tema, id_tema=tema_id)
-    return render(request, 'haapar_unla_app/proyecto-detalle.html', {'tema': tema})
-
-
 @login_required
-def crear_reporte(request):
-    if request.method == 'POST':
-        nombre = request.POST.get('nombre')
-        descripcion = request.POST.get('descripcion')
-        horizonte = request.POST.get('horizonte')
-        territorio = request.POST.get('territorio')
+def proyecto_detalle(request, tema_id, subsistema_id=None):
+    tema = get_object_or_404(Tema, pk=tema_id, activo=True)
+    subsistema, subsistemas, variables = None, None, []
 
-        Tema.objects.create(
-            user=request.user,
-            nombre=nombre,
-            descripcion=descripcion,
-            horizonte=horizonte,
-            territorio=territorio
-        )
-        return redirect('crear-reporte')
-    return render(request, 'haapar_unla_app/crear-reporte.html')
+    if subsistema_id:
+        subsistema = get_object_or_404(Subsistema, pk=subsistema_id, activo=True)
+        variables = Variable.objects.filter(subsistema=subsistema, activo=True)
+    else:
+        subsistemas = Subsistema.objects.filter(sistema__tema=tema, activo=True)
+
+    return render(request, "haapar_unla_app/proyecto-detalle.html", {
+        "tema": tema,
+        "subsistema": subsistema,
+        "subsistemas": subsistemas,
+        "variables": variables,
+    })
 
 
 @login_required
@@ -77,84 +105,147 @@ def eliminar_proyecto(request, id_tema):
 # ---------------------------
 # VARIABLES
 # ---------------------------
-def variable_detalle(request):
-    variables = Variable.objects.filter(activo=True)
-    return render(request, 'haapar_unla_app/variable-detalle.html', {"variables": variables})
+@login_required
+def variable_detalle(request, subsistema_id):
+    subsistema = get_object_or_404(Subsistema, pk=subsistema_id, activo=True)
+    variables = Variable.objects.filter(subsistema=subsistema, activo=True)
+    tema = subsistema.sistema.tema
+    return render(request, 'haapar_unla_app/variable-detalle.html', {
+        "subsistema": subsistema,
+        "variables": variables,
+        "tema": tema,
+    })
 
 
-def eliminar_variable(request, pk):
-    variable = get_object_or_404(Variable, pk=pk)
-    variable.activo = False
-    variable.save()
-    return redirect("variable_detalle")
+@login_required
+def crear_variable(request, subsistema_id):
+    subsistema = get_object_or_404(Subsistema, pk=subsistema_id, activo=True)
+
+    if request.method == "POST":
+        variable = Variable.objects.create(
+            nombre=request.POST.get("nombre"),
+            nombre_corto=request.POST.get("nombre_corto"),
+            descripcion=request.POST.get("descripcion"),
+            tipo=request.POST.get("tipo"),
+            subsistema=subsistema
+        )
+        Evaluacion.objects.create(
+            variable=variable,
+            importancia=0,
+            incertidumbre=0,
+            usuario_creador=request.user,
+            usuario_modificador=request.user,
+            accion='CREADO'
+        )
+        return redirect("variable_detalle", subsistema_id=subsistema.id_subsistema)
+
+    return render(request, "haapar_unla_app/crear-variable.html", {"subsistema": subsistema})
 
 
+@login_required
 def editar_variable(request, pk):
-    variable = get_object_or_404(Variable, pk=pk)
+    variable = get_object_or_404(Variable, pk=pk, activo=True)
+    subsistema_id = variable.subsistema.id_subsistema
+
     if request.method == "POST":
         variable.nombre = request.POST.get("nombre")
         variable.nombre_corto = request.POST.get("nombre_corto")
         variable.descripcion = request.POST.get("descripcion")
+        variable.tipo = request.POST.get("tipo")
         variable.save()
-        return redirect("variable_detalle")
-    return render(request, "haapar_unla_app/editar-variable.html", {"variable": variable})
 
-
-def crear_variable(request):
-    if request.method == "POST":
-        nombre = request.POST.get("nombre")
-        nombre_corto = request.POST.get("nombre_corto")
-        descripcion = request.POST.get("descripcion")
-        tipo = request.POST.get("tipo")
-
-        subsistema = Subsistema.objects.first()
-
-        Variable.objects.create(
-            nombre=nombre,
-            nombre_corto=nombre_corto,
-            descripcion=descripcion,
-            tipo=tipo,
-            subsistema=subsistema
+        Evaluacion.objects.create(
+            variable=variable,
+            importancia=0,
+            incertidumbre=0,
+            usuario_creador=request.user,
+            usuario_modificador=request.user,
+            accion='MODIFICADO'
         )
-        return redirect("variable_detalle")
-    return render(request, "haapar_unla_app/crear-variable.html")
+        return redirect("variable_detalle", subsistema_id=subsistema_id)
+
+    return render(request, "haapar_unla_app/editar-variable.html", {
+        "variable": variable,
+        "subsistema_id": subsistema_id
+    })
+
+
+@login_required
+def eliminar_variable(request, pk):
+    variable = get_object_or_404(Variable, pk=pk, activo=True)
+    subsistema_id = variable.subsistema.id_subsistema
+
+    variable.activo = False
+    variable.save()
+
+    Evaluacion.objects.create(
+        variable=variable,
+        importancia=0,
+        incertidumbre=0,
+        usuario_creador=request.user,
+        usuario_modificador=request.user,
+        accion='ELIMINADO'
+    )
+    return redirect("variable_detalle", subsistema_id=subsistema_id)
+
+
+@login_required
+def historial_variables(request, subsistema_id):
+    historial = Evaluacion.objects.select_related(
+        'variable', 'usuario_creador'
+    ).filter(
+        variable__subsistema_id=subsistema_id
+    ).order_by('-fecha_modificacion')
+
+    return render(request, "haapar_unla_app/historial-variable.html", {
+        "historial": historial,
+        "subsistema_id": subsistema_id
+    })
 
 
 # ---------------------------
 # SUBSISTEMAS
 # ---------------------------
-def subsistemas(request):
-    tema = request.session.get('reporte_tema', 'TEMA NO ESPECIFICADO')
-    anio = request.session.get('reporte_anio', '')
-    grado = request.session.get('reporte_grado', '')
-
-    if request.method == 'GET':
-        tema = request.GET.get('tema', tema)
-        anio = request.GET.get('anio', anio)
-        grado = request.GET.get('grado', grado)
-        request.session['reporte_tema'] = tema
-        request.session['reporte_anio'] = anio
-        request.session['reporte_grado'] = grado
-
-    return render(request, 'haapar_unla_app/subsistemas.html', {'tema': tema, 'anio': anio, 'grado': grado})
-
-"""
-def subsistemas(request):
-    if request.method == 'GET':
-        tema = request.GET.get('tema', request.session.get('reporte_tema', 'TEMA NO ESPECIFICADO'))
-        anio = request.GET.get('anio', request.session.get('reporte_anio', ''))
-        grado = request.GET.get('grado', request.session.get('reporte_grado', ''))
-
-        request.session['reporte_tema'] = tema
-        request.session['reporte_anio'] = anio
-        request.session['reporte_grado'] = grado
-
+@login_required
+def subsistemas(request, tema_id):
+    tema = get_object_or_404(Tema, id_tema=tema_id, user=request.user)
+    sistemas = Sistema.objects.filter(tema=tema).prefetch_related(
+        Prefetch('subsistema_set', queryset=Subsistema.objects.filter(activo=True))
+    )
     return render(request, 'haapar_unla_app/subsistemas.html', {
         'tema': tema,
-        'anio': anio,
-        'grado': grado
-    }) 
-"""
+        'sistemas': sistemas
+    })
+
+
+@login_required
+def crear_subsistema(request, tema_id):
+    tema = get_object_or_404(Tema, pk=tema_id)
+    sistema, _ = Sistema.objects.get_or_create(
+        tema=tema,
+        defaults={
+            "nombre": f"Sistema de {tema.nombre}",
+            "descripcion": "Sistema generado automáticamente"
+        }
+    )
+    if request.method == "POST":
+        Subsistema.objects.create(
+            sistema=sistema,
+            nombre=request.POST.get("nombre"),
+            descripcion=request.POST.get("descripcion"),
+            activo=True
+        )
+        return redirect("subsistemas", tema_id=tema.id_tema)
+    return render(request, "haapar_unla_app/crear-subsistema.html", {"tema": tema})
+
+
+@login_required
+def eliminar_subsistema(request, sub_id):
+    sub = get_object_or_404(Subsistema, id_subsistema=sub_id, sistema__tema__user=request.user)
+    if request.method == 'POST':
+        sub.activo = False
+        sub.save()
+    return redirect('subsistemas', tema_id=sub.sistema.tema.id_tema)
 
 
 # ---------------------------
@@ -167,15 +258,9 @@ def registro(request):
             user = form.save()
             login(request, user)
             return redirect("inicio")
-        else:
-            return render(request, 'haapar_unla_app/autenticacion/signup.html', {
-                'form': form,
-            })
     else:
         form = SignUpForm()
-        return render(request, 'haapar_unla_app/autenticacion/signup.html', {
-            'form': form
-        })
+    return render(request, 'haapar_unla_app/autenticacion/signup.html', {'form': form})
 
 
 def cerrar_sesion(request):
@@ -185,9 +270,7 @@ def cerrar_sesion(request):
 
 def iniciar_sesion(request):
     if request.method == 'GET':
-        return render(request, "haapar_unla_app/autenticacion/signin.html", {
-            'form': AuthenticationForm()
-        })
+        return render(request, "haapar_unla_app/autenticacion/signin.html", {'form': AuthenticationForm()})
     else:
         user = authenticate(request, username=request.POST['username'], password=request.POST['password'])
         if user is None:
@@ -195,9 +278,8 @@ def iniciar_sesion(request):
                 'form': AuthenticationForm(),
                 'error': 'El usuario o la contraseña son incorrectas.'
             })
-        else:
-            login(request, user)
-            return redirect('inicio')
+        login(request, user)
+        return redirect('inicio')
 
 
 # ---------------------------
@@ -206,7 +288,6 @@ def iniciar_sesion(request):
 @login_required
 def perfil(request):
     user = request.user
-
     if request.method == 'POST':
         if 'update_profile' in request.POST:
             form = ProfileForm(request.POST, instance=user)
@@ -229,13 +310,11 @@ def perfil(request):
             messages.success(request, "Tu cuenta fue desactivada correctamente.")
             logout(request)
             return redirect("inicio")
-
     else:
         form = ProfileForm(instance=user)
         pass_form = PasswordChangeForm(user)
 
     initials = (user.first_name[:1] + user.last_name[:1]).upper() if user.first_name and user.last_name else user.username[:2].upper()
-
     return render(request, 'haapar_unla_app/perfil.html', {
         'form': form,
         'pass_form': pass_form,
@@ -265,6 +344,7 @@ def error_500_view(request):
 # ---------------------------
 # ACTORES
 # ---------------------------
+@login_required
 def actor_detalle(request, tema_id):
     tema = get_object_or_404(Tema, id_tema=tema_id)
     actores = Actor.objects.filter(tema=tema, activo=True)
@@ -274,38 +354,27 @@ def actor_detalle(request, tema_id):
     })
 
 
+@login_required
 def crear_actor(request, tema_id):
     tema = get_object_or_404(Tema, id_tema=tema_id)
     if request.method == 'POST':
-        nombre = request.POST.get('nombre')
-        descripcion = request.POST.get('descripcion')
-        puesto = request.POST.get('puesto')
-        subsistema_id = request.POST.get('subsistema')
-        emite = 'emite' in request.POST
-        recibe = 'recibe' in request.POST
-        influencia = request.POST.get('influencia')
-
-        subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id)
-
+        subsistema = get_object_or_404(Subsistema, id_subsistema=request.POST.get('subsistema'))
         Actor.objects.create(
             tema=tema,
             subsistema=subsistema,
-            nombre=nombre,
-            descripcion=descripcion,
-            puesto=puesto,
-            emite=emite,
-            recibe=recibe,
-            influencia=influencia
+            nombre=request.POST.get('nombre'),
+            descripcion=request.POST.get('descripcion'),
+            puesto=request.POST.get('puesto'),
+            emite='emite' in request.POST,
+            recibe='recibe' in request.POST,
+            influencia=request.POST.get('influencia')
         )
         return redirect('actor_detalle', tema_id=tema_id)
-
     subsistemas = Subsistema.objects.filter(activo=True)
-    return render(request, 'haapar_unla_app/crear-actor.html', {
-        'tema': tema,
-        'subsistemas': subsistemas
-    })
+    return render(request, 'haapar_unla_app/crear-actor.html', {'tema': tema, 'subsistemas': subsistemas})
 
 
+@login_required
 def editar_actor(request, pk):
     actor = get_object_or_404(Actor, pk=pk)
     if request.method == 'POST':
@@ -316,22 +385,17 @@ def editar_actor(request, pk):
         actor.recibe = 'recibe' in request.POST
         actor.influencia = request.POST.get('influencia')
         actor.save()
-
         return redirect('actor_detalle', tema_id=actor.tema.id_tema)
-
     subsistemas = Subsistema.objects.filter(activo=True)
-    return render(request, 'haapar_unla_app/editar-actor.html', {
-        'actor': actor,
-        'subsistemas': subsistemas
-    })
+    return render(request, 'haapar_unla_app/editar-actor.html', {'actor': actor, 'subsistemas': subsistemas})
 
 
+@login_required
 def eliminar_actor(request, pk):
     actor = get_object_or_404(Actor, pk=pk)
-    tema_id = actor.tema.id_tema
     actor.activo = False
     actor.save()
-    return redirect('actor_detalle', tema_id=tema_id)
+    return redirect('actor_detalle', tema_id=actor.tema.id_tema)
 
 
 # ---------------------------
@@ -342,15 +406,11 @@ def listar_tendencias(request):
     tendencias_por_subsistema = Subsistema.objects.annotate(
         num_tendencias=Count('tendenciaexterna', filter=Q(tendenciaexterna__activo=True), distinct=True)
     ).filter(num_tendencias__gt=0)
-
     todas_las_tendencias = TendenciaExterna.objects.filter(activo=True)
-
-    context = {
+    return render(request, 'haapar_unla_app/tendencias.html', {
         'tendencias_por_subsistema': tendencias_por_subsistema,
         'todas_las_tendencias': todas_las_tendencias,
-    }
-
-    return render(request, 'haapar_unla_app/tendencias.html', context)
+    })
 
 
 @login_required
@@ -367,30 +427,17 @@ def tendencia_detalle(request, tema_id):
 def crear_tendencia(request, tema_id):
     tema = get_object_or_404(Tema, id_tema=tema_id)
     subsistemas = Subsistema.objects.filter(activo=True)
-
     if request.method == 'POST':
-        subsistema_id = request.POST.get('subsistema')
-        subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id)
-
-        nombre = request.POST.get('nombre')
-        nombre_corto = request.POST.get('nombre_corto')
-        descripcion = request.POST.get('descripcion')
-
+        subsistema = get_object_or_404(Subsistema, id_subsistema=request.POST.get('subsistema'))
         TendenciaExterna.objects.create(
             tema=tema,
             subsistema=subsistema,
-            nombre=nombre,
-            nombre_corto=nombre_corto,
-            descripcion=descripcion
+            nombre=request.POST.get('nombre'),
+            nombre_corto=request.POST.get('nombre_corto'),
+            descripcion=request.POST.get('descripcion')
         )
-
         return redirect('tendencia_detalle', tema_id=tema.id_tema)
-
-    context = {
-        'tema': tema,
-        'subsistemas': subsistemas,
-    }
-    return render(request, 'haapar_unla_app/crear-tendencia.html', context)
+    return render(request, 'haapar_unla_app/crear-tendencia.html', {'tema': tema, 'subsistemas': subsistemas})
 
 
 @login_required
@@ -401,22 +448,16 @@ def editar_tendencia(request, pk):
         tendencia.descripcion = request.POST.get('descripcion')
         tendencia.save()
         return redirect('tendencia_detalle', tema_id=tendencia.tema.id_tema)
-
     subsistemas = Subsistema.objects.filter(activo=True)
-    return render(request, 'haapar_unla_app/editar-tendencia.html', {
-        'tendencia': tendencia,
-        'subsistemas': subsistemas
-    })
+    return render(request, 'haapar_unla_app/editar-tendencia.html', {'tendencia': tendencia, 'subsistemas': subsistemas})
 
 
 @login_required
 def eliminar_tendencia(request, pk):
     tendencia = get_object_or_404(TendenciaExterna, pk=pk)
-    tema_id = tendencia.tema.id_tema
     tendencia.activo = False
     tendencia.save()
-    return redirect('tendencia_detalle', tema_id=tema_id)
-
+    return redirect('tendencia_detalle', tema_id=tendencia.tema.id_tema)
 
 # ---------------------------
 # PASSWORD RESET
@@ -480,3 +521,4 @@ def password_reset_done(request):
 
 def password_reset_complete(request):
     return render(request, 'haapar_unla_app/autenticacion/password_reset_complete.html')
+
