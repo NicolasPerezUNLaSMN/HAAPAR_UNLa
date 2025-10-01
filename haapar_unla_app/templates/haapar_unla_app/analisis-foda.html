@@ -1,0 +1,73 @@
+{% extends 'haapar_unla_app/base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Análisis FODA</h2>
+
+    <div class="row">
+        <!-- Fortalezas -->
+        <div class="col-md-6 mb-3">
+            <div class="card text-white bg-success shadow-sm">
+                <div class="card-header fw-bold">Fortalezas</div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        {% for f in fortalezas %}
+                          <li>{{ f }}</li>
+                        {% empty %}
+                          <li>No hay fortalezas cargadas</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Oportunidades -->
+        <div class="col-md-6 mb-3">
+            <div class="card text-white bg-primary shadow-sm">
+                <div class="card-header fw-bold">Oportunidades</div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        {% for o in oportunidades %}
+                          <li>{{ o }}</li>
+                        {% empty %}
+                          <li>No hay oportunidades cargadas</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Debilidades -->
+        <div class="col-md-6 mb-3">
+            <div class="card text-dark bg-warning shadow-sm">
+                <div class="card-header fw-bold">Debilidades</div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        {% for d in debilidades %}
+                          <li>{{ d }}</li>
+                        {% empty %}
+                          <li>No hay debilidades cargadas</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Amenazas -->
+        <div class="col-md-6 mb-3">
+            <div class="card text-white bg-danger shadow-sm">
+                <div class="card-header fw-bold">Amenazas</div>
+                <div class="card-body">
+                    <ul class="mb-0">
+                        {% for a in amenazas %}
+                          <li>{{ a }}</li>
+                        {% empty %}
+                          <li>No hay amenazas cargadas</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -156,6 +156,22 @@ def subsistemas(request):
     }) 
 """
 
+# ---------------------------
+# ANALISIS FODA
+# ---------------------------
+
+@login_required
+def analisis_foda(request):
+   
+   #ejemplo, hay que resolver de donde se carga 
+    contexto = {
+        "fortalezas": ["Buena organización", "Trabajo en equipo"],
+        "oportunidades": ["Mercado en crecimiento", "Nuevas tecnologías"],
+        "debilidades": ["Falta de experiencia", "Pocos recursos"],
+        "amenazas": ["Competencia fuerte", "Cambios regulatorios"],
+    }
+    return render(request, 'haapar_unla_app/analisis-foda.html', contexto)
+
 
 # ---------------------------
 # AUTENTICACIÓN
