@@ -19,11 +19,6 @@
         <div>
           <span class="fw-bold">{{ forloop.counter }}</span>
           <span class="ms-2 fw-bold text-primary">{{ actor.nombre }}</span>
-          <span class="badge 
-            {% comment %} Puedes definir influencia desde RelacionActor si lo quieres mostrar {% endcomment %}
-            bg-secondary ms-2">
-            Actor Activo
-          </span>
         </div>
         <div>
           <a href="{% url 'editar_actor' actor.id_actor_clave %}" class="btn btn-sm btn-outline-primary">
