@@ -49,7 +49,11 @@ Detalle del Proyecto - HAAPAR
                 <i class="fa-solid fa-arrow-trend-up"></i>
               </div>
               <h3 class="card-title text-info">
-                <a href="{% url 'tendencia_detalle' tema.id_tema %}" class="stretched-link text-decoration-none">Tendencias</a>
+                {% if subsistema %}
+                  <a href="{% url 'tendencia_detalle' subsistema.id_subsistema %}">Tendencias</a>
+                {% else %}
+                  <a href="#">Tendencias</a>
+                {% endif %}
               </h3>
               <p class="card-text">
                 Nuestro sistema de Tendencias ofrece una visión prospectiva crucial para la planificación de futuros.

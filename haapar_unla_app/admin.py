@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Tema, Sistema, Subsistema, TendenciaExterna, PESTEL, Variable, IndicadorVariable, Influencia, VariableTendencia, Evaluacion, ActorClave, RelacionActor, Actor
+from .models import Tema, Sistema, Subsistema, TendenciaExterna, PESTEL, Variable, IndicadorVariable, Influencia, VariableTendencia, Evaluacion, ActorClave, RelacionActor
 
 # Registra tus modelos aquí.
 
@@ -17,8 +17,8 @@ class SubsistemaAdmin(admin.ModelAdmin):
 
 @admin.register(TendenciaExterna)
 class TendenciaExternaAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'tema', 'subsistema', 'activo')
-    list_filter = ('activo', 'tema')
+    list_display = ('id_tendencia_externa', 'nombre', 'subsistema', 'activo')
+    list_filter = ('subsistema', 'activo')
     search_fields = ('nombre',)
 
 @admin.register(PESTEL)
@@ -52,8 +52,4 @@ class ActorClaveAdmin(admin.ModelAdmin):
 
 @admin.register(RelacionActor)
 class RelacionActorAdmin(admin.ModelAdmin):
-    list_display = ('actor', 'subsistema', 'influencia')
-
-@admin.register(Actor)
-class ActorAdmin(admin.ModelAdmin):
-    list_display = ('nombre', 'tema', 'subsistema', 'influencia')
+    list_display = ('actor_clave', 'subsistema', 'influencia')

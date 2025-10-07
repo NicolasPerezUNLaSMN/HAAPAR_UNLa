@@ -1,33 +1,18 @@
-{% extends 'haapar_unla_app/base.html' %} {% block title %} Crear Tendencia -
-HAAPAR {% endblock %} {% block content %}
+{% extends 'haapar_unla_app/base.html' %}
+{% block title %} Crear Tendencia - HAAPAR {% endblock %}
+{% block content %}
 
 <div class="container mt-5">
   <div class="row justify-content-center">
     <div class="col-md-8">
-      <div class="card">
+      <div class="card shadow-sm">
         <div class="card-body">
           <h2 class="card-title text-center mb-4">
-            Crear nueva tendencia para el proyecto: {{ tema.nombre }}
+            Crear nueva tendencia para el subsistema: {{ subsistema.nombre }}
           </h2>
-          <form method="post" action="{% url 'crear_tendencia' tema.id_tema %}">
-            {% csrf_token %}
 
-            <div class="mb-3">
-              <label for="subsistema" class="form-label">Subsistema</label>
-              <select
-                class="form-select"
-                id="subsistema"
-                name="subsistema"
-                required
-              >
-                <option value="">Seleccione un subsistema</option>
-                {% for subsistema in subsistemas %}
-                <option value="{{ subsistema.id_subsistema }}">
-                  {{ subsistema.nombre }}
-                </option>
-                {% endfor %}
-              </select>
-            </div>
+          <form method="post" action="{% url 'crear_tendencia' subsistema.id_subsistema %}">
+            {% csrf_token %}
 
             <div class="mb-3">
               <label for="nombre" class="form-label">Nombre</label>
@@ -39,6 +24,7 @@ HAAPAR {% endblock %} {% block content %}
                 required
               />
             </div>
+
             <div class="mb-3">
               <label for="nombre_corto" class="form-label">Nombre corto</label>
               <input
@@ -49,6 +35,15 @@ HAAPAR {% endblock %} {% block content %}
                 required
               />
             </div>
+
+            <div class="mb-3">
+              <label for="tipo_dato" class="form-label">Tipo de Dato</label>
+              <select class="form-select" id="tipo_dato" name="tipo_dato" required>
+                <option value="Cuantitativa">Cuantitativa</option>
+                <option value="Cualitativa">Cualitativa</option>
+              </select>
+            </div>
+
             <div class="mb-3">
               <label for="descripcion" class="form-label">Descripción</label>
               <textarea
@@ -65,12 +60,14 @@ HAAPAR {% endblock %} {% block content %}
                 Guardar Tendencia
               </button>
               <a
-                href="{% url 'tendencia_detalle' tema.id_tema %}"
+                href="{% url 'tendencia_detalle' subsistema.id_subsistema %}"
                 class="btn btn-secondary"
-                >Cancelar</a
               >
+                Cancelar
+              </a>
             </div>
           </form>
+
         </div>
       </div>
     </div>

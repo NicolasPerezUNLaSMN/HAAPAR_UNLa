@@ -47,8 +47,8 @@ urlpatterns = [
 
     # Tendencias
     path('tendencias/', views.listar_tendencias, name='listar_tendencias'),
-    path('tendencias-detalle/<int:tema_id>/', views.tendencia_detalle, name='tendencia_detalle'),
-    path('tendencias/crear/<int:tema_id>/', views.crear_tendencia, name='crear_tendencia'),
+    path('tendencias-detalle/<int:subsistema_id>/', views.tendencia_detalle, name='tendencia_detalle'),
+    path('tendencias/crear/<int:subsistema_id>/', views.crear_tendencia, name='crear_tendencia'),
     path('tendencias/<int:pk>/editar/', views.editar_tendencia, name='editar_tendencia'),
     path('tendencias/<int:pk>/eliminar/', views.eliminar_tendencia, name='eliminar_tendencia'),
 ]

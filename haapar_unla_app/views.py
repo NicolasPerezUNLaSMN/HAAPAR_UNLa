@@ -22,7 +22,7 @@ from django.db.models import Prefetch, Count, Q
 from .forms import SignUpForm
 from haapar_unla_app.models import (
     Tema, Sistema, Subsistema, Variable,
-    Evaluacion, Actor, TendenciaExterna
+    Evaluacion, TendenciaExterna
 )
 
 User = get_user_model()
@@ -414,50 +414,72 @@ def listar_tendencias(request):
 
 
 @login_required
-def tendencia_detalle(request, tema_id):
-    tema = get_object_or_404(Tema, id_tema=tema_id)
-    tendencias = TendenciaExterna.objects.filter(tema=tema, activo=True)
+def tendencia_detalle(request, subsistema_id):
+    subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id, activo=True)
+    tema = subsistema.sistema.tema
+
+    tendencias = TendenciaExterna.objects.filter(subsistema=subsistema, activo=True)
+
     return render(request, 'haapar_unla_app/tendencia-detalle.html', {
         'tema': tema,
-        'tendencias': tendencias
+        'subsistema': subsistema,
+        'tendencias': tendencias,
     })
 
 
 @login_required
-def crear_tendencia(request, tema_id):
-    tema = get_object_or_404(Tema, id_tema=tema_id)
-    subsistemas = Subsistema.objects.filter(activo=True)
-    if request.method == 'POST':
-        subsistema = get_object_or_404(Subsistema, id_subsistema=request.POST.get('subsistema'))
-        TendenciaExterna.objects.create(
-            tema=tema,
-            subsistema=subsistema,
-            nombre=request.POST.get('nombre'),
-            nombre_corto=request.POST.get('nombre_corto'),
-            descripcion=request.POST.get('descripcion')
-        )
-        return redirect('tendencia_detalle', tema_id=tema.id_tema)
-    return render(request, 'haapar_unla_app/crear-tendencia.html', {'tema': tema, 'subsistemas': subsistemas})
+def crear_tendencia(request, subsistema_id):
+    subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id)
 
+    if request.method == 'POST':
+        nombre = request.POST.get('nombre')
+        nombre_corto = request.POST.get('nombre_corto')
+        tipo_dato = request.POST.get('tipo_dato')
+        descripcion = request.POST.get('descripcion')
+
+        TendenciaExterna.objects.create(
+            subsistema=subsistema,
+            nombre=nombre,
+            nombre_corto=nombre_corto,
+            tipo_dato=tipo_dato,
+            descripcion=descripcion,
+            activo=True
+        )
+
+        return redirect('tendencia_detalle', subsistema_id=subsistema.id_subsistema)
+
+    return render(request, 'haapar_unla_app/crear-tendencia.html', {
+        'subsistema': subsistema,
+    })
 
 @login_required
 def editar_tendencia(request, pk):
-    tendencia = get_object_or_404(TendenciaExterna, pk=pk)
+    tendencia = get_object_or_404(TendenciaExterna, pk=pk, activo=True)
+    subsistema = tendencia.subsistema
+
     if request.method == 'POST':
-        tendencia.nombre = request.POST.get('nombre')
-        tendencia.descripcion = request.POST.get('descripcion')
+        tendencia.nombre = request.POST.get('nombre', tendencia.nombre)
+        tendencia.nombre_corto = request.POST.get('nombre_corto', tendencia.nombre_corto)
+        tendencia.tipo_dato = request.POST.get('tipo_dato', tendencia.tipo_dato)
+        tendencia.descripcion = request.POST.get('descripcion', tendencia.descripcion)
         tendencia.save()
-        return redirect('tendencia_detalle', tema_id=tendencia.tema.id_tema)
-    subsistemas = Subsistema.objects.filter(activo=True)
-    return render(request, 'haapar_unla_app/editar-tendencia.html', {'tendencia': tendencia, 'subsistemas': subsistemas})
+
+        return redirect('tendencia_detalle', subsistema_id=subsistema.id_subsistema)
+
+    return render(request, 'haapar_unla_app/editar-tendencia.html', {
+        'tendencia': tendencia,
+        'subsistema': subsistema,
+    })
 
 
 @login_required
 def eliminar_tendencia(request, pk):
-    tendencia = get_object_or_404(TendenciaExterna, pk=pk)
-    tendencia.activo = False
-    tendencia.save()
-    return redirect('tendencia_detalle', tema_id=tendencia.tema.id_tema)
+    tendencia = get_object_or_404(TendenciaExterna, pk=pk, activo=True)
+    subsistema_id = tendencia.subsistema.id_subsistema
+    if request.method == 'POST':
+        tendencia.activo = False
+        tendencia.save()
+    return redirect('tendencia_detalle', subsistema_id=subsistema_id)
 
 # ---------------------------
 # PASSWORD RESET
