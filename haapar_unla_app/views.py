@@ -22,7 +22,7 @@ from django.db.models import Prefetch, Count, Q
 from .forms import SignUpForm
 from haapar_unla_app.models import (
     Tema, Sistema, Subsistema, Variable,
-    Evaluacion, TendenciaExterna
+    Evaluacion, TendenciaExterna,ActorClave,RelacionActor
 )
 
 User = get_user_model()
@@ -344,58 +344,92 @@ def error_500_view(request):
 # ---------------------------
 # ACTORES
 # ---------------------------
-@login_required
-def actor_detalle(request, tema_id):
-    tema = get_object_or_404(Tema, id_tema=tema_id)
-    actores = Actor.objects.filter(tema=tema, activo=True)
+@login_required 
+def actor_detalle(request, subsistema_id):
+    subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id)
+    actores = ActorClave.objects.filter(subsistema=subsistema, activo=True)
+    tema = subsistema.sistema.tema
     return render(request, 'haapar_unla_app/actor-detalle.html', {
-        'tema': tema,
-        'actores': actores
+        'subsistema': subsistema,
+        'actores': actores,
+        'tema': tema
     })
 
 
 @login_required
-def crear_actor(request, tema_id):
-    tema = get_object_or_404(Tema, id_tema=tema_id)
+def crear_actor(request, subsistema_id):
+    subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id)
+
     if request.method == 'POST':
-        subsistema = get_object_or_404(Subsistema, id_subsistema=request.POST.get('subsistema'))
-        Actor.objects.create(
-            tema=tema,
+        nombre = request.POST.get('nombre')
+        descripcion = request.POST.get('descripcion')
+        puesto = request.POST.get('puesto')
+        actor = ActorClave.objects.create(
             subsistema=subsistema,
-            nombre=request.POST.get('nombre'),
-            descripcion=request.POST.get('descripcion'),
-            puesto=request.POST.get('puesto'),
-            emite='emite' in request.POST,
-            recibe='recibe' in request.POST,
-            influencia=request.POST.get('influencia')
+            nombre=nombre,
+            descripcion=descripcion,
+            puesto=puesto,
+            activo=True
         )
-        return redirect('actor_detalle', tema_id=tema_id)
-    subsistemas = Subsistema.objects.filter(activo=True)
-    return render(request, 'haapar_unla_app/crear-actor.html', {'tema': tema, 'subsistemas': subsistemas})
+        
+        influencia = request.POST.get('influencia')
+        if influencia:
+            RelacionActor.objects.create(
+                actor_clave=actor,
+                subsistema=subsistema,
+                influencia=influencia
+            )
+        return redirect('actor_detalle', subsistema_id=subsistema.id_subsistema)
+
+    return render(request, 'haapar_unla_app/crear-actor.html', {
+        'subsistema': subsistema
+    })
 
 
 @login_required
 def editar_actor(request, pk):
-    actor = get_object_or_404(Actor, pk=pk)
+    actor = get_object_or_404(ActorClave, pk=pk)
+    subsistema = actor.subsistema
+
     if request.method == 'POST':
-        actor.nombre = request.POST.get('nombre')
-        actor.descripcion = request.POST.get('descripcion')
-        actor.puesto = request.POST.get('puesto')
-        actor.emite = 'emite' in request.POST
-        actor.recibe = 'recibe' in request.POST
-        actor.influencia = request.POST.get('influencia')
+        actor.nombre = request.POST.get('nombre', actor.nombre)
+        actor.descripcion = request.POST.get('descripcion', actor.descripcion)
+        actor.puesto = request.POST.get('puesto', actor.puesto)
         actor.save()
-        return redirect('actor_detalle', tema_id=actor.tema.id_tema)
-    subsistemas = Subsistema.objects.filter(activo=True)
-    return render(request, 'haapar_unla_app/editar-actor.html', {'actor': actor, 'subsistemas': subsistemas})
+
+        # Actualizar o crear la relación de influencia
+        influencia = request.POST.get('influencia')
+        if influencia:
+            relacion, created = RelacionActor.objects.get_or_create(
+                actor_clave=actor,
+                subsistema=subsistema,
+                defaults={'influencia': influencia}
+            )
+            if not created:
+                relacion.influencia = influencia
+                relacion.save()
+
+        return redirect('actor_detalle', subsistema_id=subsistema.id_subsistema)
+
+    try:
+        relacion = RelacionActor.objects.get(actor_clave=actor, subsistema=subsistema)
+        influencia = relacion.influencia
+    except RelacionActor.DoesNotExist:
+        influencia = None
+
+    return render(request, 'haapar_unla_app/editar-actor.html', {
+        'actor': actor,
+        'influencia': influencia,
+        'subsistema': subsistema
+    })
 
 
 @login_required
 def eliminar_actor(request, pk):
-    actor = get_object_or_404(Actor, pk=pk)
+    actor = get_object_or_404(ActorClave, pk=pk)
     actor.activo = False
     actor.save()
-    return redirect('actor_detalle', tema_id=actor.tema.id_tema)
+    return redirect('actor_detalle', subsistema_id=actor.subsistema.id_subsistema)
 
 
 # ---------------------------
