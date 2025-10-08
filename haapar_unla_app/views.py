@@ -396,7 +396,6 @@ def editar_actor(request, pk):
         actor.descripcion = request.POST.get('descripcion', actor.descripcion)
         actor.puesto = request.POST.get('puesto', actor.puesto)
         actor.save()
-
         # Actualizar o crear la relación de influencia
         influencia = request.POST.get('influencia')
         if influencia:
@@ -424,6 +423,7 @@ def editar_actor(request, pk):
     })
 
 
+
 @login_required
 def eliminar_actor(request, pk):
     actor = get_object_or_404(ActorClave, pk=pk)
@@ -444,6 +444,16 @@ def listar_tendencias(request):
     return render(request, 'haapar_unla_app/tendencias.html', {
         'tendencias_por_subsistema': tendencias_por_subsistema,
         'todas_las_tendencias': todas_las_tendencias,
+    })
+
+
+@login_required
+def tendencia_detalle(request, tema_id):
+    tema = get_object_or_404(Tema, id_tema=tema_id)
+    tendencias = TendenciaExterna.objects.filter(tema=tema, activo=True)
+    return render(request, 'haapar_unla_app/tendencia-detalle.html', {
+        'tema': tema,
+        'tendencias': tendencias
     })
 
 
@@ -506,6 +516,7 @@ def editar_tendencia(request, pk):
     })
 
 
+
 @login_required
 def eliminar_tendencia(request, pk):
     tendencia = get_object_or_404(TendenciaExterna, pk=pk, activo=True)
@@ -514,6 +525,7 @@ def eliminar_tendencia(request, pk):
         tendencia.activo = False
         tendencia.save()
     return redirect('tendencia_detalle', subsistema_id=subsistema_id)
+
 
 # ---------------------------
 # PASSWORD RESET

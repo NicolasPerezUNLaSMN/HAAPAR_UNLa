@@ -39,6 +39,7 @@ urlpatterns = [
     path("actores/<int:pk>/editar/", views.editar_actor, name="editar_actor"),
     path("actores/crear/<int:subsistema_id>/", views.crear_actor, name="crear_actor"),
 
+
     # Olvidé mi contraseña
     path('olvide-contrasena/', views.password_reset_request, name='password_reset_request'),
     path('restablecer/<uidb64>/<token>/', views.password_reset_confirm, name='password_reset_confirm'),
