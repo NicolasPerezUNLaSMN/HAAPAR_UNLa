@@ -34,10 +34,11 @@ urlpatterns = [
     path('subsistema/<int:sub_id>/eliminar/', views.eliminar_subsistema, name='eliminar_subsistema'),
 
     # Actores (si vas a manejarlos por tema)
-    path('actor-detalle/<int:tema_id>/', views.actor_detalle, name='actor_detalle'),
+    path('actor-detalle/<int:subsistema_id>/', views.actor_detalle, name='actor_detalle'),
     path("actores/<int:pk>/eliminar/", views.eliminar_actor, name="eliminar_actor"),
     path("actores/<int:pk>/editar/", views.editar_actor, name="editar_actor"),
-    path("actores/crear/<int:tema_id>/", views.crear_actor, name="crear_actor"),
+    path("actores/crear/<int:subsistema_id>/", views.crear_actor, name="crear_actor"),
+
 
     # Olvidé mi contraseña
     path('olvide-contrasena/', views.password_reset_request, name='password_reset_request'),
@@ -47,8 +48,8 @@ urlpatterns = [
 
     # Tendencias
     path('tendencias/', views.listar_tendencias, name='listar_tendencias'),
-    path('tendencias-detalle/<int:tema_id>/', views.tendencia_detalle, name='tendencia_detalle'),
-    path('tendencias/crear/<int:tema_id>/', views.crear_tendencia, name='crear_tendencia'),
+    path('tendencias-detalle/<int:subsistema_id>/', views.tendencia_detalle, name='tendencia_detalle'),
+    path('tendencias/crear/<int:subsistema_id>/', views.crear_tendencia, name='crear_tendencia'),
     path('tendencias/<int:pk>/editar/', views.editar_tendencia, name='editar_tendencia'),
     path('tendencias/<int:pk>/eliminar/', views.eliminar_tendencia, name='eliminar_tendencia'),
 ]
