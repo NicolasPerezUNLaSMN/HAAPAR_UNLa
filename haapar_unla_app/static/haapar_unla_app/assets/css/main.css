@@ -576,3 +576,53 @@ body.dark-mode .proyecto-base .card-text {
     flex-direction: column;
   }
 }
+
+/* Centrar el contenedor de mensajes y limitar ancho */
+#global-messages {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1080;
+  width: auto;
+  max-width: 920px;
+  pointer-events: none; /* dejar clics pasar excepto en los alerts */
+}
+
+/* Personalizar colores de los alerts */
+#global-messages .alert {
+  border-radius: 8px;
+  padding: 0.9rem 1rem;
+  font-weight: bold;
+  pointer-events: auto;
+  margin-bottom: 8px;
+  padding-right: 3rem;
+}
+
+/* Error */
+#global-messages .alert-danger {
+  color: #f4f4f4;
+  background-color: #BB2D3B;
+}
+
+/* Advertencia */
+#global-messages .alert-warning {
+  color: #f4f4f4;
+  background-color: #FFCA2C;
+}
+
+/* Éxito */
+#global-messages .alert-success {
+  color: #f4f4f4;
+  background-color: #198754;
+}
+
+/* Info */
+#global-messages .alert-info {
+  color: #f4f4f4;
+  background-color: #055160;
+}
+
+#global-messages .alert .btn-close {
+  filter: invert(1) brightness(2);
+}
