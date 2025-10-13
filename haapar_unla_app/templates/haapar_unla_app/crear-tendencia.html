@@ -2,76 +2,78 @@
 {% block title %} Crear Tendencia - HAAPAR {% endblock %}
 {% block content %}
 
-<div class="container mt-5">
-  <div class="row justify-content-center">
-    <div class="col-md-8">
-      <div class="card shadow-sm">
-        <div class="card-body">
-          <h2 class="card-title text-center mb-4">
-            Crear nueva tendencia para el subsistema: {{ subsistema.nombre }}
-          </h2>
+<main class="main">
+  <div class="page-title dark-background">
+    <div class="container position-relative">
+      <h1 class="text-center heading-section">Crear nueva tendencia</h1>
+      <p class="text-center text-muted">{{ subsistema.nombre }}</p>
+    </div>
+  </div>
 
-          <form method="post" action="{% url 'crear_tendencia' subsistema.id_subsistema %}">
-            {% csrf_token %}
+  <section>
+    <div class="container d-flex justify-content-center">
+      <div class="col-lg-8 col-md-10">
+        <div class="card shadow p-4" style="max-width: 600px; margin: auto;">
+          <div class="card-body">
+            <form method="post" action="{% url 'crear_tendencia' subsistema.id_subsistema %}">
+              {% csrf_token %}
 
-            <div class="mb-3">
-              <label for="nombre" class="form-label">Nombre</label>
-              <input
-                type="text"
-                class="form-control"
-                id="nombre"
-                name="nombre"
-                required
-              />
-            </div>
+              <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="nombre"
+                  name="nombre"
+                  required
+                />
+              </div>
 
-            <div class="mb-3">
-              <label for="nombre_corto" class="form-label">Nombre corto</label>
-              <input
-                type="text"
-                class="form-control"
-                id="nombre_corto"
-                name="nombre_corto"
-                required
-              />
-            </div>
+              <div class="mb-3">
+                <label for="nombre_corto" class="form-label">Nombre corto</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="nombre_corto"
+                  name="nombre_corto"
+                  required
+                />
+              </div>
 
-            <div class="mb-3">
-              <label for="tipo_dato" class="form-label">Tipo de Dato</label>
-              <select class="form-select" id="tipo_dato" name="tipo_dato" required>
-                <option value="Cuantitativa">Cuantitativa</option>
-                <option value="Cualitativa">Cualitativa</option>
-              </select>
-            </div>
+              <div class="mb-3">
+                <label for="tipo_dato" class="form-label">Tipo de Dato</label>
+                <select class="form-select" id="tipo_dato" name="tipo_dato" required>
+                  <option value="Cuantitativa">Cuantitativa</option>
+                  <option value="Cualitativa">Cualitativa</option>
+                </select>
+              </div>
 
-            <div class="mb-3">
-              <label for="descripcion" class="form-label">Descripción</label>
-              <textarea
-                class="form-control"
-                id="descripcion"
-                name="descripcion"
-                rows="3"
-                required
-              ></textarea>
-            </div>
+              <div class="mb-3">
+                <label for="descripcion" class="form-label">Descripción</label>
+                <textarea
+                  class="form-control"
+                  id="descripcion"
+                  name="descripcion"
+                  rows="3"
+                  required
+                ></textarea>
+              </div>
 
-            <div class="d-grid gap-2">
-              <button type="submit" class="btn btn-primary">
-                Guardar Tendencia
-              </button>
-              <a
-                href="{% url 'tendencia_detalle' subsistema.id_subsistema %}"
-                class="btn btn-secondary"
-              >
-                Cancelar
-              </a>
-            </div>
-          </form>
-
+              <div class="d-flex justify-content-center">
+                <button type="submit" class="btn btn-success me-2">Guardar</button>
+                <a
+                  href="{% url 'tendencia_detalle' subsistema.id_subsistema %}"
+                  class="btn btn-secondary"
+                >
+                  Cancelar
+                </a>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-</div>
+  </section>
+</main>
 
 {% endblock %}

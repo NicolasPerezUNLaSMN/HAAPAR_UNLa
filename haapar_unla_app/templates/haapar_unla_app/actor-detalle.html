@@ -7,8 +7,14 @@
   <div class="page-title dark-background">
     <div class="container position-relative">
       <h1 class="text-center heading-section">ACTORES DEL SUBSISTEMA</h1>
-      <p class="text-center text-muted">SUBSISTEMA: {{ subsistema.nombre }}</p>
+      <p class="text-center fw-bold">Subsistema: {{ subsistema.nombre }}</p>
     </div>
+  </div>
+
+  <!-- Botones de acción FIJOS en la parte superior -->
+  <div class="container mt-4 text-center sticky-top bg-white py-3 shadow-sm" style="z-index: 1000;">
+    <a href="{% url 'crear_actor' subsistema.id_subsistema %}" class="btn btn-success"> Agregar Actor</a>
+    <a href="{% url 'proyecto_detalle' tema.id_tema subsistema.id_subsistema %}" class="btn btn-dark">Volver</a>
   </div>
 
   <!-- Lista de actores -->
@@ -48,7 +54,6 @@
             </div>
             <div class="col-md-6">
               <p class="mb-1"><strong>Nivel de influencia:</strong> 
-                {% comment %} Aquí podrías iterar RelacionActor si quieres mostrar detalle {% endcomment %}
                 Ver detalles en relaciones
               </p>
             </div>
@@ -63,12 +68,6 @@
     </div>
     {% endfor %}
   </div>
-
-  <!-- Botones de acción -->
-  <div class="container mt-4 text-center">
-    <a href="{% url 'crear_actor' subsistema.id_subsistema %}" class="btn btn-success"> Agregar Actor</a>
-    <a href="{% url 'proyecto_detalle' tema.id_tema subsistema.id_subsistema %}" class="btn btn-dark">Volver</a>
-    </div>
 </main>
 
 {% endblock %}
