@@ -10,10 +10,10 @@
     </div>
   </div>
 
-  <div class="container mt-4">
-    <div class="row justify-content-center">
-      <div class="col-md-6">
-        <div class="card">
+  <section>
+    <div class="container d-flex justify-content-center">
+      <div class="col-lg-8 col-md-10">
+        <div class="card shadow p-4" style="max-width: 600px; margin: auto;">
           <div class="card-body">
             <form method="post" action="{% url 'crear_actor' subsistema.id_subsistema %}">
               {% csrf_token %}
@@ -33,16 +33,16 @@
                 <input type="text" class="form-control" id="puesto" name="puesto" required>
               </div>
               
-              <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                <a href="{% url 'actor_detalle' subsistema.id_subsistema %}" class="btn btn-secondary me-md-2">Cancelar</a>
-                <button type="submit" class="btn btn-primary">Crear Actor</button>
+              <div class="d-flex justify-content-center">
+                <button type="submit" class="btn btn-success me-2">Guardar</button>
+                <a href="{% url 'actor_detalle' subsistema.id_subsistema %}" class="btn btn-secondary">Cancelar</a>
               </div>
             </form>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </section>
 </main>
 
 {% endblock %}
