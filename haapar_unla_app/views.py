@@ -25,6 +25,9 @@ from haapar_unla_app.models import (
     Evaluacion, TendenciaExterna,ActorClave,RelacionActor
 )
 
+from django.conf import settings
+from django.urls import reverse
+
 User = get_user_model()
 
 # ---------------------------
@@ -34,7 +37,7 @@ class ProfileForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email']
-
+        fields = ['first_name', 'last_name']
 
 # ---------------------------
 # INICIO
@@ -253,6 +256,32 @@ def eliminar_subsistema(request, sub_id):
 # ---------------------------
 def registro(request):
     if request.method == 'POST':
+        # Leer valores crudos antes de validar el form para detectar usuarios inactivos
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip().lower()
+
+        existing = User.objects.filter(Q(username__iexact=username) | Q(email__iexact=email)).first()
+        if existing and not existing.is_active:
+            # Enviar email de reactivación
+            current_site = get_current_site(request)
+            uid = urlsafe_base64_encode(force_bytes(existing.pk))
+            token = default_token_generator.make_token(existing)
+            reactivate_link = request.build_absolute_uri(reverse('reactivar_cuenta', kwargs={'uidb64': uid, 'token': token}))
+            subject = 'Reactivar tu cuenta'
+            message = render_to_string('haapar_unla_app/autenticacion/reactivar_cuenta_email.txt', {
+                'user': existing,
+                'reactivate_link': reactivate_link,
+                'domain': current_site.domain,
+            })
+            try:
+                send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [existing.email], fail_silently=False)
+                messages.info(request, 'Hemos enviado un email para reactivar tu cuenta. Revisa tu bandeja de entrada.')
+            except BadHeaderError:
+                messages.error(request, 'Error al enviar el email de reactivación.')
+            form = SignUpForm()
+            return render(request, 'haapar_unla_app/autenticacion/signup.html', {'form': form})
+
+        # Proceder con validación normal si no hay usuario inactivo
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
@@ -262,6 +291,35 @@ def registro(request):
         form = SignUpForm()
     return render(request, 'haapar_unla_app/autenticacion/signup.html', {'form': form})
 
+def reactivar_cuenta(request, uidb64, token):
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        if request.method == 'POST':
+            form = SetPasswordForm(user, request.POST)
+            if form.is_valid():
+                form.save()
+                # Permitir actualizar nombres opcionalmente
+                user.first_name = request.POST.get('first_name', user.first_name)
+                user.last_name = request.POST.get('last_name', user.last_name)
+                user.is_active = True
+                user.save()
+                login(request, user)
+                messages.success(request, 'Cuenta reactivada correctamente.')
+                return redirect('inicio')
+        else:
+            form = SetPasswordForm(user)
+        return render(request, 'haapar_unla_app/autenticacion/reactivar_cuenta.html', {
+            'form': form,
+            'reactivate_user': user
+        })
+    else:
+        messages.error(request, 'El enlace de reactivación no es válido o ha expirado.')
+        return redirect('registro')
 
 def cerrar_sesion(request):
     logout(request)
@@ -288,6 +346,11 @@ def iniciar_sesion(request):
 @login_required
 def perfil(request):
     user = request.user
+
+    # inicializar ambos formularios para evitar referencias no asignadas
+    form = ProfileForm(instance=user)
+    pass_form = PasswordChangeForm(user)
+
     if request.method == 'POST':
         if 'update_profile' in request.POST:
             form = ProfileForm(request.POST, instance=user)
@@ -303,16 +366,16 @@ def perfil(request):
                 update_session_auth_hash(request, user)
                 messages.success(request, 'Contraseña cambiada con éxito.')
                 return redirect('perfil')
+            else:
+                # Mensaje genérico (no los errores campo por campo)
+                messages.error(request, 'No se pudo cambiar la contraseña. Revisa los errores del formulario.')
 
         elif 'delete_profile' in request.POST:
             user.is_active = False
             user.save()
-            messages.success(request, "Tu cuenta fue desactivada correctamente.")
+            messages.error(request, "Tu cuenta fue desactivada correctamente.")
             logout(request)
             return redirect("inicio")
-    else:
-        form = ProfileForm(instance=user)
-        pass_form = PasswordChangeForm(user)
 
     initials = (user.first_name[:1] + user.last_name[:1]).upper() if user.first_name and user.last_name else user.username[:2].upper()
     return render(request, 'haapar_unla_app/perfil.html', {

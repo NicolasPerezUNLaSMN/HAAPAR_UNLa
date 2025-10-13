@@ -140,5 +140,6 @@ STATICFILES_DIRS = [
 # Configuración de email para desarrollo.
 # Esto imprimirá los emails en la consola en lugar de enviarlos.
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'haapar@gmail.com'
 
 LOGIN_URL = 'iniciar_sesion'

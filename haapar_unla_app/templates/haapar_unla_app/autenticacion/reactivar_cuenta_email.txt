@@ -1,0 +1,11 @@
+Hola {{ user.get_full_name|default:user.username }},
+
+Recibimos una solicitud para reactivar tu cuenta en {{ domain }}.
+
+Haz clic en el siguiente enlace para reactivar tu cuenta y establecer una nueva contraseña:
+{{ reactivate_link }}
+
+Si no has solicitado esto, puedes ignorar este correo.
+
+Saludos,
+El equipo de HAAPAR UNLA.
