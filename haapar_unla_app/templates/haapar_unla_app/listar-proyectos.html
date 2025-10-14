@@ -12,6 +12,13 @@ HAAPAR {% endblock %} {% block content %}
     <div class="container">
       <div class="row justify-content-center">
         <div class="col-lg-10 col-md-12">
+          <!-- Botón Fijo en la parte superior -->
+          <div class="sticky-top bg-white py-3 mb-3 border-bottom" style="z-index: 100;">
+            <div class="text-center">
+              <a href="{% url 'inicio' %}" class="btn btn-primary">Crear nuevo proyecto</a>
+            </div>
+          </div>
+
           <div class="table-responsive">
             <table class="table table-hover table-striped proyectos-table">
               <thead>
@@ -31,7 +38,7 @@ HAAPAR {% endblock %} {% block content %}
                     <td class="text-center align-middle">{{ tema.nombre }}</td>
                     <td class="text-center align-middle">{{ tema.descripcion }}</td>
                     <td class="text-center align-middle">{{ tema.horizonte }}</td>
-                    <td class="text-center align-middle">—</td> <!-- precision -->
+                    <td class="text-center align-middle">—</td>
                     <td class="text-center align-middle">{{ tema.user.username }}</td>
                     <td class="text-center align-middle">
                       <a href="{% url 'subsistemas' tema.id_tema %}" class="btn btn-secondary">Ver detalles</a>
@@ -66,18 +73,11 @@ HAAPAR {% endblock %} {% block content %}
                   </tr>
                 {% empty %}
                   <tr>
-                    <td colspan="6" class="text-center">No hay proyectos aún.</td>
+                    <td colspan="7" class="text-center">No hay proyectos aún.</td>
                   </tr>
                 {% endfor %}
               </tbody>
             </table>
-          </div>
-
-          <div class="text-center mt-4">
-            <div class="gap-2">
-              <a href="{% url 'inicio' %}" class="btn btn-primary">Crear Nuevo Proyecto</a>
-
-            </div>
           </div>
         </div>
       </div>
