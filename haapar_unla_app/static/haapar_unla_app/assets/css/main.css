@@ -255,6 +255,14 @@ body.dark-mode .styled-form select {
   border: 1px solid #444;
 }
 
+body.dark-mode .styled-form a {
+  background-color: #1E1E1E;
+  color: #02A98D;
+}
+
+body.dark-mode .link-login {
+  color: #02A98D;
+}
 
 @keyframes fadeInUp {
   from {
@@ -602,7 +610,7 @@ body.dark-mode .report-section h3 {
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
 }
 /* ====================================================
-   SUBSITEMAS SECTION
+   SUBSISTEMAS SECTION
 ==================================================== */
 .contenedor-subsistema {
   background-color: #ffffff;
@@ -652,7 +660,7 @@ body.dark-mode .subsistema-item:hover {
 }
 
 /* ====================================================
-   BOTENES VISTAS VARIABLE/TENDENCIAS/ACTORES
+   BOTONES VISTAS VARIABLE/TENDENCIAS/ACTORES
 ==================================================== */
 .botonera {
   background-color: #ffffff;
@@ -801,4 +809,32 @@ body.dark-mode .perfil-box {
 
 #global-messages .alert .btn-close {
   filter: invert(1) brightness(2);
+}
+
+/* ====================================================
+   Recuperar contraseña (signin)
+==================================================== */
+.password-reset{
+  text-decoration: none;
+  color: #121212;
+}
+
+.password-reset:hover{
+  text-decoration: underline;
+  color: #006752;
+}
+
+/* ====================================================
+   Contraseña cambiada (password_reset_complete.html)
+==================================================== */
+.link-login{
+  text-decoration: none;
+  color: #006752;
+  font-weight: bold;
+  font-size: large;
+}
+
+.link-login:hover{
+  text-decoration: underline;
+  color: #006752;
 }
