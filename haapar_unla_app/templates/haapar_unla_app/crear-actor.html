@@ -11,11 +11,7 @@
   </div>
 
   <section>
-    <div class="container d-flex justify-content-center">
-      <div class="col-lg-8 col-md-10">
-        <div class="card shadow p-4" style="max-width: 600px; margin: auto;">
-          <div class="card-body">
-            <form method="post" action="{% url 'crear_actor' subsistema.id_subsistema %}">
+            <form method="post" action="{% url 'crear_actor' subsistema.id_subsistema %}" class="styled-form">
               {% csrf_token %}
               
               <div class="mb-3">
@@ -38,10 +34,6 @@
                 <a href="{% url 'actor_detalle' subsistema.id_subsistema %}" class="btn btn-secondary">Cancelar</a>
               </div>
             </form>
-          </div>
-        </div>
-      </div>
-    </div>
   </section>
 </main>
 
