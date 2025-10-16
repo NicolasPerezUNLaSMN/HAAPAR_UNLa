@@ -7,19 +7,19 @@
   <div class="page-title">
     <div class="container position-relative">
       <h3 class="text-center heading-section">Iniciar Sesion</h3>
-      <p class="text-center text-muted">Bienvenido de vuelta a HAAPAR</p>
+      <p class="text-center text-muted">Bienvenido de vuelta a HAAPAR.</p>
     </div>
   </div>
+
   <div class="row">
     <div class="col-md-6 offset-md-3 mt-5">
-      <form action="{% url 'iniciar_sesion' %}" method="POST" class="styled-form">  {# Corregido: Usamos 'url' en vez de hardcodear la URL #}
+      <form action="{% url 'iniciar_sesion' %}" method="POST" class="styled-form">
 
-        {# Muestra el mensaje de error si existe #}
         {% if error %}
         <p class="alert alert-danger text-danger fw-bold">{{ error }}</p>
         {% endif %}
 
-        {% csrf_token %} {# Esencial para la seguridad en formularios Django #}
+        {% csrf_token %}
 
         <div class="mb-3">
           <label for="username" class="form-label">Usuario:</label>
@@ -32,11 +32,10 @@
         </div>
 
         <button type="submit" class="btn btn-primary mt-3">
-          Iniciar Sesion
+          Ingresar
         </button>
 
-        {# NUEVO: Enlace para "Olvidé mi contraseña" #}
-        <p class="text-center mt-3"><a href="{% url 'password_reset_request' %}">¿Olvidaste tu contraseña?</a></p>
+        <p class="text-center mt-3"><a class="password-reset" href="{% url 'password_reset_request' %}">¿Olvidaste tu contraseña?</a></p>
       </form>
     </div>
   </div>
