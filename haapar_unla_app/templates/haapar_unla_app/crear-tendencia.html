@@ -11,11 +11,7 @@
   </div>
 
   <section>
-    <div class="container d-flex justify-content-center">
-      <div class="col-lg-8 col-md-10">
-        <div class="card shadow p-4" style="max-width: 600px; margin: auto;">
-          <div class="card-body">
-            <form method="post" action="{% url 'crear_tendencia' subsistema.id_subsistema %}">
+            <form method="post" action="{% url 'crear_tendencia' subsistema.id_subsistema %}" class="styled-form">
               {% csrf_token %}
 
               <div class="mb-3">
@@ -69,10 +65,6 @@
                 </a>
               </div>
             </form>
-          </div>
-        </div>
-      </div>
-    </div>
   </section>
 </main>
 

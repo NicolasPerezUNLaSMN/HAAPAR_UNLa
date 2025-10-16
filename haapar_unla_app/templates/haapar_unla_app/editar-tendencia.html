@@ -10,50 +10,40 @@
     </div>
   </div>
 
-  <div class="container mt-4">
-    <div class="row justify-content-center">
-      <div class="col-md-8">
-        <div class="card">
-          <div class="card-body">
-            <form method="post">
-              {% csrf_token %}
+    <form method="post" class="styled-form">
+      {% csrf_token %}
 
-              <div class="mb-3">
-                <label for="nombre" class="form-label">Nombre de la Tendencia</label>
-                <input type="text" class="form-control" id="nombre" name="nombre" 
-                       value="{{ tendencia.nombre }}" required>
-              </div>
-              
-              <div class="mb-3">
-                <label for="nombre_corto" class="form-label">Nombre Corto</label>
-                <input type="text" class="form-control" id="nombre_corto" name="nombre_corto" 
-                       value="{{ tendencia.nombre_corto }}" required>
-              </div>
-
-              <div class="mb-3">
-                <label for="tipo_dato" class="form-label">Tipo de Dato</label>
-                <select class="form-select" id="tipo_dato" name="tipo_dato" required>
-                  <option value="Cuantitativa" {% if tendencia.tipo_dato == 'Cuantitativa' %}selected{% endif %}>Cuantitativa</option>
-                  <option value="Cualitativa" {% if tendencia.tipo_dato == 'Cualitativa' %}selected{% endif %}>Cualitativa</option>
-                </select>
-              </div>
-
-              <div class="mb-3">
-                <label for="descripcion" class="form-label">Descripción</label>
-                <textarea class="form-control" id="descripcion" name="descripcion" 
-                          rows="3" required>{{ tendencia.descripcion }}</textarea>
-              </div>
-              
-              <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                <a href="{% url 'tendencia_detalle' subsistema.id_subsistema %}" class="btn btn-secondary me-md-2">Cancelar</a>
-                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-              </div>
-            </form>
-          </div>
-        </div>
+      <div class="mb-3">
+        <label for="nombre" class="form-label">Nombre de la Tendencia</label>
+        <input type="text" class="form-control" id="nombre" name="nombre" 
+                value="{{ tendencia.nombre }}" required>
       </div>
-    </div>
-  </div>
+      
+      <div class="mb-3">
+        <label for="nombre_corto" class="form-label">Nombre Corto</label>
+        <input type="text" class="form-control" id="nombre_corto" name="nombre_corto" 
+                value="{{ tendencia.nombre_corto }}" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="tipo_dato" class="form-label">Tipo de Dato</label>
+        <select class="form-select" id="tipo_dato" name="tipo_dato" required>
+          <option value="Cuantitativa" {% if tendencia.tipo_dato == 'Cuantitativa' %}selected{% endif %}>Cuantitativa</option>
+          <option value="Cualitativa" {% if tendencia.tipo_dato == 'Cualitativa' %}selected{% endif %}>Cualitativa</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="descripcion" class="form-label">Descripción</label>
+        <textarea class="form-control" id="descripcion" name="descripcion" 
+                  rows="3" required>{{ tendencia.descripcion }}</textarea>
+      </div>
+      
+      <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+        <a href="{% url 'tendencia_detalle' subsistema.id_subsistema %}" class="btn btn-secondary me-md-2">Cancelar</a>
+        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+      </div>
+    </form>
 </main>
 
 {% endblock %}

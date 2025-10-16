@@ -3,8 +3,8 @@
 
 {% block content %}
 <div class="container mt-4">
-  <h2 class="text-center">Crear Subsistema para {{ tema.nombre }}</h2>
-  <form method="POST">
+  <h2 class="text-center heading-section">Crear Subsistema para {{ tema.nombre }}</h2>
+  <form method="POST" class="styled-form">
     {% csrf_token %}
     <div class="mb-3">
       <label for="nombre" class="form-label">Nombre</label>

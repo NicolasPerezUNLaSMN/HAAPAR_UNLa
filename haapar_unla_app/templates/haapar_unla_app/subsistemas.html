@@ -3,13 +3,14 @@
 
 {% block content %}
 <div class="container d-flex justify-content-center align-items-center my-4">
-  <div class="report-section p-4 bg-white rounded shadow-sm" style="max-width: 700px; width: 100%;">
+  <div class="contenedor-subsistema" style="max-width: 700px; width: 100%;">
     <section class="report-section text-center">
       
-      <h3 class="mb-4 verde-oscuro">TEMA: <span class="verde-oscuro">{{ tema.nombre }}</span></h3>
+      <h3 class="mb-4 heading-section">TEMA: <span class="heading-section">{{ tema.nombre }}</span></h3>
       
       {% for sistema in sistemas %}
-        <h4 class="mb-3 border-bottom pb-2">{{ sistema.nombre }}</h4>
+        <h4 class="mb-3 ">{{ sistema.nombre }}</h4>
+        <div class="section-divider"></div>
 
         <div class="subsistemas-list">
           {% for sub in sistema.subsistema_set.all %}
@@ -40,8 +41,7 @@
       <!-- Botón de agregar subsistema -->
       <div class="mt-4">
         <a href="{% url 'crear_subsistema' tema.id_tema %}" 
-           class="btn agregar-btn" 
-           style="background-color: #1a6c2c; color: white;">
+           class="btn btn-primary" >
           <i class="fas fa-plus-circle me-2"></i> Agregar subsistema
         </a>
       </div>
@@ -49,19 +49,4 @@
   </div>
 </div>
 
-<style>
-.verde-oscuro { color: #1a6c2c !important; }
-.subsistemas-list { display: flex; flex-direction: column; gap: 12px; }
-.subsistema-item { background: #f8f9fa; padding: 16px 20px; border-radius: 8px; border: 1px solid #dee2e6; font-weight: 500; transition: all 0.3s ease; width: 100%; }
-.subsistema-item:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.1); background: #e9ecef; }
-.eliminar-btn { padding: 0.25rem 0.5rem; font-size: 0.75rem; }
-.agregar-btn { padding: 10px 20px; font-weight: 500; border: none; transition: all 0.3s ease; }
-.agregar-btn:hover { background-color: #145a32 !important; transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
-@media (max-width: 768px) {
-  .container { padding: 0 15px; }
-  .report-section { padding: 20px !important; }
-  .subsistema-item { padding: 14px 16px; font-size: 0.95rem; }
-  .eliminar-btn { padding: 0.2rem 0.4rem; font-size: 0.7rem; }
-}
-</style>
 {% endblock %}

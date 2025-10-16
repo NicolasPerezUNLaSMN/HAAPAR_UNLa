@@ -8,22 +8,22 @@
       <h1 class="text-center heading-section">VARIABLES DEL SUBSISTEMA</h1>
       <p class="text-center fw-bold">Subsistema: {{ subsistema.nombre }}</p>
       <div class="text-center mt-3">
-        <a href="{% url 'historial_variables_subsistema' subsistema.id_subsistema %}" class="btn btn-info btn-sm">
-          🕘 Historial de Variable
+        <a href="{% url 'historial_variables_subsistema' subsistema.id_subsistema %}" class="btn btn-historial">
+          <i class="fas fa-clock me-2"></i> Historial de Variable
         </a>
       </div>
     </div>
   </div>
 
   <!-- Botones de acción FIJOS en la parte superior -->
-  <div class="container mt-4 text-center sticky-top bg-white py-3 shadow-sm" style="z-index: 1000;">
-    <a href="{% url 'crear_variable' subsistema.id_subsistema %}" class="btn btn-success">Agregar Variable</a>
-    <a href="{% url 'proyecto_detalle' tema.id_tema subsistema.id_subsistema %}" class="btn btn-dark">Volver</a>
+  <div class="container mt-4 text-center sticky-top botonera" style="z-index: 1000;">
+    <a href="{% url 'crear_variable' subsistema.id_subsistema %}" class="btn btn-primary">Agregar Variable</a>
+    <a href="{% url 'proyecto_detalle' tema.id_tema subsistema.id_subsistema %}" class="btn btn-secondary">Volver</a>
   </div>
 
   <div class="container mt-4">
     {% for variable in variables %}
-    <div class="card mb-4">
+    <div class="card  mb-4 proyecto-base">
       <div class="card-header d-flex justify-content-between align-items-center">
         <div>
           <span class="fw-bold">{{ forloop.counter }}</span>
@@ -49,7 +49,7 @@
       </div>
     </div>
     {% empty %}
-    <div class="alert alert-info text-center">
+    <div class="text-center alert-contexto ">
       No hay variables definidas para este subsistema. 
       <a href="{% url 'crear_variable' subsistema.id_subsistema %}" class="alert-link">Agrega la primera variable</a>.
     </div>
