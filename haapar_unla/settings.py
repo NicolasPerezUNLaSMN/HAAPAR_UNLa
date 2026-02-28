@@ -142,3 +142,6 @@ STATICFILES_DIRS = [
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 LOGIN_URL = 'iniciar_sesion'
+
+# Configuración para integrar la API de OpenAI 
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')

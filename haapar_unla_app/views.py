@@ -25,6 +25,9 @@ from haapar_unla_app.models import (
     Evaluacion, TendenciaExterna,ActorClave,RelacionActor
 )
 
+# Cliente OpenAI (ChatGPT)
+ 
+
 User = get_user_model()
 
 # ---------------------------
@@ -589,4 +592,35 @@ def password_reset_done(request):
 
 def password_reset_complete(request):
     return render(request, 'haapar_unla_app/autenticacion/password_reset_complete.html')
+
+
+# ---------------------------
+# ChatGPT API wrapper (simple)
+# ---------------------------
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+from .infraestructura.api_client.openai_client import generate_chat_completion
+@csrf_exempt
+@require_POST
+def chatgpt_api(request):
+    """Endpoint simple que recibe JSON {"prompt": "..."} y retorna la respuesta de ChatGPT en JSON.
+
+    Nota: protege este endpoint en producción (auth, rate limit, logging).
+    """
+    try:
+        import json
+        payload = json.loads(request.body.decode('utf-8'))
+    except Exception:
+        return JsonResponse({'success': False, 'error': 'JSON inválido en cuerpo'}, status=400)
+
+    prompt = payload.get('prompt')
+    if not prompt:
+        return JsonResponse({'success': False, 'error': 'Falta campo "prompt"'}, status=400)
+
+    result = generate_chat_completion(prompt)
+    if not result.get('success'):
+        return JsonResponse({'success': False, 'error': result.get('error')}, status=500)
+
+    return JsonResponse({'success': True, 'text': result.get('text')})
 

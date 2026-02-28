@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path
 from haapar_unla_app import views
+from django.urls import include
 
 urlpatterns = [
     # Admin
@@ -52,6 +53,8 @@ urlpatterns = [
     path('tendencias/crear/<int:subsistema_id>/', views.crear_tendencia, name='crear_tendencia'),
     path('tendencias/<int:pk>/editar/', views.editar_tendencia, name='editar_tendencia'),
     path('tendencias/<int:pk>/eliminar/', views.eliminar_tendencia, name='eliminar_tendencia'),
+    # API interna para ChatGPT
+    path('api/', include('haapar_unla_app.infraestructura.api_urls')),
 ]
 
 handler400 = 'haapar_unla_app.views.error_400_view'
