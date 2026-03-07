@@ -18,6 +18,7 @@ from django.core.mail import send_mail, BadHeaderError
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpResponse
 from django.db.models import Prefetch, Count, Q
+from .services.ia_service import generar_estructura_prospectiva
 
 from .forms import SignUpForm
 from haapar_unla_app.models import (
@@ -51,11 +52,13 @@ def inicio(request):
 # ---------------------------
 @login_required
 def crear_reporte(request):
-    if request.method == 'POST':
-        nombre = request.POST.get('nombre')
-        descripcion = request.POST.get('descripcion')
-        horizonte = request.POST.get('horizonte')
-        territorio = request.POST.get('territorio')
+
+    if request.method == "POST":
+
+        nombre = request.POST.get("nombre")
+        descripcion = request.POST.get("descripcion")
+        horizonte = request.POST.get("horizonte")
+        territorio = request.POST.get("territorio")
 
         tema = Tema.objects.create(
             user=request.user,
@@ -64,10 +67,9 @@ def crear_reporte(request):
             horizonte=horizonte,
             territorio=territorio
         )
-        request.session['reporte_tema'] = tema.id_tema
-        return redirect('subsistemas', tema_id=tema.id_tema)
 
-    return render(request, 'haapar_unla_app/crear-reporte.html')
+        generar_estructura_prospectiva(tema)
+        return redirect("subsistemas", tema_id=tema.id_tema)
 
 
 @login_required
