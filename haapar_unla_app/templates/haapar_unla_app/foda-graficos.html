@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gráficos FODA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0"></script>
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #296d1b, rgb(35, 139, 43)); /* azul degradado */
+            font-family: 'Segoe UI', sans-serif;
+            color: #f5f5f5;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #fff;
+        }
+        #scatterChart {
+            display: block;
+            margin: 0 auto;
+            max-width: 800px; /* más grande */
+            height: 500px;
+        }
+        table {
+            margin: 0 auto;
+            width: 70%; /* más compacta */
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th {
+            background-color: #3f861d;
+            color: #fff;
+            text-align: center;
+        }
+        td {
+            text-align: center;
+            color: #fff;
+        }
+        td[style] {
+            color: #000; /* valores resaltados en naranja con texto oscuro */
+            font-weight: bold;
+        }
+        #pestelChart {
+    height: 500px !important;
+}
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <!-- Gráfico de dispersión -->
+        <div class="card">
+            <h2>Gráfico de Dispersión: Importancia e Incertidumbre</h2>
+            <canvas id="scatterChart"></canvas>
+        </div>
+
+        <!-- Matriz MIC-MAC -->
+        <div class="card">
+            <h2>Matriz de Valores - MIC-MAC</h2>
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th></th>
+                        {% for var in variables %}
+                            <th>{{ var }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for nombre, fila in filas %}
+                    <tr>
+                        <th>{{ nombre }}</th>
+                        {% for valor in fila %}
+                            <td {% if valor > 2 %} style="background-color: orange;" {% endif %}>
+                                {{ valor }}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <!-- Ejes de Peter-Schwartz --> 
+         <div class="card"> 
+            <h2>Ejes de Peter-Schwartz</h2> 
+            <canvas id="peterSchwartzChart"></canvas> 
+        </div>
+        <!-- Gráfico MIC-MAC Indirecto -->
+        <div class="card">
+            <h2>Gráfico de Dispersión - MIC-MAC Indirecto</h2>
+            <canvas id="micmacChart"></canvas>
+        </div>
+        <!-- Gráfico MIC-MAC Dispersión --> 
+         <div class="card"> 
+            <h2>Gráfico de Dispersión MIC-MAC</h2> 
+            <canvas id="micmacDispersionChart"></canvas> 
+        </div>
+        <div class="card"> 
+            <h2>Árbol PESTEL del Proyecto</h2> 
+            <canvas id="pestelChart"></canvas> 
+        </div>
+    </div>
+
+    <script>
+        const datos = {{ datos_dispersion|safe }};
+        const ctx = document.getElementById('scatterChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: 'Variables',
+                    data: datos.variables.map((v, i) => ({
+                        x: datos.importancia[i],
+                        y: datos.incertidumbre[i],
+                        label: v
+                    })),
+                    backgroundColor: '#ff4d4d'
+                }]
+            },
+            options: {
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const index = context.dataIndex;
+                                return datos.variables[index] + 
+                                       " (Imp: " + context.raw.x + 
+                                       ", Inc: " + context.raw.y + ")";
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { title: { display: true, text: 'Importancia', color: '#fff' }, ticks: { color: '#fff' } },
+                    y: { title: { display: true, text: 'Incertidumbre', color: '#fff' }, ticks: { color: '#fff' } }
+                }
+            }
+        });
+        </script>
+
+    <script>    
+        
+     //Eje Peter-Schwartz
+    const ctxPeter = document.getElementById('peterSchwartzChart').getContext('2d');
+
+    new Chart(ctxPeter, {
+        type: 'scatter',
+        data: {
+            datasets: [] // no necesitas puntos, solo las divisiones
+        },
+        options: {
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Escenarios futuros según Peter-Schwartz',
+                    color: '#fff'
+                },
+                annotation: {
+                    annotations: {
+                        // Líneas divisorias
+                        ejeX: {
+                            type: 'line',
+                            xMin: 0, xMax: 0,
+                            borderColor: 'white',
+                            borderWidth: 2
+                        },
+                        ejeY: {
+                            type: 'line',
+                            yMin: 0, yMax: 0,
+                            borderColor: 'white',
+                            borderWidth: 2
+                        },
+                        // Textos en cada cuadrante
+                        cuadrante1: {
+                            type: 'label',
+                            xValue: 1.6,
+                            yValue: 1.9,
+                            content: ['Estrella Ascendente'],
+                            color: 'yellow',
+                            font: { size: 14, weight: 'bold' }
+                        },
+                        cuadrante2: {
+                            type: 'label',
+                            xValue: -1.6,
+                            yValue: 1.9,
+                            content: ['Experto en Evolución'],
+                            color: 'yellow',
+                            font: { size: 14, weight: 'bold' }
+                        },
+                        cuadrante3: {
+                            type: 'label',
+                            xValue: -1.6,
+                            yValue: -1.9,
+                            content: ['Retroceso Competitivo'],
+                            color: 'yellow',
+                            font: { size: 14, weight: 'bold' }
+                        },
+                        cuadrante4: {
+                            type: 'label',
+                            xValue: 1.6,
+                            yValue: -1.9,
+                            content: ['Proyección Brillante'],
+                            color: 'yellow',
+                            font: { size: 14, weight: 'bold' }
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    title: { display: true, text: 'Proyecciones de rendimiento de expertos', color: '#fff' },
+                    min: -2, max: 2,
+                    ticks: { color: '#fff' }
+                },
+                y: {
+                    title: { display: true, text: 'Habilidades técnicas actuales', color: '#fff' },
+                    min: -2, max: 2,
+                    ticks: { color: '#fff' }
+                }
+            }
+        }
+    });
+    </script>
+    
+   
+
+  
+    <script>
+    // Gráfico MIC-MAC Indirecto
+    const datosMicmac = JSON.parse('{{ datos_micmac|default:"{}"|escapejs }}'); 
+    console.log("Contenido parseado:", datosMicmac);
+
+    const ctxMicmac = document.getElementById('micmacChart').getContext('2d');
+
+    new Chart(ctxMicmac, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Variables',
+                data: datosMicmac.variables.map((v, i) => ({
+                    x: datosMicmac.influencia[i],
+                    y: datosMicmac.dependencia[i],
+                    label: v
+                })),
+                backgroundColor: '#ffcc00'
+            }]
+        },
+        options: {
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const index = context.dataIndex;
+                            return datosMicmac.variables[index] +
+                                   " (Inf: " + context.raw.x +
+                                   ", Dep: " + context.raw.y + ")";
+                        }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'Relaciones Indirectas MIC-MAC',
+                    color: '#fff'
+                }
+            },
+            scales: {
+                x: { title: { display: true, text: 'Influencia', color: '#fff' }, ticks: { color: '#fff' } },
+                y: { title: { display: true, text: 'Dependencia', color: '#fff' }, ticks: { color: '#fff' } }
+            }
+        }
+    });
+</script>
+
+<!-- Gráfico MIC-MAC Dispersión -->
+
+<script>
+    const datosDispersion = JSON.parse('{{ datos_dispersion|default:"{}"|escapejs }}');
+    console.log("Datos MIC-MAC Dispersión:", datosDispersion);
+
+    const ctxDispersion = document.getElementById('micmacDispersionChart').getContext('2d');
+    new Chart(ctxDispersion, {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: 'Variables',
+                data: datosDispersion.variables.map((v, i) => ({
+                    x: datosDispersion.influencia[i],
+                    y: datosDispersion.dependencia[i],
+                    label: v
+                })),
+                backgroundColor: '#00ccff'
+            }]
+        },
+        options: {
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const index = context.dataIndex;
+                            return datosDispersion.variables[index] +
+                                   " (Inf: " + context.raw.x +
+                                   ", Dep: " + context.raw.y + ")";
+                        }
+                    }
+                },
+                title: {
+                    display: true,
+                    text: 'Gráfico de Dispersión MIC-MAC',
+                    color: '#fff'
+                },
+                annotation: {
+                    annotations: {
+                        ejeX: { type: 'line', xMin: 0, xMax: 0, borderColor: 'white', borderWidth: 2 },
+                        ejeY: { type: 'line', yMin: 0, yMax: 0, borderColor: 'white', borderWidth: 2 }
+                    }
+                }
+            },
+            scales: {
+                x: { title: { display: true, text: 'Influencia', color: '#fff' }, ticks: { color: '#fff' } },
+                y: { title: { display: true, text: 'Dependencia', color: '#fff' }, ticks: { color: '#fff' } }
+            }
+        }
+    });
+</script>
+<!-- GRAFICO PESTEL-->
+ <script>
+    
+const pestel = JSON.parse(document.getElementById('pestel-data').textContent);
+console.log("Contenido PESTEL:", pestel); 
+const labels = [];
+const data = [];
+const backgroundColors = [];
+
+const colores = {
+    "Político": "#ff4d4d",
+    "Económico": "#ffcc00",
+    "Social": "#00ccff",
+    "Tecnológico": "#66ff66",
+    "Ecológico": "#9966ff",
+    "Legal": "#ff9966"
+};
+
+Object.keys(pestel).forEach(categoria => {
+    labels.push(categoria);
+    data.push(pestel[categoria].length);  
+    backgroundColors.push(colores[categoria]);
+});
+
+const ctxPestel = document.getElementById('pestelChart').getContext('2d');
+
+new Chart(ctxPestel, {
+    type: 'bar',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Cantidad de Factores',
+            data: data,
+            backgroundColor: backgroundColors
+        }]
+    },
+    options: {
+        indexAxis: 'y',
+        maintainAspectRatio: false,
+        plugins: {
+            legend: { display: false },
+            title: {
+                display: true,
+                text: 'Árbol PESTEL - Factores Externos',
+                color: '#fff'
+            },
+            tooltip: {
+                callbacks: {
+                    afterLabel: function(context) {
+                        const categoria = context.label;
+                        return pestel[categoria].join(", ");
+                    }
+                }
+            }
+        },
+        scales: {
+            x: { ticks: { color: '#000' } },
+            y: { ticks: { color: '#000' } }
+        }
+    }
+});
+</script>
+</body>
+</html>
+

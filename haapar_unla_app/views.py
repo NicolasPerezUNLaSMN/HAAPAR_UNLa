@@ -24,7 +24,9 @@ from haapar_unla_app.models import (
     Tema, Sistema, Subsistema, Variable,
     Evaluacion, TendenciaExterna,ActorClave,RelacionActor
 )
-
+from django.shortcuts import render
+import json
+import datetime
 # Cliente OpenAI (ChatGPT)
  
 
@@ -623,4 +625,161 @@ def chatgpt_api(request):
         return JsonResponse({'success': False, 'error': result.get('error')}, status=500)
 
     return JsonResponse({'success': True, 'text': result.get('text')})
+
+#Creacion de graficos para el analisis FODA
+def foda_graficos(request):
+    datos_dispersion = {
+        "variables": ["Var1", "Var2", "Var3"],
+        "importancia": [5, 3, 7],
+        "incertidumbre": [2, 6, 4],
+    }
+
+    variables = [
+        "cant_de_min_de_jueg",
+        "nmer_de_gale_antl_po",
+        "tasa_de_lesi_por_tem",
+        "nive_de_comp_en_liJ",
+        "grad_de_desa_fisc_y"
+    ]
+    matriz = [
+        [0, 2, 2, 1, 3],
+        [1, 0, 1, 0, 2],
+        [3, 1, 0, 2, 3],
+        [2, 2, 2, 0, 3],
+        [1, 2, 2, 2, 0],
+    ]
+    filas = list(zip(variables, matriz))
+
+    # Datos para el eje Peter-Schwartz
+    peter_schwartz = {
+        "x_label": "Proyecciones de rendimiento de expertos",
+        "y_label": "Habilidades técnicas actuales",
+        "cuadrantes": [
+            {"nombre": "Estrella Ascendente", "pos": (1, 1)},
+            {"nombre": "Experto en Evolución", "pos": (-1, 1)},
+            {"nombre": "Retroceso Competitivo", "pos": (-1, -1)},
+            {"nombre": "Proyección Brillante", "pos": (1, -1)},
+        ]
+    }
+
+    return render(request, "haapar_unla_app/foda-graficos.html", {
+        "datos_dispersion": datos_dispersion,
+        "variables": variables,
+        "filas": filas,
+        "peter_schwartz": peter_schwartz
+    })
+
+# Variables y matriz de relaciones indirectas para el análisis MICMAC
+
+def micmac_indirecto(request):
+    variables = [
+        "cant_de_mime_de_jueg",
+        "mime_de_jueg_ant_pos",
+        "tasa_de_jueg_ben",
+        "nive_de_comp_eju_i",
+        "grad_de_desa_fisc_x"
+    ]
+    matriz_indirecta = [
+        [0, 2, 1, 3, 2],
+        [1, 0, 2, 2, 1],
+        [2, 1, 0, 3, 2],
+        [1, 2, 2, 0, 3],
+        [2, 1, 2, 2, 0],
+    ]
+    filas = list(zip(variables, matriz_indirecta))
+
+    influencia = [sum(fila) for fila in matriz_indirecta]
+    dependencia = [sum(col) for col in zip(*matriz_indirecta)]
+
+    datos_micmac = {
+        "variables": variables,
+        "influencia": influencia,
+        "dependencia": dependencia,
+    }
+
+    return render(request, "haapar_unla_app/foda-graficos.html", {
+        "variables": variables,
+        "filas": filas,
+        "datos_micmac": json.dumps(datos_micmac)  # 👈 JSON válido
+    })
+
+#Grafico de dispersion para el analisis MICMAC 
+
+def micmac_dispersion(request):
+    variables = [
+        "niv_de_comp_un_Lic",
+        "tasa_de_jueg_ben",
+        "grad_de_desa_fisc_x",
+        "mime_de_jueg_ant_pos",
+        "cant_de_mime_de_jueg"
+    ]
+
+    # Ejemplo de matriz (puedes reemplazar con la tuya)
+    matriz = [
+        [0, 2, 1, 3, 2],
+        [1, 0, 2, 2, 1],
+        [2, 1, 0, 3, 2],
+        [1, 2, 2, 0, 3],
+        [2, 1, 2, 2, 0],
+    ]
+
+    # Cálculo de influencia y dependencia
+    influencia = [sum(fila) for fila in matriz]
+    dependencia = [sum(col) for col in zip(*matriz)]
+
+    datos_dispersion = {
+        "variables": variables,
+        "influencia": influencia,
+        "dependencia": dependencia,
+    }
+
+    return render(request, "haapar_unla_app/foda-graficos.html", {
+        "variables": variables,
+        "matriz": matriz,
+        "datos_dispersion": json.dumps(datos_dispersion)
+    })
+    
+
+def pestel_arbol(request):
+    print("Entrando a la vista pestel_arbol")  #PRUEBO SI SALE EN CONSOLA
+    pestel_data = {
+        "Político": [
+            "Políticas públicas tecnológicas",
+            "Estabilidad gubernamental"
+        ],
+        "Económico": [
+            "Inflación",
+            "Costo de infraestructura",
+            "Financiamiento"
+        ],
+        "Social": [
+            "Adopción tecnológica",
+            "Capacitación de usuarios"
+        ],
+        "Tecnológico": [
+            "Innovación en software",
+            "Ciberseguridad"
+        ],
+        "Ecológico": [
+            "Consumo energético",
+            "Sustentabilidad"
+        ],
+        "Legal": [
+            "Protección de datos",
+            "Regulaciones IT"
+        ]
+    }
+    # CONSOLE LOG EN EL SERVIDOR
+    pestel_json = json.dumps(pestel_data, ensure_ascii=False)
+    print("=" * 50)
+    print("DATOS PESTEL ENVIADOS AL TEMPLATE:")
+    print("=" * 50)
+    print(pestel_json)
+    print("=" * 50)
+    print(f"Tipo de dato: {type(pestel_json)}")
+    print("=" * 50)
+
+    return render(request, "foda-graficos.html", {
+        "pestel": json.dumps(pestel_data, ensure_ascii=False)  
+    })
 
