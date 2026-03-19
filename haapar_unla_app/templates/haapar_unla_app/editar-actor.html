@@ -1,4 +1,4 @@
-{% extends 'haapar_unla_app/base.html' %} 
+{% extends 'haapar_unla_app/base.html' %}  
 {% block title %} Editar Actor - HAAPAR {% endblock %} 
 {% block content %}
 
@@ -6,71 +6,36 @@
   <div class="page-title dark-background">
     <div class="container position-relative">
       <h1 class="text-center heading-section">Editar Actor</h1>
-      <p class="text-center text-muted">{{ actor.tema.nombre }}</p>
+      <p class="text-center text-muted">{{ actor.subsistema.nombre }}</p>
     </div>
   </div>
 
-  <div class="container mt-4">
-    <div class="row justify-content-center">
-      <div class="col-md-8">
-        <div class="card">
-          <div class="card-header">
-            <h5 class="card-title mb-0">Editar Información del Actor</h5>
-          </div>
-          <div class="card-body">
-            <form method="post">
-              {% csrf_token %}
-              <div class="mb-3">
-                <label for="nombre" class="form-label">Nombre del Actor</label>
-                <input type="text" class="form-control" id="nombre" name="nombre" 
-                       value="{{ actor.nombre }}" required>
-              </div>
-              
-              <div class="mb-3">
-                <label for="descripcion" class="form-label">Descripción</label>
-                <textarea class="form-control" id="descripcion" name="descripcion" 
-                          rows="3" required>{{ actor.descripcion }}</textarea>
-              </div>
-              
-              <div class="mb-3">
-                <label for="puesto" class="form-label">Puesto/Rol</label>
-                <input type="text" class="form-control" id="puesto" name="puesto" 
-                       value="{{ actor.puesto }}" required>
-              </div>
-              
-              <div class="mb-3">
-                <label class="form-label">Relaciones</label>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="emite" name="emite" 
-                         {% if actor.emite %}checked{% endif %}>
-                  <label class="form-check-label" for="emite">Emite</label>
-                </div>
-                <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="recibe" name="recibe" 
-                         {% if actor.recibe %}checked{% endif %}>
-                  <label class="form-check-label" for="recibe">Recibe</label>
-                </div>
-              </div>
-              
-              <div class="mb-3">
-                <label for="influencia" class="form-label">Nivel de Influencia</label>
-                <select class="form-select" id="influencia" name="influencia" required>
-                  <option value="1" {% if actor.influencia == 1 %}selected{% endif %}>Baja</option>
-                  <option value="2" {% if actor.influencia == 2 %}selected{% endif %}>Media</option>
-                  <option value="3" {% if actor.influencia == 3 %}selected{% endif %}>Alta</option>
-                </select>
-              </div>
-              
-              <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                <a href="{% url 'actor_detalle' actor.tema.id_tema %}" class="btn btn-secondary me-md-2">Cancelar</a>
-                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
+  <form method="post" class="styled-form">
+    {% csrf_token %}
+    
+    <div class="mb-3">
+      <label for="nombre" class="form-label">Nombre del Actor</label>
+      <input type="text" class="form-control" id="nombre" name="nombre" 
+              value="{{ actor.nombre }}" required>
     </div>
-  </div>
+    
+    <div class="mb-3">
+      <label for="descripcion" class="form-label">Descripción</label>
+      <textarea class="form-control" id="descripcion" name="descripcion" 
+                rows="3" required>{{ actor.descripcion }}</textarea>
+    </div>
+    
+    <div class="mb-3">
+      <label for="puesto" class="form-label">Puesto/Rol</label>
+      <input type="text" class="form-control" id="puesto" name="puesto" 
+              value="{{ actor.puesto }}" required>
+    </div>
+
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+      <a href="{% url 'actor_detalle' actor.subsistema.id_subsistema %}" class="btn btn-secondary me-md-2">Cancelar</a>
+      <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+    </div>
+  </form>
 </main>
 
 {% endblock %}

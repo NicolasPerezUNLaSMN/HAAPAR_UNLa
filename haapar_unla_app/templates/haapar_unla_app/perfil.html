@@ -1,8 +1,8 @@
 {% extends 'haapar_unla_app/base.html' %}
 
 {% block content %}
-<div class="container mt-5">
-    <h2 class="mb-4">Mi Perfil</h2>
+<div class="container mt-5 perfil-box">
+    <h2 class="mb-4 heading-section">Mi Perfil</h2>
 
     <div class="d-flex align-items-center mb-4">
         <div class="rounded-circle bg-secondary text-white d-flex align-items-center justify-content-center"
@@ -15,13 +15,6 @@
         </div>
     </div>
 
-    <!-- Mensajes de éxito/error -->
-    {% if messages %}
-      {% for message in messages %}
-        <div class="alert alert-{{ message.tags }} mt-2">{{ message }}</div>
-      {% endfor %}
-    {% endif %}
-
     <hr>
 
     <!-- Editar perfil -->
@@ -31,8 +24,8 @@
       </a>
     </h4>
 
-    <div class="collapse" id="editProfileForm">
-      <div class="card card-body mb-4">
+    <div class="collapse " id="editProfileForm">
+      <div class="styled-form mb-4">
         <form method="post">
             {% csrf_token %}
 
@@ -67,10 +60,25 @@
     </h4>
 
     <div class="collapse" id="changePasswordForm">
-      <div class="card card-body mb-4">
+      <div class="styled-form mb-4">
         <form method="post">
             {% csrf_token %}
-            {{ pass_form.as_p }}
+            {{ pass_form.non_field_errors }}
+          <div class="mb-3">
+            {{ pass_form.old_password.label_tag }}
+            {{ pass_form.old_password }}
+            {{ pass_form.old_password.errors }}
+          </div>
+          <div class="mb-3">
+            {{ pass_form.new_password1.label_tag }}
+            {{ pass_form.new_password1 }}
+            {{ pass_form.new_password1.errors }}
+          </div>
+          <div class="mb-3">
+            {{ pass_form.new_password2.label_tag }}
+            {{ pass_form.new_password2 }}
+            {{ pass_form.new_password2.errors }}
+          </div>
             <button type="submit" name="change_password" class="btn btn-warning">Guardar nueva contraseña</button>
         </form>
       </div>

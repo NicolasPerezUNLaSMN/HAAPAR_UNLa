@@ -1,39 +1,36 @@
 {% extends 'haapar_unla_app/base.html' %} 
-{% block title %} Actores del Proyecto - HAAPAR {% endblock %} 
+{% block title %} Actores del Subsistema - HAAPAR {% endblock %} 
 {% block content %}
 
 <main class="main">
   <!-- Titulo de la pagina -->
   <div class="page-title dark-background">
     <div class="container position-relative">
-      <h1 class="text-center heading-section">ACTORES DEL PROYECTO</h1>
-      <p class="text-center text-muted">{{ tema.nombre }}</p>
-      <p class="text-center fw-bold text-danger">ID {{ tema.id_tema }}</p>
+      <h1 class="text-center heading-section">ACTORES DEL SUBSISTEMA</h1>
+      <p class="text-center fw-bold">Subsistema: {{ subsistema.nombre }}</p>
     </div>
+  </div>
+
+  <!-- Botones de acción FIJOS en la parte superior -->
+  <div class="container mt-4 text-center sticky-top botonera" style="z-index: 1000;">
+    <a href="{% url 'crear_actor' subsistema.id_subsistema %}" class="btn btn-primary"> Agregar Actor</a>
+    <a href="{% url 'proyecto_detalle' tema.id_tema subsistema.id_subsistema %}" class="btn btn-secondary">Volver</a>
   </div>
 
   <!-- Lista de actores -->
   <div class="container mt-4">
     {% for actor in actores %}
-    <div class="card mb-4">
+    <div class="card mb-4 proyecto-base">
       <div class="card-header d-flex justify-content-between align-items-center">
         <div>
           <span class="fw-bold">{{ forloop.counter }}</span>
           <span class="ms-2 fw-bold text-primary">{{ actor.nombre }}</span>
-          <span class="badge 
-            {% if actor.influencia == 3 %}bg-danger
-            {% elif actor.influencia == 2 %}bg-warning
-            {% else %}bg-success{% endif %} ms-2">
-            {% if actor.influencia == 3 %}Alta Influencia
-            {% elif actor.influencia == 2 %}Media Influencia
-            {% else %}Baja Influencia{% endif %}
-          </span>
         </div>
         <div>
-          <a href="{% url 'editar_actor' actor.id %}" class="btn btn-sm btn-outline-primary">
+          <a href="{% url 'editar_actor' actor.id_actor_clave %}" class="btn btn-sm btn-outline-primary">
             <i class="fa-solid fa-edit"></i> Editar
           </a>
-          <form action="{% url 'eliminar_actor' actor.id %}" method="post" class="d-inline">
+          <form action="{% url 'eliminar_actor' actor.id_actor_clave %}" method="post" class="d-inline">
             {% csrf_token %}
             <button type="submit" class="btn btn-sm btn-outline-danger ms-1" 
                     onclick="return confirm('¿Estás seguro de que quieres eliminar este actor?')">
@@ -46,23 +43,18 @@
         <p class="text-muted mb-2">
           <strong>Puesto:</strong> {{ actor.puesto }}
         </p>
-        <p class="text-muted mb-2">
-          <strong>Subsistema:</strong> {{ actor.subsistema.nombre }}
-        </p>
         <p><strong>Descripción:</strong> {{ actor.descripcion }}</p>
-        
-        <div class="mt-3 p-3 bg-light rounded">
+
+        <div class="mt-3 p-3 rounded relaciones-box">
           <h6 class="border-bottom pb-2">Relaciones e Influencia</h6>
           <div class="row">
             <div class="col-md-6">
-              <p class="mb-1"><strong>Emite:</strong> {% if actor.emite %}✔{% else %}✘{% endif %}</p>
-              <p class="mb-1"><strong>Recibe:</strong> {% if actor.recibe %}✔{% else %}✘{% endif %}</p>
+              <p class="mb-1"><strong>Emite:</strong> {% if actor.actor_fuente.all|length > 0 %}✔{% else %}✘{% endif %}</p>
+              <p class="mb-1"><strong>Recibe:</strong> {% if actor.actor_fuente.all|length > 0 %}✔{% else %}✘{% endif %}</p>
             </div>
             <div class="col-md-6">
               <p class="mb-1"><strong>Nivel de influencia:</strong> 
-                {% if actor.influencia == 3 %}Alta
-                {% elif actor.influencia == 2 %}Media
-                {% else %}Baja{% endif %}
+                Ver detalles en relaciones
               </p>
             </div>
           </div>
@@ -70,21 +62,11 @@
       </div>
     </div>
     {% empty %}
-    <div class="alert alert-info text-center">
-      No hay actores definidos para este proyecto. 
-      <a href="{% url 'crear_actor' tema.id_tema %}" class="alert-link">Agrega el primer actor</a>.
+    <div class="alert-contexto text-center">
+      No hay actores definidos para este subsistema. 
+      <a href="{% url 'crear_actor' subsistema.id_subsistema %}" class="alert-link">Agrega el primer actor</a>.
     </div>
     {% endfor %}
-  </div>
-
-  <!-- Botones de acción -->
-  <div class="container mt-4 text-center">
-    <a href="{% url 'crear_actor' tema.id_tema %}" class="btn btn-success me-2">
-      <i class="fa-solid fa-plus"></i> Agregar Actor
-    </a>
-    <a href="{% url 'proyecto_detalle' tema.id_tema %}" class="btn btn-secondary">
-        <i class="fa-solid fa-arrow-left"></i> Volver al proyecto
-      </a>
   </div>
 </main>
 

@@ -1,80 +1,71 @@
-{% extends 'haapar_unla_app/base.html' %} {% block title %} Crear Tendencia -
-HAAPAR {% endblock %} {% block content %}
+{% extends 'haapar_unla_app/base.html' %}
+{% block title %} Crear Tendencia - HAAPAR {% endblock %}
+{% block content %}
 
-<div class="container mt-5">
-  <div class="row justify-content-center">
-    <div class="col-md-8">
-      <div class="card">
-        <div class="card-body">
-          <h2 class="card-title text-center mb-4">
-            Crear nueva tendencia para el proyecto: {{ tema.nombre }}
-          </h2>
-          <form method="post" action="{% url 'crear_tendencia' tema.id_tema %}">
-            {% csrf_token %}
-
-            <div class="mb-3">
-              <label for="subsistema" class="form-label">Subsistema</label>
-              <select
-                class="form-select"
-                id="subsistema"
-                name="subsistema"
-                required
-              >
-                <option value="">Seleccione un subsistema</option>
-                {% for subsistema in subsistemas %}
-                <option value="{{ subsistema.id_subsistema }}">
-                  {{ subsistema.nombre }}
-                </option>
-                {% endfor %}
-              </select>
-            </div>
-
-            <div class="mb-3">
-              <label for="nombre" class="form-label">Nombre</label>
-              <input
-                type="text"
-                class="form-control"
-                id="nombre"
-                name="nombre"
-                required
-              />
-            </div>
-            <div class="mb-3">
-              <label for="nombre_corto" class="form-label">Nombre corto</label>
-              <input
-                type="text"
-                class="form-control"
-                id="nombre_corto"
-                name="nombre_corto"
-                required
-              />
-            </div>
-            <div class="mb-3">
-              <label for="descripcion" class="form-label">Descripción</label>
-              <textarea
-                class="form-control"
-                id="descripcion"
-                name="descripcion"
-                rows="3"
-                required
-              ></textarea>
-            </div>
-
-            <div class="d-grid gap-2">
-              <button type="submit" class="btn btn-primary">
-                Guardar Tendencia
-              </button>
-              <a
-                href="{% url 'tendencia_detalle' tema.id_tema %}"
-                class="btn btn-secondary"
-                >Cancelar</a
-              >
-            </div>
-          </form>
-        </div>
-      </div>
+<main class="main">
+  <div class="page-title dark-background">
+    <div class="container position-relative">
+      <h1 class="text-center heading-section">Crear nueva tendencia</h1>
+      <p class="text-center text-muted">{{ subsistema.nombre }}</p>
     </div>
   </div>
-</div>
+
+  <section>
+            <form method="post" action="{% url 'crear_tendencia' subsistema.id_subsistema %}" class="styled-form">
+              {% csrf_token %}
+
+              <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="nombre"
+                  name="nombre"
+                  required
+                />
+              </div>
+
+              <div class="mb-3">
+                <label for="nombre_corto" class="form-label">Nombre corto</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  id="nombre_corto"
+                  name="nombre_corto"
+                  required
+                />
+              </div>
+
+              <div class="mb-3">
+                <label for="tipo_dato" class="form-label">Tipo de Dato</label>
+                <select class="form-select" id="tipo_dato" name="tipo_dato" required>
+                  <option value="Cuantitativa">Cuantitativa</option>
+                  <option value="Cualitativa">Cualitativa</option>
+                </select>
+              </div>
+
+              <div class="mb-3">
+                <label for="descripcion" class="form-label">Descripción</label>
+                <textarea
+                  class="form-control"
+                  id="descripcion"
+                  name="descripcion"
+                  rows="3"
+                  required
+                ></textarea>
+              </div>
+
+              <div class="d-flex justify-content-center">
+                <button type="submit" class="btn btn-success me-2">Guardar</button>
+                <a
+                  href="{% url 'tendencia_detalle' subsistema.id_subsistema %}"
+                  class="btn btn-secondary"
+                >
+                  Cancelar
+                </a>
+              </div>
+            </form>
+  </section>
+</main>
 
 {% endblock %}
