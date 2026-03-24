@@ -19,10 +19,9 @@ urlpatterns = [
     path('eliminar-proyecto/<int:id_tema>/', views.eliminar_proyecto, name='eliminar_proyecto'),
     path('crear-reporte/', views.crear_reporte, name='crear-reporte'),
     
-    #Graficos FODA
-    path('foda-graficos/', views.foda_graficos, name='foda_graficos'), 
-    path('foda-graficos/', views.micmac_indirecto, name="micmac_indirecto"),
-    path('foda-graficos/', views.pestel_arbol, name="pestel_arbol"),
+    
+   #Graficos FODA
+    path('foda-graficos/', views.foda_graficos, name='foda_graficos'),
 
     # Variables (todas ligadas a un subsistema específico)
     path('variables/<int:subsistema_id>/', views.variable_detalle, name='variable_detalle'),

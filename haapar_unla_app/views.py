@@ -16,19 +16,20 @@ from django.utils.encoding import force_str, force_bytes
 from django.template.loader import render_to_string
 from django.core.mail import send_mail, BadHeaderError
 from django.contrib.sites.shortcuts import get_current_site
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.db.models import Prefetch, Count, Q
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+
+import json
+import datetime
 
 from .forms import SignUpForm
 from haapar_unla_app.models import (
     Tema, Sistema, Subsistema, Variable,
-    Evaluacion, TendenciaExterna,ActorClave,RelacionActor
+    Evaluacion, TendenciaExterna, ActorClave, RelacionActor
 )
-from django.shortcuts import render
-import json
-import datetime
-# Cliente OpenAI (ChatGPT)
- 
+from .infraestructura.api_client.openai_client import generate_chat_completion
 
 User = get_user_model()
 
@@ -246,7 +247,7 @@ def crear_subsistema(request, tema_id):
 
 @login_required
 def eliminar_subsistema(request, sub_id):
-    sub = get_object_or_404(Subsistema, id_subsistema=sub_id, sistema__tema__user=request.user)
+    sub = get_object_or_404(Subsistema, id_subsistema=sub_id, sistema_tema_user=request.user)
     if request.method == 'POST':
         sub.activo = False
         sub.save()
@@ -428,7 +429,6 @@ def editar_actor(request, pk):
     })
 
 
-
 @login_required
 def eliminar_actor(request, pk):
     actor = get_object_or_404(ActorClave, pk=pk)
@@ -453,27 +453,23 @@ def listar_tendencias(request):
 
 
 @login_required
-def tendencia_detalle(request, tema_id):
-    tema = get_object_or_404(Tema, id_tema=tema_id)
-    tendencias = TendenciaExterna.objects.filter(tema=tema, activo=True)
-    return render(request, 'haapar_unla_app/tendencia-detalle.html', {
-        'tema': tema,
-        'tendencias': tendencias
-    })
-
-
-@login_required
-def tendencia_detalle(request, subsistema_id):
-    subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id, activo=True)
-    tema = subsistema.sistema.tema
-
-    tendencias = TendenciaExterna.objects.filter(subsistema=subsistema, activo=True)
-
-    return render(request, 'haapar_unla_app/tendencia-detalle.html', {
-        'tema': tema,
-        'subsistema': subsistema,
-        'tendencias': tendencias,
-    })
+def tendencia_detalle(request, tema_id=None, subsistema_id=None):
+    if tema_id:
+        tema = get_object_or_404(Tema, id_tema=tema_id)
+        tendencias = TendenciaExterna.objects.filter(tema=tema, activo=True)
+        return render(request, 'haapar_unla_app/tendencia-detalle.html', {
+            'tema': tema,
+            'tendencias': tendencias
+        })
+    elif subsistema_id:
+        subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id, activo=True)
+        tema = subsistema.sistema.tema
+        tendencias = TendenciaExterna.objects.filter(subsistema=subsistema, activo=True)
+        return render(request, 'haapar_unla_app/tendencia-detalle.html', {
+            'tema': tema,
+            'subsistema': subsistema,
+            'tendencias': tendencias,
+        })
 
 
 @login_required
@@ -501,6 +497,7 @@ def crear_tendencia(request, subsistema_id):
         'subsistema': subsistema,
     })
 
+
 @login_required
 def editar_tendencia(request, pk):
     tendencia = get_object_or_404(TendenciaExterna, pk=pk, activo=True)
@@ -519,7 +516,6 @@ def editar_tendencia(request, pk):
         'tendencia': tendencia,
         'subsistema': subsistema,
     })
-
 
 
 @login_required
@@ -599,19 +595,11 @@ def password_reset_complete(request):
 # ---------------------------
 # ChatGPT API wrapper (simple)
 # ---------------------------
-from django.http import JsonResponse
-from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt
-from .infraestructura.api_client.openai_client import generate_chat_completion
 @csrf_exempt
 @require_POST
 def chatgpt_api(request):
-    """Endpoint simple que recibe JSON {"prompt": "..."} y retorna la respuesta de ChatGPT en JSON.
-
-    Nota: protege este endpoint en producción (auth, rate limit, logging).
-    """
+    """Endpoint simple que recibe JSON {"prompt": "..."} y retorna la respuesta de ChatGPT en JSON."""
     try:
-        import json
         payload = json.loads(request.body.decode('utf-8'))
     except Exception:
         return JsonResponse({'success': False, 'error': 'JSON inválido en cuerpo'}, status=400)
@@ -626,14 +614,23 @@ def chatgpt_api(request):
 
     return JsonResponse({'success': True, 'text': result.get('text')})
 
-#Creacion de graficos para el analisis FODA
-def foda_graficos(request):
-    datos_dispersion = {
+
+# ---------------------------------------------------------
+# FUNCIONES AUXILIARES PARA LOS GRÁFICOS FODA
+# ---------------------------------------------------------
+
+def obtener_datos_dispersion():
+    """Genera datos para Gráfico de Dispersión (Importancia/Incertidumbre) y Peter-Schwartz."""
+    datos = {
         "variables": ["Var1", "Var2", "Var3"],
         "importancia": [5, 3, 7],
         "incertidumbre": [2, 6, 4],
     }
+    return json.dumps(datos)
 
+
+def obtener_matriz_directa():
+    """Genera datos para la Matriz MIC-MAC (Tabla HTML)."""
     variables = [
         "cant_de_min_de_jueg",
         "nmer_de_gale_antl_po",
@@ -649,36 +646,12 @@ def foda_graficos(request):
         [1, 2, 2, 2, 0],
     ]
     filas = list(zip(variables, matriz))
+    return variables, filas
 
-    # Datos para el eje Peter-Schwartz
-    peter_schwartz = {
-        "x_label": "Proyecciones de rendimiento de expertos",
-        "y_label": "Habilidades técnicas actuales",
-        "cuadrantes": [
-            {"nombre": "Estrella Ascendente", "pos": (1, 1)},
-            {"nombre": "Experto en Evolución", "pos": (-1, 1)},
-            {"nombre": "Retroceso Competitivo", "pos": (-1, -1)},
-            {"nombre": "Proyección Brillante", "pos": (1, -1)},
-        ]
-    }
 
-    return render(request, "haapar_unla_app/foda-graficos.html", {
-        "datos_dispersion": datos_dispersion,
-        "variables": variables,
-        "filas": filas,
-        "peter_schwartz": peter_schwartz
-    })
-
-# Variables y matriz de relaciones indirectas para el análisis MICMAC
-
-def micmac_indirecto(request):
-    variables = [
-        "cant_de_mime_de_jueg",
-        "mime_de_jueg_ant_pos",
-        "tasa_de_jueg_ben",
-        "nive_de_comp_eju_i",
-        "grad_de_desa_fisc_x"
-    ]
+def obtener_micmac_indirecto(variables):
+    """Genera datos para la Matriz MIC-MAC Indirecto (Heatmap) y Dispersión Indirecta."""
+    # Esta es la matriz que se mostrará en los cuadraditos celestes (Heatmap)
     matriz_indirecta = [
         [0, 2, 1, 3, 2],
         [1, 0, 2, 2, 1],
@@ -686,100 +659,67 @@ def micmac_indirecto(request):
         [1, 2, 2, 0, 3],
         [2, 1, 2, 2, 0],
     ]
-    filas = list(zip(variables, matriz_indirecta))
-
+    
+    # Cálculos matemáticos para el gráfico de puntos
     influencia = [sum(fila) for fila in matriz_indirecta]
     dependencia = [sum(col) for col in zip(*matriz_indirecta)]
 
-    datos_micmac = {
+    datos_micmac_dispersion = {
         "variables": variables,
         "influencia": influencia,
         "dependencia": dependencia,
     }
-
-    return render(request, "haapar_unla_app/foda-graficos.html", {
-        "variables": variables,
-        "filas": filas,
-        "datos_micmac": json.dumps(datos_micmac)  # 👈 JSON válido
-    })
-
-#Grafico de dispersion para el analisis MICMAC 
-
-def micmac_dispersion(request):
-    variables = [
-        "niv_de_comp_un_Lic",
-        "tasa_de_jueg_ben",
-        "grad_de_desa_fisc_x",
-        "mime_de_jueg_ant_pos",
-        "cant_de_mime_de_jueg"
-    ]
-
-    # Ejemplo de matriz (puedes reemplazar con la tuya)
-    matriz = [
-        [0, 2, 1, 3, 2],
-        [1, 0, 2, 2, 1],
-        [2, 1, 0, 3, 2],
-        [1, 2, 2, 0, 3],
-        [2, 1, 2, 2, 0],
-    ]
-
-    # Cálculo de influencia y dependencia
-    influencia = [sum(fila) for fila in matriz]
-    dependencia = [sum(col) for col in zip(*matriz)]
-
-    datos_dispersion = {
-        "variables": variables,
-        "influencia": influencia,
-        "dependencia": dependencia,
-    }
-
-    return render(request, "haapar_unla_app/foda-graficos.html", {
-        "variables": variables,
-        "matriz": matriz,
-        "datos_dispersion": json.dumps(datos_dispersion)
-    })
     
-
-def pestel_arbol(request):
-    print("Entrando a la vista pestel_arbol")  #PRUEBO SI SALE EN CONSOLA
-    pestel_data = {
-        "Político": [
-            "Políticas públicas tecnológicas",
-            "Estabilidad gubernamental"
-        ],
-        "Económico": [
-            "Inflación",
-            "Costo de infraestructura",
-            "Financiamiento"
-        ],
-        "Social": [
-            "Adopción tecnológica",
-            "Capacitación de usuarios"
-        ],
-        "Tecnológico": [
-            "Innovación en software",
-            "Ciberseguridad"
-        ],
-        "Ecológico": [
-            "Consumo energético",
-            "Sustentabilidad"
-        ],
-        "Legal": [
-            "Protección de datos",
-            "Regulaciones IT"
-        ]
+    # Estructura requerida por Chart.js para armar la cuadrícula (Heatmap)
+    datos_heatmap = {
+        "variables": variables,
+        "valores": matriz_indirecta
     }
-    # CONSOLE LOG EN EL SERVIDOR
-    pestel_json = json.dumps(pestel_data, ensure_ascii=False)
-    print("=" * 50)
-    print("DATOS PESTEL ENVIADOS AL TEMPLATE:")
-    print("=" * 50)
-    print(pestel_json)
-    print("=" * 50)
-    print(f"Tipo de dato: {type(pestel_json)}")
-    print("=" * 50)
+    
+    return json.dumps(datos_heatmap), json.dumps(datos_micmac_dispersion)
 
-    return render(request, "foda-graficos.html", {
-        "pestel": json.dumps(pestel_data, ensure_ascii=False)  
-    })
 
+def obtener_datos_pestel():
+    """Genera los datos para el Árbol PESTEL."""
+    pestel_data = {
+        "Político": ["Políticas públicas tecnológicas", "Estabilidad gubernamental"],
+        "Económico": ["Inflación", "Costo de infraestructura", "Financiamiento"],
+        "Social": ["Adopción tecnológica", "Capacitación de usuarios"],
+        "Tecnológico": ["Innovación en software", "Ciberseguridad"],
+        "Ecológico": ["Consumo energético", "Sustentabilidad"],
+        "Legal": ["Protección de datos", "Regulaciones IT"]
+    }
+    return json.dumps(pestel_data, ensure_ascii=False)
+
+
+# ---------------------------------------------------------
+# VISTA PRINCIPAL (FODA)
+# ---------------------------------------------------------
+
+# @login_required  <-- Descomenta esta línea si solo usuarios logueados pueden ver los gráficos
+def foda_graficos(request):
+    """
+    Vista maestra que recolecta los datos de las funciones auxiliares
+    y los envía a la plantilla HTML foda-graficos.html
+    """
+    
+    # 1. Llamamos a cada función individual
+    dispersion_json = obtener_datos_dispersion()
+    variables_html, filas_html = obtener_matriz_directa()
+    
+    # 2. Le pasamos las variables del MIC-MAC directo a la función de MIC-MAC indirecto
+    heatmap_json, micmac_json = obtener_micmac_indirecto(variables_html)
+    
+    pestel_json = obtener_datos_pestel()
+
+    # 3. Enviamos todo consolidado al template
+    contexto = {
+        "datos_dispersion": dispersion_json,
+        "variables": variables_html,  
+        "filas": filas_html,                 
+        "matriz_indirecta": heatmap_json,   # <-- AQUÍ ESTÁ LA MATRIZ INDIRECTA
+        "datos_micmac": micmac_json, 
+        "datos_pestel": pestel_json
+    }
+
+    return render(request, "haapar_unla_app/foda-graficos.html", contexto)
