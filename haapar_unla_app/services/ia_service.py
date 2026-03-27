@@ -26,7 +26,30 @@ def generar_estructura_prospectiva(tema):
     - 4 variables por subsistema
     - 3 actores por subsistema
     - 3 tendencias por subsistema
+    
+    IMPORTANTE:
+    Las variables deben ser CUANTIFICABLES, es decir, deben poder medirse numéricamente.
 
+    El nombre de cada variable debe incluir una métrica clara o unidad, como:
+    - Porcentaje (%)
+    - Tasa
+    - Cantidad
+    - Índice
+    - Nivel
+
+    Ejemplos:
+    - "Tasa de desempleo (%)"
+    - "Nivel de digitalización (%)"
+    - "Cantidad de empresas activas"
+    - "Índice de inflación anual"
+
+    NO usar nombres abstractos como:
+    - "Economía"
+    - "Tecnología"
+    - "Educación"
+
+    Cada variable debe tener un nombre claro, específico y medible.
+    
     Las variables deben clasificarse como:
 
     I = Interna (factor dentro del sistema)
