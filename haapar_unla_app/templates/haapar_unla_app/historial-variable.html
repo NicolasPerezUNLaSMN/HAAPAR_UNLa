@@ -10,8 +10,6 @@
       <tr>
         <th>Variable</th>
         <th>Acción</th>
-        <th>Importancia</th>
-        <th>Incertidumbre</th>
         <th>Fecha</th>
         <th>Usuario</th>
       </tr>
@@ -27,10 +25,8 @@
           {% endif %}
         </td>
         <td>{{ ev.get_accion_display }}</td>
-        <td>{{ ev.importancia }}</td>
-        <td>{{ ev.incertidumbre }}</td>
-        <td>{{ ev.fecha_modificacion|date:"d/m/Y H:i" }}</td>
-        <td>{{ ev.usuario_creador.username }}</td>
+        <td>{{ ev.fecha|date:"d/m/Y H:i" }}</td>
+        <td>{{ ev.usuario.username }}</td>
       </tr>
       {% empty %}
       <tr>
