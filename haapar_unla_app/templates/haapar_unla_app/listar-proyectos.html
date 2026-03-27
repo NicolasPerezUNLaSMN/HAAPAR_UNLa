@@ -14,6 +14,11 @@ HAAPAR {% endblock %} {% block content %}
         <div class="col-lg-10 col-md-12">
           <!-- Botón Fijo en la parte superior -->
           <div class="report-section sticky-top py-3 mb-3 " style="z-index: 100;">
+
+        <div class="col-lg-10 col-md-14">
+          <!-- Botón Fijo en la parte superior -->
+          <div class="sticky-top bg-white py-3 mb-3 border-bottom" style="z-index: 100;">
+
             <div class="text-center">
               <a href="{% url 'inicio' %}" class="btn btn-primary">Crear nuevo proyecto</a>
             </div>
@@ -36,7 +41,7 @@ HAAPAR {% endblock %} {% block content %}
                 {% for tema in temas %}
                   <tr>
                     <td class="text-center align-middle">{{ tema.nombre }}</td>
-                    <td class="text-center align-middle">{{ tema.descripcion }}</td>
+                    <td class="align-middle">{{ tema.descripcion }}</td>
                     <td class="text-center align-middle">{{ tema.horizonte }}</td>
                     <td class="text-center align-middle">—</td>
                     <td class="text-center align-middle">{{ tema.user.username }}</td>

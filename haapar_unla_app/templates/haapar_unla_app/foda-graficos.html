@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Gráficos FODA</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.4.0/highcharts.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.4.0/modules/heatmap.js"></script> 
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.4.0/modules/treemap.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.4.0/modules/treegraph.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.4.0/modules/exporting.js"></script> 
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #296d1b, rgb(35, 139, 43));
+            font-family: 'Segoe UI', sans-serif;
+            color: #f5f5f5;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #fff;
+        }
+        canvas {
+            display: block;
+            margin: 0 auto;
+            max-width: 800px;
+            height: 500px;
+        }
+        table {
+            margin: 0 auto;
+            width: 70%;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        th { background-color: #3f861d; color: #fff; text-align: center; }
+        td { text-align: center; color: #fff; }
+        td[style] { color: #000; font-weight: bold; }
+        
+        /* Contenedores Blancos para Highcharts */
+        .hc-container {
+            width: 100%;
+            max-width: 900px;
+            height: 600px; 
+            margin: 0 auto;
+            background-color: #ffffff; /* Fondo blanco */
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="card">
+            <h2>Gráfico de Dispersión: Importancia e Incertidumbre</h2>
+            <canvas id="scatterChart"></canvas>
+        </div>
+
+        <div class="card">
+            <h2>Matriz de Valores - MIC-MAC</h2>
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th></th>
+                        {% for var in variables %}
+                            <th>{{ var }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for nombre, fila in filas %}
+                    <tr>
+                        <th>{{ nombre }}</th>
+                        {% for valor in fila %}
+                            <td {% if valor > 2 %} style="background-color: orange;" {% endif %}>
+                                {{ valor }}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h2>Matriz de Valores - MIC-MAC - Indirecto</h2>
+            <div id="heatmapMatrixChartContainer" class="hc-container"></div>
+        </div>
+        
+        <div class="card"> 
+            <h2>Ejes de Peter-Schwartz</h2> 
+            <canvas id="peterSchwartzChart"></canvas> 
+        </div>
+        
+        <div class="card">
+            <h2>Gráfico de Dispersión - MIC-MAC Indirecto</h2>
+            <canvas id="micmacChart"></canvas>
+        </div>
+        
+        <div class="card"> 
+            <h2>Gráfico de Dispersión MIC-MAC</h2> 
+            <canvas id="micmacDispersionChart"></canvas> 
+        </div>
+        
+        <div class="card"> 
+            <h2>Árbol PESTEL del Proyecto</h2> 
+            <div id="pestelChartContainer" class="hc-container"></div> 
+        </div>
+    </div>
+
+    <script>
+        const datosDispersionStr = '{{ datos_dispersion|escapejs }}';
+        const matrizIndirectaStr = '{{ matriz_indirecta|escapejs }}';
+        const datosMicmacStr = '{{ datos_micmac|escapejs }}';
+        const datosPestelStr = '{{ datos_pestel|escapejs }}';
+
+        const datosDispersion = datosDispersionStr ? JSON.parse(datosDispersionStr) : {};
+        const matrizIndirecta = matrizIndirectaStr ? JSON.parse(matrizIndirectaStr) : {};
+        const datosMicmac = datosMicmacStr ? JSON.parse(datosMicmacStr) : {};
+        const datosPestel = datosPestelStr ? JSON.parse(datosPestelStr) : {};
+    </script>
+
+    <script>
+        try {
+            let datos = datosDispersion.variables ? datosDispersion : { variables: ["Tecnología", "Competencia", "Legislación", "Economía"], importancia: [4, 5, 2, 4], incertidumbre: [3, 4, 1, 5] };
+            const ctx1 = document.getElementById('scatterChart').getContext('2d');
+            new Chart(ctx1, {
+                type: 'scatter',
+                data: { datasets: [{ label: 'Variables', data: datos.variables.map((v, i) => ({ x: datos.importancia[i], y: datos.incertidumbre[i], label: v })), backgroundColor: '#ff4d4d', pointRadius: 6 }] },
+                options: { plugins: { legend: { display: false }, tooltip: { callbacks: { label: (context) => datos.variables[context.dataIndex] + " (Imp: " + context.raw.x + ", Inc: " + context.raw.y + ")" } } }, scales: { x: { title: { display: true, text: 'Importancia', color: '#fff' }, ticks: { color: '#fff' } }, y: { title: { display: true, text: 'Incertidumbre', color: '#fff' }, ticks: { color: '#fff' } } } }
+            });
+        } catch (e) { console.error("Error en Dispersión:", e); }
+    </script>
+
+    <script>
+        try {
+            let mData = matrizIndirecta.variables ? matrizIndirecta : {
+                variables: ["cant_minutos", "goles_anotados", "tasa_lesiones", "nivel_comp"],
+                valores: [ [16, 13, 7, 13], [9, 17, 7, 15], [18, 18, 12, 18], [12, 13, 7, 17] ]
+            };
+
+            let hcData = [];
+            for (let i = 0; i < mData.variables.length; i++) {
+                for (let j = 0; j < mData.variables.length; j++) {
+                    hcData.push([j, i, mData.valores[i][j]]);
+                }
+            }
+
+            Highcharts.chart('heatmapMatrixChartContainer', {
+                chart: { type: 'heatmap', marginTop: 40, marginBottom: 80, plotBorderWidth: 1 },
+                title: { text: 'Matriz MIC-MAC del Proyecto', style: { fontWeight: 'bold' } },
+                xAxis: { categories: mData.variables, labels: { style: { color: '#333' } } },
+                yAxis: { categories: mData.variables, title: null, reversed: true, labels: { style: { color: '#333' } } },
+                colorAxis: {
+                    min: 0,
+                    minColor: '#ffffff',
+                    maxColor: '#689bcc'  
+                },
+                legend: { align: 'right', layout: 'vertical', verticalAlign: 'top', y: 25, symbolHeight: 280 },
+                tooltip: {
+                    formatter: function () {
+                        return `La variable: <b>${this.series.yAxis.categories[this.point.y]}</b><br>influye en <b>${this.point.value}</b> en<br>la variable: <b>${this.series.xAxis.categories[this.point.x]}</b>`;
+                    }
+                },
+                series: [{
+                    name: 'Matriz',
+                    borderWidth: 1,
+                    borderColor: '#dddddd',
+                    data: hcData,
+                    dataLabels: { enabled: true, color: '#000000', style: { textOutline: 'none', fontWeight: 'bold' } }
+                }],
+                credits: { enabled: false }
+            });
+        } catch (e) { console.error("Error en Heatmap:", e); }
+    </script>
+
+    <script>
+        try {
+            let datosP = datosDispersion.variables ? datosDispersion : { variables: ["A", "B"], importancia: [4, 2], incertidumbre: [3, 1] };
+            const ctxPeter = document.getElementById('peterSchwartzChart').getContext('2d');
+            new Chart(ctxPeter, {
+                type: 'scatter',
+                data: { datasets: [{ label: 'Escenarios', data: datosP.variables.map((v, i) => ({ x: (datosP.importancia[i] - 3), y: (datosP.incertidumbre[i] - 3), label: v })), backgroundColor: '#00ffcc', pointRadius: 8 }] },
+                options: { plugins: { legend: { display: false }, tooltip: { callbacks: { label: (context) => context.raw.label } }, title: { display: true, text: 'Escenarios futuros según Peter-Schwartz', color: '#fff' }, annotation: { annotations: { ejeX: { type: 'line', xMin: 0, xMax: 0, borderColor: 'white', borderWidth: 2 }, ejeY: { type: 'line', yMin: 0, yMax: 0, borderColor: 'white', borderWidth: 2 }, cuadrante1: { type: 'label', xValue: 1.6, yValue: 1.9, content: ['Estrella Ascendente'], color: 'yellow', font: { size: 14, weight: 'bold' } }, cuadrante2: { type: 'label', xValue: -1.6, yValue: 1.9, content: ['Experto en Evolución'], color: 'yellow', font: { size: 14, weight: 'bold' } }, cuadrante3: { type: 'label', xValue: -1.6, yValue: -1.9, content: ['Retroceso Competitivo'], color: 'yellow', font: { size: 14, weight: 'bold' } }, cuadrante4: { type: 'label', xValue: 1.6, yValue: -1.9, content: ['Proyección Brillante'], color: 'yellow', font: { size: 14, weight: 'bold' } } } } }, scales: { x: { title: { display: true, text: 'Proyecciones', color: '#fff' }, min: -2, max: 2, ticks: { color: '#fff' } }, y: { title: { display: true, text: 'Habilidades', color: '#fff' }, min: -2, max: 2, ticks: { color: '#fff' } } } }
+            });
+        } catch (e) { console.error("Error en Peter-Schwartz:", e); }
+    </script>
+    
+    <script>
+        try {
+            let dMicmac = datosMicmac.variables ? datosMicmac : { variables: ["V1", "V2"], influencia: [100, 250], dependencia: [200, 50] };
+            const ctxMicmac = document.getElementById('micmacChart').getContext('2d');
+            new Chart(ctxMicmac, {
+                type: 'scatter',
+                data: { datasets: [{ label: 'Variables', data: dMicmac.variables.map((v, i) => ({ x: dMicmac.influencia[i], y: dMicmac.dependencia[i], label: v })), backgroundColor: '#ffcc00', pointRadius: 6 }] },
+                options: { plugins: { legend: { display: false }, tooltip: { callbacks: { label: (context) => dMicmac.variables[context.dataIndex] + " (Inf: " + context.raw.x + ", Dep: " + context.raw.y + ")" } }, title: { display: true, text: 'Relaciones Indirectas MIC-MAC', color: '#fff' } }, scales: { x: { title: { display: true, text: 'Influencia', color: '#fff' }, ticks: { color: '#fff' } }, y: { title: { display: true, text: 'Dependencia', color: '#fff' }, ticks: { color: '#fff' } } } }
+            });
+        } catch (e) { console.error("Error en MICMAC Indirecto:", e); }
+    </script>
+
+    <script>
+        try {
+            let dDisp2 = datosDispersion.influencia ? datosDispersion : { variables: ["A", "B", "C", "D"], influencia: [3, 1, 2, 4], dependencia: [1, 4, 3, 2] };
+            const ctxDispersion = document.getElementById('micmacDispersionChart').getContext('2d');
+            new Chart(ctxDispersion, {
+                type: 'scatter',
+                data: { datasets: [{ label: 'Variables', data: dDisp2.variables.map((v, i) => ({ x: dDisp2.influencia[i], y: dDisp2.dependencia[i], label: v })), backgroundColor: '#00ccff', pointRadius: 6 }] },
+                options: { plugins: { legend: { display: false }, tooltip: { callbacks: { label: (context) => dDisp2.variables[context.dataIndex] + " (Inf: " + context.raw.x + ", Dep: " + context.raw.y + ")" } }, title: { display: true, text: 'Gráfico de Dispersión MIC-MAC', color: '#fff' }, annotation: { annotations: { ejeX: { type: 'line', xMin: 2.5, xMax: 2.5, borderColor: 'white', borderWidth: 2, borderDash: [5, 5] }, ejeY: { type: 'line', yMin: 2.5, yMax: 2.5, borderColor: 'white', borderWidth: 2, borderDash: [5, 5] } } } }, scales: { x: { title: { display: true, text: 'Influencia', color: '#fff' }, ticks: { color: '#fff' } }, y: { title: { display: true, text: 'Dependencia', color: '#fff' }, ticks: { color: '#fff' } } } }
+            });
+        } catch (e) { console.error("Error en MICMAC Dispersión:", e); }
+    </script>
+
+    <script>
+        try {
+            let pestel = Object.keys(datosPestel).length > 0 ? datosPestel : {
+                "Legal": ["Protección de datos", "Regulaciones IT"],
+                "Ecológico": ["Consumo energético", "Sustentabilidad"],
+                "Tecnológico": ["Innovación en software", "Ciberseguridad"],
+                "Social": ["Adopción tecnológica", "Capacitación de usuarios"],
+                "Económico": ["Inflación", "Costo de infraestructura", "Financiamiento"],
+                "Político": ["Políticas públicas tecnológicas", "Estabilidad gubernamental"]
+            };
+
+            const coloresPestel = {
+                "Legal": "#fdbb63", "Ecológico": "#42d4b9", "Tecnológico": "#667bc6",  
+                "Social": "#5c33be", "Económico": "#49a4ff", "Político": "#613bc0"      
+            };
+
+            const nombreProyecto = '{{ tema.nombre|escapejs }}' || 'Proyecto';
+            
+            // Estructura oficial del árbol
+            const highchartsData = [{ id: 'root', name: nombreProyecto, color: '#333333' }];
+
+            Object.keys(pestel).forEach((categoria, index) => {
+                let colorRama = coloresPestel[categoria] || '#aaaaaa';
+                let catId = 'cat_' + index;
+                
+                // Nodo Categoría (Ej: Social)
+                highchartsData.push({ id: catId, parent: 'root', name: categoria, color: colorRama });
+
+                // Nodo Hojas (Ej: Adopción tecnológica)
+                if (Array.isArray(pestel[categoria])) {
+                    pestel[categoria].forEach((factor, fIndex) => {
+                        highchartsData.push({ id: catId + '_f_' + fIndex, parent: catId, name: factor, color: colorRama });
+                    });
+                }
+            });
+
+            Highcharts.chart('pestelChartContainer', {
+                chart: { type: 'treegraph', inverted: true },
+                title: { text: '' },
+                series: [{
+                    type: 'treegraph',
+                    data: highchartsData,
+                    tooltip: { pointFormat: '{point.name}' },
+                    marker: { symbol: 'rect', radius: 5 }, // Nodos estilo "píldora"
+                    dataLabels: {
+                        pointFormat: '{point.name}',
+                        style: { whiteSpace: 'nowrap', textOutline: 'none', color: '#333333' }
+                    }
+                }],
+                credits: { enabled: false }
+            });
+        } catch (e) { console.error("Error en Árbol PESTEL:", e); }
+    </script>
+</body>
+</html>
