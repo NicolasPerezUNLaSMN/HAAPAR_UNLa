@@ -2,7 +2,10 @@
 {% block title %}Historial de Variables{% endblock %}
 {% block content %}
 
-<div class="container mt-4">
+<div class="container mt-4 position-relative">
+  <a href="{% url 'variable_detalle' subsistema_id %}" class="btn-back">
+     <i class="fa-solid fa-arrow-left"></i>
+  </a>
   <h2 class="text-center heading-section">Historial de Variables</h2>
   
   <table class="table proyectos-table">
@@ -36,9 +39,5 @@
     </tbody>
   </table>
 
-  <div class="text-center mt-3">
-      <a href="{% url 'variable_detalle' subsistema_id %}" class="btn btn-secondary">Volver</a>
-  </div>
-</div>
 
 {% endblock %}

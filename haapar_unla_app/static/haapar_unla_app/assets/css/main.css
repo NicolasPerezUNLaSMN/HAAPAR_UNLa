@@ -838,3 +838,28 @@ body.dark-mode .perfil-box {
   text-decoration: underline;
   color: #006752;
 }
+.btn-back {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    z-index: 1001;
+
+    background-color: #198754;
+    color: white;
+
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.btn-back:hover {
+    background-color: #157347;
+    transform: scale(1.1);
+}
