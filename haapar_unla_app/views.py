@@ -29,7 +29,11 @@ import datetime
 from .forms import SignUpForm
 from haapar_unla_app.models import (
     Tema, Sistema, Subsistema, Variable,
-    Evaluacion, TendenciaExterna, ActorClave, RelacionActor
+
+    Evaluacion, TendenciaExterna, ActorClave, RelacionActor,
+
+    Historial, TendenciaExterna,ActorClave,RelacionActor
+
 )
 from .infraestructura.api_client.openai_client import generate_chat_completion
 
@@ -141,14 +145,12 @@ def crear_variable(request, subsistema_id):
             tipo=request.POST.get("tipo"),
             subsistema=subsistema
         )
-        Evaluacion.objects.create(
+        Historial.objects.create(
             variable=variable,
-            importancia=0,
-            incertidumbre=0,
-            usuario_creador=request.user,
-            usuario_modificador=request.user,
-            accion='CREADO'
+            usuario=request.user,
+            accion='AGREGADO'
         )
+        
         return redirect("variable_detalle", subsistema_id=subsistema.id_subsistema)
 
     return render(request, "haapar_unla_app/crear-variable.html", {"subsistema": subsistema})
@@ -166,12 +168,9 @@ def editar_variable(request, pk):
         variable.tipo = request.POST.get("tipo")
         variable.save()
 
-        Evaluacion.objects.create(
+        Historial.objects.create(
             variable=variable,
-            importancia=0,
-            incertidumbre=0,
-            usuario_creador=request.user,
-            usuario_modificador=request.user,
+            usuario=request.user,
             accion='MODIFICADO'
         )
         return redirect("variable_detalle", subsistema_id=subsistema_id)
@@ -190,12 +189,9 @@ def eliminar_variable(request, pk):
     variable.activo = False
     variable.save()
 
-    Evaluacion.objects.create(
+    Historial.objects.create(
         variable=variable,
-        importancia=0,
-        incertidumbre=0,
-        usuario_creador=request.user,
-        usuario_modificador=request.user,
+        usuario=request.user,
         accion='ELIMINADO'
     )
     return redirect("variable_detalle", subsistema_id=subsistema_id)
@@ -203,11 +199,11 @@ def eliminar_variable(request, pk):
 
 @login_required
 def historial_variables(request, subsistema_id):
-    historial = Evaluacion.objects.select_related(
-        'variable', 'usuario_creador'
+    historial = Historial.objects.select_related(
+        'variable', 'usuario'
     ).filter(
         variable__subsistema_id=subsistema_id
-    ).order_by('-fecha_modificacion')
+    ).order_by('-fecha')
 
     return render(request, "haapar_unla_app/historial-variable.html", {
         "historial": historial,
