@@ -30,7 +30,7 @@ from .forms import SignUpForm
 from haapar_unla_app.models import (
     Tema, Sistema, Subsistema, Variable,
 
-    Evaluacion, TendenciaExterna, ActorClave, RelacionActor,
+    TendenciaExterna, ActorClave, RelacionActor,
 
     Historial, TendenciaExterna,ActorClave,RelacionActor
 

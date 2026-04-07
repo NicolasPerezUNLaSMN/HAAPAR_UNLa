@@ -388,7 +388,10 @@ input[type="text"]:focus {
   vertical-align: middle;
 
 }
-
+.container-fluid {
+  padding-left: 40px;
+  padding-right: 40px;
+}
 .proyectos-table tbody tr:hover {
   background-color: #f8f9fa;
 }
@@ -408,6 +411,13 @@ body.dark-mode .proyectos-table td {
 
 body.dark-mode .proyectos-table tbody tr:hover {
   background-color: #333;
+}
+/* Limitar ancho de la columna de descripción */
+.descripcion-col {
+  max-width: 300px;       /* ajustá este valor según lo que quieras */
+  white-space: normal;    /* permite saltos de línea */
+  word-wrap: break-word;  /* corta palabras largas */
+  vertical-align: top;    /* texto alineado arriba */
 }
 /* ====================================================
    CARDS DETALLES

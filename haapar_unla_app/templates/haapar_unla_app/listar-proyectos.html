@@ -1,5 +1,6 @@
-{% extends 'haapar_unla_app/base.html' %} {% block title %} Mis Proyectos -
-HAAPAR {% endblock %} {% block content %}
+{% extends 'haapar_unla_app/base.html' %}
+{% block title %} Mis Proyectos - HAAPAR {% endblock %}
+{% block content %}
 
 <main class="main">
   <div class="page-title">
@@ -8,43 +9,37 @@ HAAPAR {% endblock %} {% block content %}
       <p class="text-center text-muted">Aquí puedes ver y gestionar todos tus proyectos de estudio.</p>
     </div>
   </div>
+
   <section>
-    <div class="container">
-      <div class="row justify-content-center">
-        <div class="col-lg-10 col-md-12">
-          <!-- Botón Fijo en la parte superior -->
-
-          <div class="report-section sticky-top py-3 mb-3 " style="z-index: 100;">
-
-        <div class="col-lg-10 col-md-14">
-          <!-- Botón Fijo en la parte superior -->
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <!-- Botón fijo en la parte superior -->
           <div class="sticky-top bg-white py-3 mb-3 border-bottom" style="z-index: 100;">
-
-          <div class="report-section sticky-top py-3 mb-3 bg-white" style="top: 0; z-index: 1000;"></div>
-
             <div class="text-center">
               <a href="{% url 'inicio' %}" class="btn btn-primary">Crear nuevo proyecto</a>
             </div>
           </div>
 
-          <div class="table-responsive">
-            <table class="table table-hover table-striped proyectos-table">
+          <!-- Tabla de proyectos -->
+          <div class="table-responsive" style="overflow-x: hidden;">
+            <table class="table table-hover table-striped proyectos-table w-100">
               <thead>
                 <tr class="table-dark">
-                  <th class="text-center">Nombre del Tema</th>
-                  <th class="text-center">Descripción</th>
-                  <th class="text-center">Año de Estudio</th>
-                  <th class="text-center">Precision</th>
-                  <th class="text-center">Usuario</th>
-                  <th class="text-center">Detalle</th>
-                  <th class="text-center">Eliminar</th>
+                  <th class="text-center" style="width: 15%;">Nombre del Tema</th>
+                  <th class="text-center descripcion-col">Descripción</th>
+                  <th class="text-center" style="width: 10%;">Año de Estudio</th>
+                  <th class="text-center" style="width: 10%;">Precisión</th>
+                  <th class="text-center" style="width: 10%;">Usuario</th>
+                  <th class="text-center" style="width: 12%;">Detalle</th>
+                  <th class="text-center" style="width: 13%;">Eliminar</th>
                 </tr>
               </thead>
               <tbody>
                 {% for tema in temas %}
                   <tr>
                     <td class="text-center align-middle">{{ tema.nombre }}</td>
-                    <td class="align-middle">{{ tema.descripcion }}</td>
+                    <td class="align-middle descripcion-col">{{ tema.descripcion }}</td>
                     <td class="text-center align-middle">{{ tema.horizonte }}</td>
                     <td class="text-center align-middle">—</td>
                     <td class="text-center align-middle">{{ tema.user.username }}</td>
@@ -56,6 +51,7 @@ HAAPAR {% endblock %} {% block content %}
                         <i class="fa-solid fa-trash"></i>
                       </button>
 
+                      <!-- Modal de confirmación -->
                       <div class="modal fade" id="confirmModal{{ tema.id_tema }}" tabindex="-1" aria-labelledby="confirmModalLabel{{ tema.id_tema }}" aria-hidden="true">
                         <div class="modal-dialog">
                           <div class="modal-content">
@@ -87,6 +83,7 @@ HAAPAR {% endblock %} {% block content %}
               </tbody>
             </table>
           </div>
+
         </div>
       </div>
     </div>
