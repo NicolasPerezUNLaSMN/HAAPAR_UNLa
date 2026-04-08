@@ -4,13 +4,17 @@
 
 <main class="main">
   <div class="page-title dark-background">
-    <a href="{% url 'proyecto_detalle' tema.id_tema subsistema.id_subsistema %}" 
-     class="btn-back">
-    <i class="fa-solid fa-arrow-left"></i>
-  </a>
     <div class="container position-relative">
+      <!-- Flecha arriba a la izquierda -->
+      <a href="{% url 'proyecto_detalle' tema.id_tema subsistema.id_subsistema %}" 
+         class="btn-back position-absolute top-0 start-0 mt-3 ms-3">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
+
+      <!-- Título centrado -->
       <h1 class="text-center heading-section">VARIABLES DEL SUBSISTEMA</h1>
       <p class="text-center fw-bold">Subsistema: {{ subsistema.nombre }}</p>
+
       <div class="text-center mt-3">
         <a href="{% url 'historial_variables_subsistema' subsistema.id_subsistema %}" class="btn btn-historial">
           <i class="fas fa-clock me-2"></i> Historial de Variable
