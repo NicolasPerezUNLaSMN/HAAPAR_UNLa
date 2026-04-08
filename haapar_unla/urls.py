@@ -21,7 +21,7 @@ urlpatterns = [
     
     
    #Graficos FODA
-    path('foda-graficos/', views.foda_graficos, name='foda_graficos'),
+    path('foda-graficos/<int:tema_id>/', views.foda_graficos, name='foda_graficos'),
 
     # Variables (todas ligadas a un subsistema específico)
     path('variables/<int:subsistema_id>/', views.variable_detalle, name='variable_detalle'),
