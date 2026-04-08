@@ -10,37 +10,22 @@ from django.contrib.auth import (
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django import forms
+from django.views.decorators.http import require_POST, require_GET, require_http_methods
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.encoding import force_str, force_bytes
 from django.template.loader import render_to_string
 from django.core.mail import send_mail, BadHeaderError
 from django.contrib.sites.shortcuts import get_current_site
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse
 from django.db.models import Prefetch, Count, Q
 from .services.ia_service import generar_estructura_prospectiva
-from .services.ia_service import generar_estructura_prospectiva, generar_evaluaciones_e_influencias_dummy
-from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt
-
-import json
-import datetime
-
 from .forms import SignUpForm
 from haapar_unla_app.models import (
     Tema, Sistema, Subsistema, Variable,
-<<<<<<< HEAD
-
-    TendenciaExterna, ActorClave, RelacionActor,
-
     Historial, TendenciaExterna,ActorClave,RelacionActor
-
-=======
-    Evaluacion, TendenciaExterna, ActorClave, RelacionActor,
-    Influencia, PESTEL  # <-- Eliminamos VariablePESTEL y dejamos Influencia y PESTEL
->>>>>>> origin/integrando_graficos
 )
-from .infraestructura.api_client.openai_client import generate_chat_completion
 
 from django.conf import settings
 from django.urls import reverse
@@ -54,6 +39,7 @@ class ProfileForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email']
+        fields = ['first_name', 'last_name']
 
 # ---------------------------
 # INICIO
@@ -66,9 +52,10 @@ def inicio(request):
 # PROYECTOS
 # ---------------------------
 @login_required
-@login_required
 def crear_reporte(request):
+
     if request.method == "POST":
+
         nombre = request.POST.get("nombre")
         descripcion = request.POST.get("descripcion")
         horizonte = request.POST.get("horizonte")
@@ -82,13 +69,9 @@ def crear_reporte(request):
             territorio=territorio
         )
 
-        # 1. La IA genera los subsistemas, variables, etc.
         generar_estructura_prospectiva(tema)
-        
-        # datos dummy no reales
-        generar_evaluaciones_e_influencias_dummy(tema, request.user)
-
         return redirect("subsistemas", tema_id=tema.id_tema)
+
 
 @login_required
 def listar_proyectos(request):
@@ -256,7 +239,7 @@ def crear_subsistema(request, tema_id):
 
 @login_required
 def eliminar_subsistema(request, sub_id):
-    sub = get_object_or_404(Subsistema, id_subsistema=sub_id, sistema_tema_user=request.user)
+    sub = get_object_or_404(Subsistema, id_subsistema=sub_id, sistema__tema__user=request.user)
     if request.method == 'POST':
         sub.activo = False
         sub.save()
@@ -268,11 +251,13 @@ def eliminar_subsistema(request, sub_id):
 # ---------------------------
 def registro(request):
     if request.method == 'POST':
+        # Leer valores crudos antes de validar el form para detectar usuarios inactivos
         username = request.POST.get('username', '').strip()
         email = request.POST.get('email', '').strip().lower()
 
         existing = User.objects.filter(Q(username__iexact=username) | Q(email__iexact=email)).first()
         if existing and not existing.is_active:
+            # Enviar email de reactivación
             current_site = get_current_site(request)
             uid = urlsafe_base64_encode(force_bytes(existing.pk))
             token = default_token_generator.make_token(existing)
@@ -291,6 +276,7 @@ def registro(request):
             form = SignUpForm()
             return render(request, 'haapar_unla_app/autenticacion/signup.html', {'form': form})
 
+        # Proceder con validación normal si no hay usuario inactivo
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
@@ -312,6 +298,7 @@ def reactivar_cuenta(request, uidb64, token):
             form = SetPasswordForm(user, request.POST)
             if form.is_valid():
                 form.save()
+                # Permitir actualizar nombres opcionalmente
                 user.first_name = request.POST.get('first_name', user.first_name)
                 user.last_name = request.POST.get('last_name', user.last_name)
                 user.is_active = True
@@ -333,6 +320,7 @@ def cerrar_sesion(request):
     logout(request)
     return redirect("inicio")
 
+
 def iniciar_sesion(request):
     if request.method == 'GET':
         return render(request, "haapar_unla_app/autenticacion/signin.html", {'form': AuthenticationForm()})
@@ -353,6 +341,8 @@ def iniciar_sesion(request):
 @login_required
 def perfil(request):
     user = request.user
+
+    # inicializar ambos formularios para evitar referencias no asignadas
     form = ProfileForm(instance=user)
     pass_form = PasswordChangeForm(user)
 
@@ -372,6 +362,7 @@ def perfil(request):
                 messages.success(request, 'Contraseña cambiada con éxito.')
                 return redirect('perfil')
             else:
+                # Mensaje genérico (no los errores campo por campo)
                 messages.error(request, 'No se pudo cambiar la contraseña. Revisa los errores del formulario.')
 
         elif 'delete_profile' in request.POST:
@@ -395,11 +386,14 @@ def perfil(request):
 def error_400_view(request, exception):
     return render(request, 'haapar_unla_app/error/400.html', status=400)
 
+
 def error_403_view(request, exception):
     return render(request, 'haapar_unla_app/error/403.html', status=403)
 
+
 def error_404_view(request, exception):
     return render(request, 'haapar_unla_app/error/404.html', status=404)
+
 
 def error_500_view(request):
     return render(request, 'haapar_unla_app/error/500.html', status=500)
@@ -418,6 +412,7 @@ def actor_detalle(request, subsistema_id):
         'actores': actores,
         'tema': tema
     })
+
 
 @login_required
 def crear_actor(request, subsistema_id):
@@ -448,6 +443,7 @@ def crear_actor(request, subsistema_id):
         'subsistema': subsistema
     })
 
+
 @login_required
 def editar_actor(request, pk):
     actor = get_object_or_404(ActorClave, pk=pk)
@@ -458,7 +454,7 @@ def editar_actor(request, pk):
         actor.descripcion = request.POST.get('descripcion', actor.descripcion)
         actor.puesto = request.POST.get('puesto', actor.puesto)
         actor.save()
-        
+        # Actualizar o crear la relación de influencia
         influencia = request.POST.get('influencia')
         if influencia:
             relacion, created = RelacionActor.objects.get_or_create(
@@ -484,6 +480,8 @@ def editar_actor(request, pk):
         'subsistema': subsistema
     })
 
+
+
 @login_required
 def eliminar_actor(request, pk):
     actor = get_object_or_404(ActorClave, pk=pk)
@@ -506,24 +504,30 @@ def listar_tendencias(request):
         'todas_las_tendencias': todas_las_tendencias,
     })
 
+
 @login_required
-def tendencia_detalle(request, tema_id=None, subsistema_id=None):
-    if tema_id:
-        tema = get_object_or_404(Tema, id_tema=tema_id)
-        tendencias = TendenciaExterna.objects.filter(tema=tema, activo=True)
-        return render(request, 'haapar_unla_app/tendencia-detalle.html', {
-            'tema': tema,
-            'tendencias': tendencias
-        })
-    elif subsistema_id:
-        subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id, activo=True)
-        tema = subsistema.sistema.tema
-        tendencias = TendenciaExterna.objects.filter(subsistema=subsistema, activo=True)
-        return render(request, 'haapar_unla_app/tendencia-detalle.html', {
-            'tema': tema,
-            'subsistema': subsistema,
-            'tendencias': tendencias,
-        })
+def tendencia_detalle(request, tema_id):
+    tema = get_object_or_404(Tema, id_tema=tema_id)
+    tendencias = TendenciaExterna.objects.filter(tema=tema, activo=True)
+    return render(request, 'haapar_unla_app/tendencia-detalle.html', {
+        'tema': tema,
+        'tendencias': tendencias
+    })
+
+
+@login_required
+def tendencia_detalle(request, subsistema_id):
+    subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id, activo=True)
+    tema = subsistema.sistema.tema
+
+    tendencias = TendenciaExterna.objects.filter(subsistema=subsistema, activo=True)
+
+    return render(request, 'haapar_unla_app/tendencia-detalle.html', {
+        'tema': tema,
+        'subsistema': subsistema,
+        'tendencias': tendencias,
+    })
+
 
 @login_required
 def crear_tendencia(request, subsistema_id):
@@ -543,6 +547,7 @@ def crear_tendencia(request, subsistema_id):
             descripcion=descripcion,
             activo=True
         )
+
         return redirect('tendencia_detalle', subsistema_id=subsistema.id_subsistema)
 
     return render(request, 'haapar_unla_app/crear-tendencia.html', {
@@ -560,12 +565,15 @@ def editar_tendencia(request, pk):
         tendencia.tipo_dato = request.POST.get('tipo_dato', tendencia.tipo_dato)
         tendencia.descripcion = request.POST.get('descripcion', tendencia.descripcion)
         tendencia.save()
+
         return redirect('tendencia_detalle', subsistema_id=subsistema.id_subsistema)
 
     return render(request, 'haapar_unla_app/editar-tendencia.html', {
         'tendencia': tendencia,
         'subsistema': subsistema,
     })
+
+
 
 @login_required
 def eliminar_tendencia(request, pk):
@@ -610,6 +618,7 @@ def password_reset_request(request):
     password_reset_form = PasswordResetForm()
     return render(request, "haapar_unla_app/autenticacion/password_reset.html", {"password_reset_form": password_reset_form})
 
+
 def password_reset_confirm(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
@@ -631,12 +640,13 @@ def password_reset_confirm(request, uidb64, token):
         messages.error(request, 'El enlace de restablecimiento es inválido o ha expirado.')
         return redirect('password_reset_request')
 
+
 def password_reset_done(request):
     return render(request, 'haapar_unla_app/autenticacion/password_reset_done.html')
 
+
 def password_reset_complete(request):
     return render(request, 'haapar_unla_app/autenticacion/password_reset_complete.html')
-
 
 # ---------------------------
 # ChatGPT API wrapper (simple)
@@ -685,7 +695,7 @@ def foda_graficos(request, tema_id):
     incertidumbres = []
 
     for v in variables_obj:
-        ev = Evaluacion.objects.filter(variable=v).order_by('-fecha_modificacion').first()
+        ev = Historial.objects.filter(variable=v).order_by('-fecha').first()
         importancias.append(ev.importancia if ev else 0)
         incertidumbres.append(ev.incertidumbre if ev else 0)
 
