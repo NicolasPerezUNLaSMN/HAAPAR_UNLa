@@ -1,8 +1,13 @@
 import json
 import os
+import random
 from openai import OpenAI
 
+
 from ..models import Historial, Sistema, Subsistema, Variable, ActorClave, TendenciaExterna
+
+from ..models import Sistema, Subsistema, Variable, ActorClave, TendenciaExterna, Influencia, Evaluacion
+
 
 client = OpenAI(
     api_key=os.getenv("API_KEY_OPENROUTER"),
@@ -27,6 +32,7 @@ def generar_estructura_prospectiva(tema):
     - 3 actores por subsistema
     - 3 tendencias por subsistema
 
+
      Las tendencias deben ser de dos tipos:
 
     - Cuantitativas: expresadas con métricas (%, tasas, índices, cantidades)
@@ -47,26 +53,7 @@ def generar_estructura_prospectiva(tema):
     IMPORTANTE:
     Las variables deben ser CUANTIFICABLES, es decir, deben poder medirse numéricamente.
 
-    El nombre de cada variable debe incluir una métrica clara o unidad, como:
-    - Porcentaje (%)
-    - Tasa
-    - Cantidad
-    - Índice
-    - Nivel
 
-    Ejemplos:
-    - "Tasa de desempleo (%)"
-    - "Nivel de digitalización (%)"
-    - "Cantidad de empresas activas"
-    - "Índice de inflación anual"
-
-    NO usar nombres abstractos como:
-    - "Economía"
-    - "Tecnología"
-    - "Educación"
-
-    Cada variable debe tener un nombre claro, específico y medible.
-    
     Las variables deben clasificarse como:
 
     I = Interna (factor dentro del sistema)
@@ -108,7 +95,8 @@ def generar_estructura_prospectiva(tema):
     response = client.chat.completions.create(
         model="meta-llama/llama-3.1-8b-instruct",
         messages=[{"role": "user", "content": prompt}],
-        temperature=0.7
+        temperature=0.2,
+        max_tokens=4000
     )
 
     content = response.choices[0].message.content
@@ -200,8 +188,40 @@ def generar_estructura_prospectiva(tema):
                 activo=True
             )
 
+
             Historial.objects.create(
                 tendencia=tendencia,
                 accion='CREADO',
                 usuario=None
             )
+
+# --- NUEVA FUNCIÓN FUERA DEL BUCLE ---
+
+# datos dummy no reales
+def generar_evaluaciones_e_influencias_dummy(tema, usuario):
+    """
+    Genera datos aleatorios de prueba para que los gráficos FODA tengan información.
+    Esto debe reemplazarse luego por un prompt real a la IA o carga manual.
+    """
+    variables = Variable.objects.filter(subsistema__sistema__tema=tema)
+
+    for var in variables:
+        Evaluacion.objects.create(
+            variable=var,
+            importancia=random.randint(1, 10),
+            incertidumbre=random.randint(1, 10),
+            usuario_creador=usuario,
+            usuario_modificador=usuario,
+            accion='CREADO'
+        )
+
+    for var_origen in variables:
+        for var_destino in variables:
+            if var_origen != var_destino:
+                valor_aleatorio = random.choice([0, 0, 1, 1, 2, 3])
+                Influencia.objects.create(
+                    variable_origen=var_origen,
+                    variable_destino=var_destino,
+                    valor=valor_aleatorio
+                )
+
