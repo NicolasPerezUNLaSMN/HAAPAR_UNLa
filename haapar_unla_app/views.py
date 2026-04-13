@@ -18,13 +18,17 @@ from django.utils.encoding import force_str, force_bytes
 from django.template.loader import render_to_string
 from django.core.mail import send_mail, BadHeaderError
 from django.contrib.sites.shortcuts import get_current_site
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.db.models import Prefetch, Count, Q
+import json  
+import datetime
+
 from .services.ia_service import generar_estructura_prospectiva
 from .forms import SignUpForm
 from haapar_unla_app.models import (
     Tema, Sistema, Subsistema, Variable,
-    Historial, TendenciaExterna,ActorClave,RelacionActor
+    Historial, TendenciaExterna, ActorClave, RelacionActor,
+    Influencia, PESTEL  
 )
 
 from django.conf import settings
@@ -39,7 +43,6 @@ class ProfileForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['first_name', 'last_name', 'email']
-        fields = ['first_name', 'last_name']
 
 # ---------------------------
 # INICIO
@@ -69,7 +72,13 @@ def crear_reporte(request):
             territorio=territorio
         )
 
+        # 1. Crea la estructura (Variables, Tendencias, Actores)
         generar_estructura_prospectiva(tema)
+        
+        # 2. Crea la matriz matemática lógica con la IA
+        from haapar_unla_app.services.ia_service import generar_evaluaciones_e_influencias_dummy
+        generar_evaluaciones_e_influencias_dummy(tema, request.user)
+
         return redirect("subsistemas", tema_id=tema.id_tema)
 
 
@@ -695,9 +704,8 @@ def foda_graficos(request, tema_id):
     incertidumbres = []
 
     for v in variables_obj:
-        ev = Historial.objects.filter(variable=v).order_by('-fecha').first()
-        importancias.append(ev.importancia if ev else 0)
-        incertidumbres.append(ev.incertidumbre if ev else 0)
+        importancias.append(int(v.promedio_importancia()))
+        incertidumbres.append(int(v.promedio_incertidumbre()))
 
     datos_dispersion = {
         "variables": nombres_vars,
