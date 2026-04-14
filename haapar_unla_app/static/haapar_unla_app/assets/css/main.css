@@ -43,6 +43,38 @@ body.dark-mode .text-muted {
   width: var(--sidebar-width);
   height: 100vh;
   background: linear-gradient(135deg, #f4f3f2 0%, #f4f3f2e6 80%);
+transition: width 0.5s ease-in-out; /* animación suave */
+  overflow: hidden;
+}
+/* Elementos que se ocultan al colapsar */
+.hide-on-collapse,
+.logo-text,
+.logo-img,
+.profile-info {
+  opacity: 1;
+  transition: opacity 0.4s ease-in-out;
+}
+
+.sidebar.collapsed .hide-on-collapse,
+.sidebar.collapsed .logo-text,
+.sidebar.collapsed .logo-img,
+.sidebar.collapsed .profile-info {
+  opacity: 0;
+  pointer-events: none; /* evita clics en elementos invisibles */
+}
+/* Estado normal */
+.sticky-top {
+   background-color: transparent !important;
+  transition: background-color 0.4s ease-in-out;
+  box-shadow: none;
+}
+.sidebar:not(.collapsed) ~ .main-content .sticky-top {
+  background-color: #f8f9fa; /* gris claro */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.sidebar.collapsed ~ .main-content section .sticky-top {
+  background-color: transparent !important;
+  border-bottom: none !important;
 }
 
 .sidebar.collapsed {
