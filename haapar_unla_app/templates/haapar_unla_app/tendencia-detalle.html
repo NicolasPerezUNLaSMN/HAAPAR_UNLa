@@ -4,6 +4,10 @@
 
 <main class="main">
   <div class="page-title dark-background">
+    <a href="{% url 'proyecto_detalle' tema.id_tema subsistema.id_subsistema %}" 
+      class="btn-back">
+     <i class="fa-solid fa-arrow-left"></i>
+    </a>
     <div class="container position-relative">
       <h1 class="text-center heading-section">TENDENCIAS DEL SUBSISTEMA</h1>
       <p class="text-center fw-bold">Subsistema: {{ subsistema.nombre }}</p>
@@ -13,7 +17,6 @@
   <!-- Botones de acción FIJOS en la parte superior -->
   <div class="container mt-4 text-center sticky-top botonera" style="z-index: 1000;">
     <a href="{% url 'crear_tendencia' subsistema.id_subsistema %}" class="btn btn-primary"> Agregar Tendencia</a>
-    <a href="{% url 'proyecto_detalle' tema.id_tema subsistema.id_subsistema %}" class="btn btn-secondary">Volver</a>
   </div>
 
   <div class="container mt-4">

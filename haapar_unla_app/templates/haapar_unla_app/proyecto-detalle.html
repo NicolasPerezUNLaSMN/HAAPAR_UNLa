@@ -7,6 +7,10 @@ Detalle del Proyecto - HAAPAR
 {% block content %}
 <main class="main">
   <div class="page-title dark-background">
+    <div class="container mt-4 position-relative">
+      <a href="{% url 'subsistemas' tema.id_tema %}"  class="btn-back">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
     <div class="container position-relative">
       <h1 class="text-center heading-section">Detalle del proyecto</h1>
       <p class="text-center text-muted">{{ tema.nombre }}</p>
@@ -102,9 +106,6 @@ Detalle del Proyecto - HAAPAR
 
       </div> 
 
-      <div class="text-center mt-4">
-        <a href="{% url 'subsistemas' tema.id_tema %}" class="btn btn-primary">Volver</a>
-      </div>
     </div>
   </section>
 </main>

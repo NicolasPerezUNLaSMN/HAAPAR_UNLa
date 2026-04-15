@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.db.models import Avg 
 
 class Tema(models.Model):
     id_tema = models.AutoField(primary_key=True, verbose_name='ID Tema')
@@ -64,6 +65,37 @@ class Variable(models.Model):
     
     def __str__(self):
         return self.nombre
+    
+    def promedio_importancia(self):
+        return self.evaluaciones.aggregate(Avg('importancia'))['importancia__avg'] or 0
+
+    def promedio_incertidumbre(self):
+        return self.evaluaciones.aggregate(Avg('incertidumbre'))['incertidumbre__avg'] or 0
+    
+class EvaluacionVariable(models.Model):
+    variable = models.ForeignKey(
+        Variable,
+        on_delete=models.CASCADE,
+        related_name='evaluaciones'
+    )
+
+    usuario = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+    importancia = models.IntegerField(choices=[(i, i) for i in range(0, 11)])
+    incertidumbre = models.IntegerField(choices=[(i, i) for i in range(0, 11)])
+
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('variable', 'usuario')
+
+    def __str__(self):
+        return f"{self.variable.nombre} - {self.usuario or 'IA'}"
 
 class IndicadorVariable(models.Model):
     id_indicador = models.AutoField(primary_key=True, verbose_name='ID Indicador')
@@ -96,6 +128,37 @@ class TendenciaExterna(models.Model):
     
     def __str__(self):
         return self.nombre
+    
+    def promedio_importancia(self):
+        return self.evaluaciones.aggregate(Avg('importancia'))['importancia__avg'] or 0
+
+    def promedio_incertidumbre(self):
+        return self.evaluaciones.aggregate(Avg('incertidumbre'))['incertidumbre__avg'] or 0
+    
+class EvaluacionTendencia(models.Model):
+    tendencia = models.ForeignKey(
+        TendenciaExterna,
+        on_delete=models.CASCADE,
+        related_name='evaluaciones'
+    )
+
+    usuario = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True
+    )
+
+    importancia = models.IntegerField(choices=[(i, i) for i in range(0, 11)])
+    incertidumbre = models.IntegerField(choices=[(i, i) for i in range(0, 11)])
+
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('tendencia', 'usuario')
+
+    def __str__(self):
+        return f"{self.tendencia.nombre} - {self.usuario or 'IA'}"
 
 class IndicadorTendencia(models.Model):
     id_indicador_tendencia = models.AutoField(primary_key=True, verbose_name='ID Indicador')
@@ -118,25 +181,29 @@ class VariableTendencia(models.Model):
         return f"{self.variable} - {self.tendencia}"
 
 
-class Evaluacion(models.Model):
+class Historial(models.Model):
     
     ACCIONES = [
         ('CREADO', 'Creado'),
+        ('AGREGADO', 'Agregado'),
         ('ELIMINADO', 'Eliminado'),
         ('MODIFICADO', 'Modificado'),
+        ('EVALUACION', 'Evaluación'),
     ]
-    id_evaluacion = models.AutoField(primary_key=True, verbose_name='ID Evaluacion')
-    importancia = models.IntegerField(verbose_name='Importancia', choices=[(i, i) for i in range(0, 11)])
-    incertidumbre = models.IntegerField(verbose_name='Incertidumbre', choices=[(i, i) for i in range(0, 11)])
-    fecha_creacion = models.DateTimeField(auto_now_add=True)
-    fecha_modificacion = models.DateTimeField(auto_now=True)
+    id_historial = models.AutoField(primary_key=True, verbose_name='ID Historial')
+    fecha = models.DateTimeField(auto_now_add=True)
+    
     variable = models.ForeignKey(Variable, on_delete=models.SET_NULL, null=True, blank=True)
-    usuario_creador = models.ForeignKey(User, on_delete=models.CASCADE, related_name='usuario_creador')
-    usuario_modificador = models.ForeignKey(User, on_delete=models.CASCADE, related_name='usuario_mod')
-    accion = models.CharField(max_length=20, choices=ACCIONES, default='CREADO')
+    tendencia = models.ForeignKey(TendenciaExterna, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    
+    accion = models.CharField(max_length=20, choices=ACCIONES)
     
     def __str__(self):
-        return f"Evaluación de {self.variable}"
+        if self.usuario:
+            return f"{self.accion} - {self.usuario}"
+        return f"{self.accion} - IA"
     
 
 class ActorClave(models.Model):
