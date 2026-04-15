@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path
 from haapar_unla_app import views
+from django.urls import include
 
 urlpatterns = [
     # Admin
@@ -17,6 +18,10 @@ urlpatterns = [
     path('proyecto/<int:tema_id>/<int:subsistema_id>/', views.proyecto_detalle, name='proyecto_detalle'),
     path('eliminar-proyecto/<int:id_tema>/', views.eliminar_proyecto, name='eliminar_proyecto'),
     path('crear-reporte/', views.crear_reporte, name='crear-reporte'),
+    
+    
+   #Graficos FODA
+    path('foda-graficos/', views.foda_graficos, name='foda_graficos'),
 
     # Variables (todas ligadas a un subsistema específico)
     path('variables/<int:subsistema_id>/', views.variable_detalle, name='variable_detalle'),
@@ -54,6 +59,8 @@ urlpatterns = [
     path('tendencias/crear/<int:subsistema_id>/', views.crear_tendencia, name='crear_tendencia'),
     path('tendencias/<int:pk>/editar/', views.editar_tendencia, name='editar_tendencia'),
     path('tendencias/<int:pk>/eliminar/', views.eliminar_tendencia, name='eliminar_tendencia'),
+    # API interna para ChatGPT
+    path('api/', include('haapar_unla_app.infraestructura.api_urls')),
 ]
 
 handler400 = 'haapar_unla_app.views.error_400_view'

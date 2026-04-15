@@ -20,13 +20,18 @@
   </div>
 
   <!-- Botones de acción FIJOS en la parte superior -->
+
   <div class="container mt-4 text-center sticky-top botonera" style="z-index: 1000;">
     <a href="{% url 'crear_variable' subsistema.id_subsistema %}" class="btn btn-primary">Agregar Variable</a>
   </div>
 
   <div class="container mt-4">
     {% for variable in variables %}
+
     <div class="card  mb-4 proyecto-base">
+
+    <div class="card mb-4">
+
       <div class="card-header d-flex justify-content-between align-items-center">
         <div>
           <span class="fw-bold">{{ forloop.counter }}</span>
@@ -52,7 +57,10 @@
       </div>
     </div>
     {% empty %}
+
     <div class="text-center alert-contexto ">
+
+    <div class="alert alert-info text-center">
       No hay variables definidas para este subsistema. 
       <a href="{% url 'crear_variable' subsistema.id_subsistema %}" class="alert-link">Agrega la primera variable</a>.
     </div>

@@ -30,6 +30,27 @@ def generar_estructura_prospectiva(tema):
     IMPORTANTE:
     Las variables deben ser CUANTIFICABLES, es decir, deben poder medirse numéricamente.
 
+     Las tendencias deben ser de dos tipos:
+
+    - Cuantitativas: expresadas con métricas (%, tasas, índices, cantidades)
+    - Cualitativas: cambios o fenómenos no medibles directamente
+
+    Debe haber una mezcla de ambas.
+
+    Ejemplos:
+
+    Cuantitativas:
+    - "Crecimiento del PBI (%)"
+    - "Tasa de adopción tecnológica (%)"
+
+    Cualitativas:
+    - "Cambio en hábitos de consumo digital"
+    - "Mayor conciencia ambiental en la población"
+    
+    IMPORTANTE:
+    Las variables deben ser CUANTIFICABLES, es decir, deben poder medirse numéricamente.
+
+
     El nombre de cada variable debe incluir una métrica clara o unidad, como:
     - Porcentaje (%)
     - Tasa
@@ -78,14 +99,13 @@ def generar_estructura_prospectiva(tema):
               "puesto":""
             }}
           ],
-          "tendencias":[
+            "tendencias":[
             {{
-              "nombre":"",
-              "descripcion":""
+            "nombre":"",
+            "descripcion":"",
+            "tipo":"CUALITATIVA o CUANTITATIVA"
             }}
-          ]
-        }}
-      ]
+         ]
     }}
     """
 
@@ -169,11 +189,20 @@ def generar_estructura_prospectiva(tema):
 
         for t in s.get("tendencias", []):
 
+            tipo = t.get("tipo", "CUALITATIVA")
+
+            # validar tipo
+            if tipo not in ["CUALITATIVA", "CUANTITATIVA"]:
+                tipo = "CUALITATIVA"
+
+            TendenciaExterna.objects.create(
+
             tendencia = TendenciaExterna.objects.create(
+
                 subsistema=subsistema,
                 nombre=t.get("nombre", ""),
                 nombre_corto=t.get("nombre", "")[:40],
-                tipo_dato="texto",
+                tipo_dato=tipo,  # ahora guarda el tipo real
                 descripcion=t.get("descripcion", ""),
                 activo=True
             )

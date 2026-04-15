@@ -52,3 +52,40 @@ Sigue los pasos a continuación para configurar el proyecto en tu máquina local
 git clone https://github.com/NicolasPerezUNLaSMN/HAAPAR_UNLa.git
 cd HAAPAR_UNLa
 ```
+
+### 2. Instala dependencias
+
+Usa un entorno virtual y luego instala las dependencias listadas en `requirements.txt`:
+
+```powershell
+python -m venv .venv; .\.venv\Scripts\Activate.ps1; pip install -r requirements.txt
+```
+
+### 3. Configura la clave de OpenAI
+
+Coloca tu clave en una variable de entorno llamada `OPENAI_API_KEY`. En PowerShell:
+
+```powershell
+$env:OPENAI_API_KEY = 'sk-...'
+```
+
+O agrega la línea `OPENAI_API_KEY=sk-...` en un archivo `.env` en la raíz del proyecto (recuerda nunca subirlo a git).
+
+### 4. Endpoint de ChatGPT
+
+Se añadió un endpoint interno POST `/api/chatgpt/` que recibe JSON con la forma:
+
+```json
+{"prompt": "Tu pregunta o prompt aquí"}
+```
+
+Devuelve JSON con la respuesta: `{ "success": true, "text": "Respuesta generada" }`.
+
+En PowerShell puedes probarlo con curl (Windows 10/11 PowerShell incluye curl aliasing a Invoke-WebRequest; si tienes curl real, úsalo):
+
+```powershell
+# usando curl real si está instalado
+curl -X POST http://127.0.0.1:8000/api/chatgpt/ -H "Content-Type: application/json" -d '{"prompt":"Hola"}'
+```
+
+Notas de seguridad: Este endpoint es un ejemplo mínimo. En producción debes protegerlo con autenticación, control de uso (rate limiting) y sanitizar/registrar las entradas.
