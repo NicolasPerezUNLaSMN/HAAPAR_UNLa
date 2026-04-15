@@ -5,6 +5,10 @@
 <main class="main">
   <!-- Titulo de la pagina -->
   <div class="page-title dark-background">
+    <a href="{% url 'proyecto_detalle' tema.id_tema subsistema.id_subsistema %}" 
+     class="btn-back">
+      <i class="fa-solid fa-arrow-left"></i>
+    </a>
     <div class="container position-relative">
       <h1 class="text-center heading-section">ACTORES DEL SUBSISTEMA</h1>
       <p class="text-center fw-bold">Subsistema: {{ subsistema.nombre }}</p>
@@ -16,6 +20,8 @@
   <div class="container mt-4 text-center sticky-top bg-white py-3 shadow-sm" style="z-index: 1000;">
     <a href="{% url 'crear_actor' subsistema.id_subsistema %}" class="btn btn-success"> Agregar Actor</a>
     <a href="{% url 'proyecto_detalle' tema.id_tema subsistema.id_subsistema %}" class="btn btn-dark">Volver</a>
+  <div class="container mt-4 text-center sticky-top botonera" style="z-index: 1000;">
+    <a href="{% url 'crear_actor' subsistema.id_subsistema %}" class="btn btn-primary"> Agregar Actor</a>
   </div>
 
   <!-- Lista de actores -->

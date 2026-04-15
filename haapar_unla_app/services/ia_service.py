@@ -2,7 +2,7 @@ import json
 import os
 from openai import OpenAI
 
-from ..models import Sistema, Subsistema, Variable, ActorClave, TendenciaExterna
+from ..models import Historial, Sistema, Subsistema, Variable, ActorClave, TendenciaExterna
 
 client = OpenAI(
     api_key=os.getenv("API_KEY_OPENROUTER"),
@@ -162,13 +162,19 @@ def generar_estructura_prospectiva(tema):
             if tipo not in ["I", "E"]:
                 tipo = "I"
 
-            Variable.objects.create(
+            variable = Variable.objects.create(
                 subsistema=subsistema,
                 nombre=v.get("nombre", ""),
                 nombre_corto=v.get("nombre", "")[:40],
                 descripcion=v.get("descripcion", ""),
                 tipo=tipo,
                 activo=True
+            )
+
+            Historial.objects.create(
+                variable=variable,
+                accion='CREADO',
+                usuario=None
             )
 
         for a in s.get("actores", []):
@@ -190,10 +196,19 @@ def generar_estructura_prospectiva(tema):
                 tipo = "CUALITATIVA"
 
             TendenciaExterna.objects.create(
+
+            tendencia = TendenciaExterna.objects.create(
+
                 subsistema=subsistema,
                 nombre=t.get("nombre", ""),
                 nombre_corto=t.get("nombre", "")[:40],
                 tipo_dato=tipo,  # ahora guarda el tipo real
                 descripcion=t.get("descripcion", ""),
                 activo=True
+            )
+
+            Historial.objects.create(
+                tendencia=tendencia,
+                accion='CREADO',
+                usuario=None
             )
