@@ -26,6 +26,9 @@ def generar_estructura_prospectiva(tema):
     - 4 variables por subsistema
     - 3 actores por subsistema
     - 3 tendencias por subsistema
+    
+    IMPORTANTE:
+    Las variables deben ser CUANTIFICABLES, es decir, deben poder medirse numéricamente.
 
      Las tendencias deben ser de dos tipos:
 
@@ -46,6 +49,7 @@ def generar_estructura_prospectiva(tema):
     
     IMPORTANTE:
     Las variables deben ser CUANTIFICABLES, es decir, deben poder medirse numéricamente.
+
 
     El nombre de cada variable debe incluir una métrica clara o unidad, como:
     - Porcentaje (%)
