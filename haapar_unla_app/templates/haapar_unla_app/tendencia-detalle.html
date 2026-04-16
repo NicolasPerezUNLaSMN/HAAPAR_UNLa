@@ -4,16 +4,12 @@
 
 <main class="main">
   <div class="page-title dark-background">
-    <a href="{% url 'proyecto_detalle' tema.id_tema subsistema.id_subsistema %}" 
-      class="btn-back">
-     <i class="fa-solid fa-arrow-left"></i>
-    </a>
     <div class="container position-relative">
       <!-- Flecha arriba a la izquierda -->
-      <a href="{% url 'proyecto_detalle' tema.id_tema subsistema.id_subsistema %}" 
-         class="btn-back position-absolute top-0 start-0 mt-3 ms-3">
-        <i class="fa-solid fa-arrow-left"></i>
-      </a>
+    <a href="{% url 'proyecto_detalle' tema.id_tema subsistema.id_subsistema %}" 
+       class="btn-back position-absolute top-0 start-0 mt-3 ms-3">
+      <i class="fa-solid fa-arrow-left"></i>
+    </a>
 
       <!-- Título centrado -->
       <h1 class="text-center heading-section">TENDENCIAS DEL SUBSISTEMA</h1>

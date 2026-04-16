@@ -69,71 +69,7 @@
     </div>
   </div>
 
-  <section>
-    <div class="container d-flex justify-content-center">
-      <div class="col-lg-8 col-md-10">
-        <div class="card shadow p-4" style="max-width: 600px; margin: auto;">
-          <div class="card-body">
-            <form method="post" action="{% url 'crear_tendencia' subsistema.id_subsistema %}">
-              {% csrf_token %}
-
-              <div class="mb-3">
-                <label for="nombre" class="form-label">Nombre</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="nombre"
-                  name="nombre"
-                  required
-                />
-              </div>
-
-              <div class="mb-3">
-                <label for="nombre_corto" class="form-label">Nombre corto</label>
-                <input
-                  type="text"
-                  class="form-control"
-                  id="nombre_corto"
-                  name="nombre_corto"
-                  required
-                />
-              </div>
-
-              <div class="mb-3">
-                <label for="tipo_dato" class="form-label">Tipo de Dato</label>
-                <select class="form-select" id="tipo_dato" name="tipo_dato" required>
-                  <option value="Cuantitativa">Cuantitativa</option>
-                  <option value="Cualitativa">Cualitativa</option>
-                </select>
-              </div>
-
-              <div class="mb-3">
-                <label for="descripcion" class="form-label">Descripción</label>
-                <textarea
-                  class="form-control"
-                  id="descripcion"
-                  name="descripcion"
-                  rows="3"
-                  required
-                ></textarea>
-              </div>
-
-              <div class="d-flex justify-content-center">
-                <button type="submit" class="btn btn-success me-2">Guardar</button>
-                <a
-                  href="{% url 'tendencia_detalle' subsistema.id_subsistema %}"
-                  class="btn btn-secondary"
-                >
-                  Cancelar
-                </a>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-
-  </section>
+  
 </main>
 
 {% endblock %}

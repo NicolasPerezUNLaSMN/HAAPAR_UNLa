@@ -4,17 +4,12 @@
 
 <main class="main">
   <div class="page-title dark-background">
-    <a href="{% url 'proyecto_detalle' tema.id_tema subsistema.id_subsistema %}" 
-     class="btn-back">
-    <i class="fa-solid fa-arrow-left"></i>
-  </a>
     <div class="container position-relative">
-      <!-- Flecha arriba a la izquierda -->
-      <a href="{% url 'proyecto_detalle' tema.id_tema subsistema.id_subsistema %}" 
-         class="btn-back position-absolute top-0 start-0 mt-3 ms-3">
-        <i class="fa-solid fa-arrow-left"></i>
-      </a>
-
+       <!-- Flecha arriba a la izquierda -->
+    <a href="{% url 'proyecto_detalle' tema.id_tema subsistema.id_subsistema %}" 
+       class="btn-back position-absolute top-0 start-0 mt-3 ms-3">
+      <i class="fa-solid fa-arrow-left"></i>
+    </a>
       <!-- Título centrado -->
       <h1 class="text-center heading-section">VARIABLES DEL SUBSISTEMA</h1>
       <p class="text-center fw-bold">Subsistema: {{ subsistema.nombre }}</p>
@@ -27,19 +22,14 @@
     </div>
   </div>
 
-  <!-- Botones de acción FIJOS en la parte superior -->
-<<<<<<< HEAD
+  <!-- Botones de acción fijos -->
   <div class="container mt-4 text-center sticky-top botonera" style="z-index: 1000; background-color: #fff;">
-=======
-
-  <div class="container mt-4 text-center sticky-top botonera" style="z-index: 1000;">
->>>>>>> origin/dev
     <a href="{% url 'crear_variable' subsistema.id_subsistema %}" class="btn btn-primary">Agregar Variable</a>
   </div>
 
+  <!-- Listado de variables -->
   <div class="container mt-4">
     {% for variable in variables %}
-
       <div class="card mb-4 proyecto-base">
         <div class="card-header d-flex justify-content-between align-items-center">
           <div>
@@ -58,15 +48,6 @@
               </button>
             </form>
           </div>
-=======    <div class="card  mb-4 proyecto-base">
-
-    <div class="card mb-4">
-
-      <div class="card-header d-flex justify-content-between align-items-center">
-        <div>
-          <span class="fw-bold">{{ forloop.counter }}</span>
-          <span class="ms-2 fw-bold text-primary">{{ variable.nombre }}</span>
-
         </div>
         <div class="card-body">
           <p class="text-muted mb-2"><strong>Nombre Corto:</strong> {{ variable.nombre_corto }}</p>
@@ -75,14 +56,10 @@
         </div>
       </div>
     {% empty %}
-
-    <div class="text-center alert-contexto ">
-
-    <div class="alert alert-info text-center">
-      No hay variables definidas para este subsistema. 
-      <a href="{% url 'crear_variable' subsistema.id_subsistema %}" class="alert-link">Agrega la primera variable</a>.
-    </div>
-
+      <div class="alert alert-info text-center">
+        No hay variables definidas para este subsistema. 
+        <a href="{% url 'crear_variable' subsistema.id_subsistema %}" class="alert-link">Agrega la primera variable</a>.
+      </div>
     {% endfor %}
   </div>
 </main>

@@ -1,13 +1,28 @@
 import json
 import os
 from openai import OpenAI
+from dotenv import load_dotenv
 
 from ..models import Historial, Sistema, Subsistema, Variable, ActorClave, TendenciaExterna
 
+
+
+load_dotenv()
+
+api_key = os.getenv("API_KEY_OPENROUTER")
+
 client = OpenAI(
-    api_key=os.getenv("API_KEY_OPENROUTER"),
-    base_url="https://openrouter.ai/api/v1"
+    api_key=api_key,
+    base_url="https://openrouter.ai/api/v1",
+    default_headers={
+        "Authorization": f"Bearer {api_key}",
+        "HTTP-Referer": "http://127.0.0.1:8000",  # opcional, pero recomendado por OpenRouter
+        "X-Title": "HAAPAR_UNLa"                  # nombre de tu app
+    }
 )
+    
+resp = client.models.list()
+print(resp)
 
 
 def generar_estructura_prospectiva(tema):

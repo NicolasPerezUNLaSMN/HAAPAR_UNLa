@@ -5,10 +5,6 @@
 <main class="main">
   <!-- Titulo de la pagina -->
   <div class="page-title dark-background">
-    <a href="{% url 'proyecto_detalle' tema.id_tema subsistema.id_subsistema %}" 
-     class="btn-back">
-      <i class="fa-solid fa-arrow-left"></i>
-    </a>
     <div class="container position-relative">
       <!-- Flecha arriba a la izquierda -->
       <a href="{% url 'proyecto_detalle' tema.id_tema subsistema.id_subsistema %}" 
@@ -23,17 +19,9 @@
   </div>
 
   <!-- Botones de acción FIJOS en la parte superior -->
-<<<<<<< HEAD
+
   <div class="container mt-4 text-center sticky-top botonera" style="z-index: 1000; background-color: #fff;">
     <a href="{% url 'crear_actor' subsistema.id_subsistema %}" class="btn btn-primary">Agregar Actor</a>
-=======
-
-  <div class="container mt-4 text-center sticky-top bg-white py-3 shadow-sm" style="z-index: 1000;">
-    <a href="{% url 'crear_actor' subsistema.id_subsistema %}" class="btn btn-success"> Agregar Actor</a>
-    <a href="{% url 'proyecto_detalle' tema.id_tema subsistema.id_subsistema %}" class="btn btn-dark">Volver</a>
-  <div class="container mt-4 text-center sticky-top botonera" style="z-index: 1000;">
-    <a href="{% url 'crear_actor' subsistema.id_subsistema %}" class="btn btn-primary"> Agregar Actor</a>
->>>>>>> origin/dev
   </div>
 
   <!-- Lista de actores -->

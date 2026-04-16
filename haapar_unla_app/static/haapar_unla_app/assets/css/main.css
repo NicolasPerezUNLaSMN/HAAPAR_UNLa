@@ -888,11 +888,9 @@ body.dark-mode .perfil-box {
     top: 20px;
     left: 20px;
     z-index: 1001;
-
-    background-color: #198754;
-    color: white;
-
-    border-radius: 50%;
+    
+    color: #198754;
+    border:none;
     width: 40px;
     height: 40px;
 
@@ -901,10 +899,12 @@ body.dark-mode .perfil-box {
     justify-content: center;
 
     text-decoration: none;
-    transition: 0.3s;
+    font-size: 1.5rem;     /* tamaño ajustable */
+    transition: transform 0.3s ease, color 0.3s ease, text-shadow 0.3s ease;
 }
 
 .btn-back:hover {
-    background-color: #157347;
-    transform: scale(1.1);
+  color: #145c32;           /* verde más oscuro */
+  transform: translateX(-6px) scale(1.2); /* se mueve y agranda un poco */
+  text-shadow: 0 0 8px rgba(25, 135, 84, 0.6); /* efecto glow *//
 }
