@@ -2,10 +2,14 @@ import json
 import os
 from openai import OpenAI
 
+
 from ..models import (
     Sistema, Subsistema, Variable, ActorClave, TendenciaExterna,
     Influencia, EvaluacionVariable, Historial
 )
+
+from ..models import Historial, Sistema, Subsistema, Variable, ActorClave, TendenciaExterna
+
 
 client = OpenAI(
     api_key=os.getenv("API_KEY_OPENROUTER"),
@@ -32,7 +36,51 @@ def generar_estructura_prospectiva(tema):
     - 4 variables por subsistema
     - 3 actores por subsistema
     - 3 tendencias por subsistema
+    
+    IMPORTANTE:
+    Las variables deben ser CUANTIFICABLES, es decir, deben poder medirse numéricamente.
 
+     Las tendencias deben ser de dos tipos:
+
+    - Cuantitativas: expresadas con métricas (%, tasas, índices, cantidades)
+    - Cualitativas: cambios o fenómenos no medibles directamente
+
+    Debe haber una mezcla de ambas.
+
+    Ejemplos:
+
+    Cuantitativas:
+    - "Crecimiento del PBI (%)"
+    - "Tasa de adopción tecnológica (%)"
+
+    Cualitativas:
+    - "Cambio en hábitos de consumo digital"
+    - "Mayor conciencia ambiental en la población"
+    
+    IMPORTANTE:
+    Las variables deben ser CUANTIFICABLES, es decir, deben poder medirse numéricamente.
+
+
+    El nombre de cada variable debe incluir una métrica clara o unidad, como:
+    - Porcentaje (%)
+    - Tasa
+    - Cantidad
+    - Índice
+    - Nivel
+
+    Ejemplos:
+    - "Tasa de desempleo (%)"
+    - "Nivel de digitalización (%)"
+    - "Cantidad de empresas activas"
+    - "Índice de inflación anual"
+
+    NO usar nombres abstractos como:
+    - "Economía"
+    - "Tecnología"
+    - "Educación"
+
+    Cada variable debe tener un nombre claro, específico y medible.
+    
     Las variables deben clasificarse como:
 
     I = Interna (factor dentro del sistema)
@@ -61,14 +109,13 @@ def generar_estructura_prospectiva(tema):
               "puesto":""
             }}
           ],
-          "tendencias":[
+            "tendencias":[
             {{
-              "nombre":"",
-              "descripcion":""
+            "nombre":"",
+            "descripcion":"",
+            "tipo":"CUALITATIVA o CUANTITATIVA"
             }}
-          ]
-        }}
-      ]
+         ]
     }}
     """
 
@@ -152,19 +199,34 @@ def generar_estructura_prospectiva(tema):
 
         for t in s.get("tendencias", []):
 
+
             tendencia = TendenciaExterna.objects.create(
+
+            tipo = t.get("tipo", "CUALITATIVA")
+
+            # validar tipo
+            if tipo not in ["CUALITATIVA", "CUANTITATIVA"]:
+                tipo = "CUALITATIVA"
+
+            TendenciaExterna.objects.create(
+
+            tendencia = TendenciaExterna.objects.create(
+
+
                 subsistema=subsistema,
                 nombre=t.get("nombre", ""),
                 nombre_corto=t.get("nombre", "")[:40],
-                tipo_dato="texto",
+                tipo_dato=tipo,  # ahora guarda el tipo real
                 descripcion=t.get("descripcion", ""),
                 activo=True
+            )
             )
 
             Historial.objects.create(
                 tendencia=tendencia,
                 accion='CREADO',
                 usuario=None
+
             )
 
 
@@ -284,3 +346,6 @@ devuelve las influencias reales (por ejemplo, detectando que "Inflación" influy
 Todo se guarda en PostgreSQL. Cuando el usuario entra a foda_graficos, ve una matriz armada inteligentemente, 
 pero que él puede editar si considera que la IA se equivocó.
 """
+
+            )
+

@@ -20,16 +20,35 @@ from django.core.mail import send_mail, BadHeaderError
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Prefetch, Count, Q
+<<<<<<< HEAD
 import json  
 import datetime
+=======
+from .services.ia_service import generar_estructura_prospectiva
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+
+import json
+import datetime
+
+>>>>>>> origin/dev
 
 from .services.ia_service import generar_estructura_prospectiva
 from .forms import SignUpForm
 from haapar_unla_app.models import (
     Tema, Sistema, Subsistema, Variable,
+<<<<<<< HEAD
     Historial, TendenciaExterna, ActorClave, RelacionActor,
     Influencia, PESTEL  
+=======
+
+    Evaluacion, TendenciaExterna, ActorClave, RelacionActor
+
+    Historial, TendenciaExterna,ActorClave,RelacionActor
+
+>>>>>>> origin/dev
 )
+from .infraestructura.api_client.openai_client import generate_chat_completion
 
 from django.conf import settings
 from django.urls import reverse
@@ -248,7 +267,7 @@ def crear_subsistema(request, tema_id):
 
 @login_required
 def eliminar_subsistema(request, sub_id):
-    sub = get_object_or_404(Subsistema, id_subsistema=sub_id, sistema__tema__user=request.user)
+    sub = get_object_or_404(Subsistema, id_subsistema=sub_id, sistema_tema_user=request.user)
     if request.method == 'POST':
         sub.activo = False
         sub.save()
@@ -490,7 +509,6 @@ def editar_actor(request, pk):
     })
 
 
-
 @login_required
 def eliminar_actor(request, pk):
     actor = get_object_or_404(ActorClave, pk=pk)
@@ -515,27 +533,23 @@ def listar_tendencias(request):
 
 
 @login_required
-def tendencia_detalle(request, tema_id):
-    tema = get_object_or_404(Tema, id_tema=tema_id)
-    tendencias = TendenciaExterna.objects.filter(tema=tema, activo=True)
-    return render(request, 'haapar_unla_app/tendencia-detalle.html', {
-        'tema': tema,
-        'tendencias': tendencias
-    })
-
-
-@login_required
-def tendencia_detalle(request, subsistema_id):
-    subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id, activo=True)
-    tema = subsistema.sistema.tema
-
-    tendencias = TendenciaExterna.objects.filter(subsistema=subsistema, activo=True)
-
-    return render(request, 'haapar_unla_app/tendencia-detalle.html', {
-        'tema': tema,
-        'subsistema': subsistema,
-        'tendencias': tendencias,
-    })
+def tendencia_detalle(request, tema_id=None, subsistema_id=None):
+    if tema_id:
+        tema = get_object_or_404(Tema, id_tema=tema_id)
+        tendencias = TendenciaExterna.objects.filter(tema=tema, activo=True)
+        return render(request, 'haapar_unla_app/tendencia-detalle.html', {
+            'tema': tema,
+            'tendencias': tendencias
+        })
+    elif subsistema_id:
+        subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id, activo=True)
+        tema = subsistema.sistema.tema
+        tendencias = TendenciaExterna.objects.filter(subsistema=subsistema, activo=True)
+        return render(request, 'haapar_unla_app/tendencia-detalle.html', {
+            'tema': tema,
+            'subsistema': subsistema,
+            'tendencias': tendencias,
+        })
 
 
 @login_required
@@ -563,6 +577,7 @@ def crear_tendencia(request, subsistema_id):
         'subsistema': subsistema,
     })
 
+
 @login_required
 def editar_tendencia(request, pk):
     tendencia = get_object_or_404(TendenciaExterna, pk=pk, activo=True)
@@ -581,7 +596,6 @@ def editar_tendencia(request, pk):
         'tendencia': tendencia,
         'subsistema': subsistema,
     })
-
 
 
 @login_required
@@ -657,6 +671,9 @@ def password_reset_done(request):
 def password_reset_complete(request):
     return render(request, 'haapar_unla_app/autenticacion/password_reset_complete.html')
 
+
+
+
 # ---------------------------
 # ChatGPT API wrapper (simple)
 # ---------------------------
@@ -681,6 +698,7 @@ def chatgpt_api(request):
 
 
 # ---------------------------------------------------------
+
 # VISTA PRINCIPAL (FODA Y GRÁFICOS)
 # ---------------------------------------------------------
 @login_required
@@ -769,6 +787,112 @@ def foda_graficos(request, tema_id):
         'matriz_indirecta': json.dumps(matriz_indirecta),
         'datos_micmac': json.dumps(datos_micmac),
         'datos_pestel': json.dumps(datos_pestel),
+    }
+# FUNCIONES AUXILIARES PARA LOS GRÁFICOS FODA
+# ---------------------------------------------------------
+
+def obtener_datos_dispersion():
+    """Genera datos para Gráfico de Dispersión (Importancia/Incertidumbre) y Peter-Schwartz."""
+    datos = {
+        "variables": ["Var1", "Var2", "Var3"],
+        "importancia": [5, 3, 7],
+        "incertidumbre": [2, 6, 4],
+    }
+    return json.dumps(datos)
+
+
+def obtener_matriz_directa():
+    """Genera datos para la Matriz MIC-MAC (Tabla HTML)."""
+    variables = [
+        "cant_de_min_de_jueg",
+        "nmer_de_gale_antl_po",
+        "tasa_de_lesi_por_tem",
+        "nive_de_comp_en_liJ",
+        "grad_de_desa_fisc_y"
+    ]
+    matriz = [
+        [0, 2, 2, 1, 3],
+        [1, 0, 1, 0, 2],
+        [3, 1, 0, 2, 3],
+        [2, 2, 2, 0, 3],
+        [1, 2, 2, 2, 0],
+    ]
+    filas = list(zip(variables, matriz))
+    return variables, filas
+
+
+def obtener_micmac_indirecto(variables):
+    """Genera datos para la Matriz MIC-MAC Indirecto (Heatmap) y Dispersión Indirecta."""
+    # Esta es la matriz que se mostrará en los cuadraditos celestes (Heatmap)
+    matriz_indirecta = [
+        [0, 2, 1, 3, 2],
+        [1, 0, 2, 2, 1],
+        [2, 1, 0, 3, 2],
+        [1, 2, 2, 0, 3],
+        [2, 1, 2, 2, 0],
+    ]
+    
+    # Cálculos matemáticos para el gráfico de puntos
+    influencia = [sum(fila) for fila in matriz_indirecta]
+    dependencia = [sum(col) for col in zip(*matriz_indirecta)]
+
+    datos_micmac_dispersion = {
+        "variables": variables,
+        "influencia": influencia,
+        "dependencia": dependencia,
+    }
+    
+    # Estructura requerida por Chart.js para armar la cuadrícula (Heatmap)
+    datos_heatmap = {
+        "variables": variables,
+        "valores": matriz_indirecta
+    }
+    
+    return json.dumps(datos_heatmap), json.dumps(datos_micmac_dispersion)
+
+
+def obtener_datos_pestel():
+    """Genera los datos para el Árbol PESTEL."""
+    pestel_data = {
+        "Político": ["Políticas públicas tecnológicas", "Estabilidad gubernamental"],
+        "Económico": ["Inflación", "Costo de infraestructura", "Financiamiento"],
+        "Social": ["Adopción tecnológica", "Capacitación de usuarios"],
+        "Tecnológico": ["Innovación en software", "Ciberseguridad"],
+        "Ecológico": ["Consumo energético", "Sustentabilidad"],
+        "Legal": ["Protección de datos", "Regulaciones IT"]
+    }
+    return json.dumps(pestel_data, ensure_ascii=False)
+
+
+# ---------------------------------------------------------
+# VISTA PRINCIPAL (FODA)
+# ---------------------------------------------------------
+
+# @login_required  <-- Descomenta esta línea si solo usuarios logueados pueden ver los gráficos
+def foda_graficos(request):
+    """
+    Vista maestra que recolecta los datos de las funciones auxiliares
+    y los envía a la plantilla HTML foda-graficos.html
+    """
+    
+    # 1. Llamamos a cada función individual
+    dispersion_json = obtener_datos_dispersion()
+    variables_html, filas_html = obtener_matriz_directa()
+    
+    # 2. Le pasamos las variables del MIC-MAC directo a la función de MIC-MAC indirecto
+    heatmap_json, micmac_json = obtener_micmac_indirecto(variables_html)
+    
+    pestel_json = obtener_datos_pestel()
+
+    # 3. Enviamos todo consolidado al template
+    contexto = {
+        "datos_dispersion": dispersion_json,
+        "variables": variables_html,  
+        "filas": filas_html,                 
+        "matriz_indirecta": heatmap_json,   # <-- AQUÍ ESTÁ LA MATRIZ INDIRECTA
+        "datos_micmac": micmac_json, 
+        "datos_pestel": pestel_json
+
     }
 
     return render(request, "haapar_unla_app/foda-graficos.html", contexto)
