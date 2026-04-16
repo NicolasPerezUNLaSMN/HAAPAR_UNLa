@@ -30,7 +30,7 @@ def generar_estructura_prospectiva(tema):
     IMPORTANTE:
     Las variables deben ser CUANTIFICABLES, es decir, deben poder medirse numéricamente.
 
-     Las tendencias deben ser de dos tipos:
+    Las tendencias deben ser de dos tipos:
 
     - Cuantitativas: expresadas con métricas (%, tasas, índices, cantidades)
     - Cualitativas: cambios o fenómenos no medibles directamente
@@ -81,34 +81,36 @@ def generar_estructura_prospectiva(tema):
     Respondé SOLO en JSON válido.
 
     {{
-      "subsistemas":[
-        {{
-          "nombre":"",
-          "descripcion":"",
-          "variables":[
-            {{
-              "nombre":"",
-              "descripcion":"",
-              "tipo":"I o E"
-            }}
-          ],
-          "actores":[
-            {{
-              "nombre":"",
-              "descripcion":"",
-              "puesto":""
-            }}
-          ],
-            "tendencias":[
+        "subsistemas":[
             {{
             "nombre":"",
             "descripcion":"",
-            "tipo":"CUALITATIVA o CUANTITATIVA"
+            "variables":[
+                {{
+                "nombre":"",
+                "descripcion":"",
+                "tipo":"I o E"
+                }}
+            ],
+            "actores":[
+                {{
+                "nombre":"",
+                "descripcion":"",
+                "puesto":""
+                }}
+            ],
+            "tendencias":[
+                {{
+                "nombre":"",
+                "descripcion":"",
+                "tipo":"CUALITATIVA o CUANTITATIVA"
+                }}
+            ]
             }}
-         ]
+        ]
     }}
     """
-
+    
     response = client.chat.completions.create(
         model="meta-llama/llama-3.1-8b-instruct",
         messages=[{"role": "user", "content": prompt}],
@@ -195,8 +197,6 @@ def generar_estructura_prospectiva(tema):
             if tipo not in ["CUALITATIVA", "CUANTITATIVA"]:
                 tipo = "CUALITATIVA"
 
-            TendenciaExterna.objects.create(
-
             tendencia = TendenciaExterna.objects.create(
 
                 subsistema=subsistema,
@@ -206,7 +206,8 @@ def generar_estructura_prospectiva(tema):
                 descripcion=t.get("descripcion", ""),
                 activo=True
             )
-
+            
+            
             Historial.objects.create(
                 tendencia=tendencia,
                 accion='CREADO',

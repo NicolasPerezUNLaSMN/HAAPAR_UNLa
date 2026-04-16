@@ -27,14 +27,8 @@ import datetime
 
 
 from .forms import SignUpForm
-from haapar_unla_app.models import (
-    Tema, Sistema, Subsistema, Variable,
+from haapar_unla_app.models import (Tema, Sistema, Subsistema, Variable, TendenciaExterna, ActorClave, RelacionActor, Historial, TendenciaExterna,ActorClave,RelacionActor)
 
-    Evaluacion, TendenciaExterna, ActorClave, RelacionActor
-
-    Historial, TendenciaExterna,ActorClave,RelacionActor
-
-)
 from .infraestructura.api_client.openai_client import generate_chat_completion
 
 from django.conf import settings
@@ -412,7 +406,7 @@ def error_500_view(request):
 # ---------------------------
 # ACTORES
 # ---------------------------
-@login_required 
+@login_required
 def actor_detalle(request, subsistema_id):
     subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id)
     actores = ActorClave.objects.filter(subsistema=subsistema, activo=True)
