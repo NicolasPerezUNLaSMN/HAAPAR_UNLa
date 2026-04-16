@@ -1,30 +1,31 @@
 import json
+from dotenv import load_dotenv 
 import os
-from openai import OpenAI
-from dotenv import load_dotenv
-
-from ..models import Historial, Sistema, Subsistema, Variable, ActorClave, TendenciaExterna
+from openai import OpenAI 
 
 
+load_dotenv(override=True)
 
-load_dotenv()
+from ..models import Historial, Sistema, Subsistema, Variable, ActorClave, TendenciaExterna,EvaluacionVariable, Influencia
 
+
+# 2. Obtenemos la clave específicamente
 api_key = os.getenv("API_KEY_OPENROUTER")
+
+# 3. Verificación de seguridad (esto saldrá en tu terminal de VS Code)
+if api_key and api_key.startswith("sk-proj"):
+    print("⚠️ ERROR: Sigues cargando una clave de OpenAI en lugar de OpenRouter")
+elif api_key:
+    print("✅ Clave de OpenRouter cargada correctamente")
+else:
+    print("❌ No se encontró ninguna clave")
 
 client = OpenAI(
     api_key=api_key,
-    base_url="https://openrouter.ai/api/v1",
-    default_headers={
-        "Authorization": f"Bearer {api_key}",
-        "HTTP-Referer": "http://127.0.0.1:8000",  # opcional, pero recomendado por OpenRouter
-        "X-Title": "HAAPAR_UNLa"                  # nombre de tu app
-    }
+    base_url="https://openrouter.ai/api/v1"
 )
-    
-resp = client.models.list()
-print(resp)
 
-
+print(api_key)
 def generar_estructura_prospectiva(tema):
 
     prompt = f"""
