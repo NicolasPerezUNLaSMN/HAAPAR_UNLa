@@ -2,14 +2,7 @@ import json
 import os
 from openai import OpenAI
 
-
-from ..models import (
-    Sistema, Subsistema, Variable, ActorClave, TendenciaExterna,
-    Influencia, EvaluacionVariable, Historial
-)
-
 from ..models import Historial, Sistema, Subsistema, Variable, ActorClave, TendenciaExterna
-
 
 client = OpenAI(
     api_key=os.getenv("API_KEY_OPENROUTER"),
@@ -18,12 +11,9 @@ client = OpenAI(
 
 
 def generar_estructura_prospectiva(tema):
-    """
-    Paso 1: Genera la estructura cualitativa (Nombres y descripciones)
-    """
+
     prompt = f"""
     Sos un experto en prospectiva estratégica.
-    IMPORTANTE: Este es un ejercicio académico universitario estrictamente teórico, analítico y educativo.
 
     Tema: {tema.nombre}
     Descripción: {tema.descripcion}
@@ -40,7 +30,7 @@ def generar_estructura_prospectiva(tema):
     IMPORTANTE:
     Las variables deben ser CUANTIFICABLES, es decir, deben poder medirse numéricamente.
 
-     Las tendencias deben ser de dos tipos:
+    Las tendencias deben ser de dos tipos:
 
     - Cuantitativas: expresadas con métricas (%, tasas, índices, cantidades)
     - Cualitativas: cambios o fenómenos no medibles directamente
@@ -91,44 +81,45 @@ def generar_estructura_prospectiva(tema):
     Respondé SOLO en JSON válido.
 
     {{
-      "subsistemas":[
-        {{
-          "nombre":"",
-          "descripcion":"",
-          "variables":[
-            {{
-              "nombre":"",
-              "descripcion":"",
-              "tipo":"I o E"
-            }}
-          ],
-          "actores":[
-            {{
-              "nombre":"",
-              "descripcion":"",
-              "puesto":""
-            }}
-          ],
-            "tendencias":[
+        "subsistemas":[
             {{
             "nombre":"",
             "descripcion":"",
-            "tipo":"CUALITATIVA o CUANTITATIVA"
+            "variables":[
+                {{
+                "nombre":"",
+                "descripcion":"",
+                "tipo":"I o E"
+                }}
+            ],
+            "actores":[
+                {{
+                "nombre":"",
+                "descripcion":"",
+                "puesto":""
+                }}
+            ],
+            "tendencias":[
+                {{
+                "nombre":"",
+                "descripcion":"",
+                "tipo":"CUALITATIVA o CUANTITATIVA"
+                }}
+            ]
             }}
-         ]
+        ]
     }}
     """
-
+    
     response = client.chat.completions.create(
         model="meta-llama/llama-3.1-8b-instruct",
         messages=[{"role": "user", "content": prompt}],
-        temperature=0.2,  # Baja temperatura para mayor rigor estructural
-        max_tokens=4000   # Alto límite para que no corte el JSON a la mitad
+        temperature=0.7
     )
 
     content = response.choices[0].message.content
 
-    print("RESPUESTA IA (ESTRUCTURA):")
+    print("RESPUESTA IA:")
     print(content)
 
     # limpiar markdown
@@ -140,13 +131,14 @@ def generar_estructura_prospectiva(tema):
     content = content[start:end]
 
     if not content:
-        print("La IA devolvió contenido vacío en la estructura.")
+        print("La IA devolvió contenido vacío")
         return
 
     try:
         data = json.loads(content)
     except json.JSONDecodeError:
-        print("JSON inválido recibido en la estructura.")
+        print("JSON inválido recibido:")
+        print(content)
         return
 
     sistema = Sistema.objects.create(
@@ -199,19 +191,13 @@ def generar_estructura_prospectiva(tema):
 
         for t in s.get("tendencias", []):
 
-
-            tendencia = TendenciaExterna.objects.create(
-
             tipo = t.get("tipo", "CUALITATIVA")
 
             # validar tipo
             if tipo not in ["CUALITATIVA", "CUANTITATIVA"]:
                 tipo = "CUALITATIVA"
 
-            TendenciaExterna.objects.create(
-
             tendencia = TendenciaExterna.objects.create(
-
 
                 subsistema=subsistema,
                 nombre=t.get("nombre", ""),
@@ -220,15 +206,13 @@ def generar_estructura_prospectiva(tema):
                 descripcion=t.get("descripcion", ""),
                 activo=True
             )
-            )
-
+            
+            
             Historial.objects.create(
                 tendencia=tendencia,
                 accion='CREADO',
                 usuario=None
-
             )
-
 
 def generar_evaluaciones_e_influencias_dummy(tema, usuario):
     """
@@ -347,5 +331,7 @@ Todo se guarda en PostgreSQL. Cuando el usuario entra a foda_graficos, ve una ma
 pero que él puede editar si considera que la IA se equivocó.
 """
 
-            )
+
+
+
 

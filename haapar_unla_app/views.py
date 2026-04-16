@@ -20,10 +20,10 @@ from django.core.mail import send_mail, BadHeaderError
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Prefetch, Count, Q
-<<<<<<< HEAD
+
 import json  
 import datetime
-=======
+
 from .services.ia_service import generar_estructura_prospectiva
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
@@ -31,23 +31,27 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 import datetime
 
->>>>>>> origin/dev
+
 
 from .services.ia_service import generar_estructura_prospectiva
 from .forms import SignUpForm
+
 from haapar_unla_app.models import (
     Tema, Sistema, Subsistema, Variable,
-<<<<<<< HEAD
-    Historial, TendenciaExterna, ActorClave, RelacionActor,
-    Influencia, PESTEL  
-=======
 
-    Evaluacion, TendenciaExterna, ActorClave, RelacionActor
+    Historial, TendenciaExterna, ActorClave, RelacionActor,
+    Influencia, PESTEL,  
+
+   TendenciaExterna, ActorClave, RelacionActor,
 
     Historial, TendenciaExterna,ActorClave,RelacionActor
 
->>>>>>> origin/dev
+
 )
+
+from haapar_unla_app.models import (Tema, Sistema, Subsistema, Variable, TendenciaExterna, ActorClave, RelacionActor, Historial, TendenciaExterna,ActorClave,RelacionActor)
+
+
 from .infraestructura.api_client.openai_client import generate_chat_completion
 
 from django.conf import settings
@@ -430,7 +434,7 @@ def error_500_view(request):
 # ---------------------------
 # ACTORES
 # ---------------------------
-@login_required 
+@login_required
 def actor_detalle(request, subsistema_id):
     subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id)
     actores = ActorClave.objects.filter(subsistema=subsistema, activo=True)
