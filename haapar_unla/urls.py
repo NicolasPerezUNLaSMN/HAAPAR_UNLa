@@ -19,15 +19,10 @@ urlpatterns = [
     path('eliminar-proyecto/<int:id_tema>/', views.eliminar_proyecto, name='eliminar_proyecto'),
     path('crear-reporte/', views.crear_reporte, name='crear-reporte'),
     
-    
-   #Graficos FODA
-
+    # Graficos FODA (Solo dejamos la correcta)
     path('foda-graficos/<int:tema_id>/', views.foda_graficos, name='foda_graficos'),
 
-    path('foda-graficos/', views.foda_graficos, name='foda_graficos'),
-
-
-    # Variables (todas ligadas a un subsistema específico)
+    # Variables
     path('variables/<int:subsistema_id>/', views.variable_detalle, name='variable_detalle'),
     path("variables/<int:pk>/eliminar/", views.eliminar_variable, name="eliminar_variable"),
     path("variables/<int:pk>/editar/", views.editar_variable, name="editar_variable"),
@@ -42,7 +37,7 @@ urlpatterns = [
     path("tema/<int:tema_id>/crear-subsistema/", views.crear_subsistema, name="crear_subsistema"),
     path('subsistema/<int:sub_id>/eliminar/', views.eliminar_subsistema, name='eliminar_subsistema'),
 
-    # Actores (si vas a manejarlos por tema)
+    # Actores
     path('actor-detalle/<int:subsistema_id>/', views.actor_detalle, name='actor_detalle'),
     path("actores/<int:pk>/eliminar/", views.eliminar_actor, name="eliminar_actor"),
     path("actores/<int:pk>/editar/", views.editar_actor, name="editar_actor"),
@@ -63,6 +58,7 @@ urlpatterns = [
     path('tendencias/crear/<int:subsistema_id>/', views.crear_tendencia, name='crear_tendencia'),
     path('tendencias/<int:pk>/editar/', views.editar_tendencia, name='editar_tendencia'),
     path('tendencias/<int:pk>/eliminar/', views.eliminar_tendencia, name='eliminar_tendencia'),
+    
     # API interna para ChatGPT
     path('api/', include('haapar_unla_app.infraestructura.api_urls')),
 ]

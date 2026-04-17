@@ -20,42 +20,22 @@ from django.core.mail import send_mail, BadHeaderError
 from django.contrib.sites.shortcuts import get_current_site
 from django.http import HttpResponse, JsonResponse
 from django.db.models import Prefetch, Count, Q
+from django.conf import settings
+from django.urls import reverse
 
 import json  
 import datetime
 
 from .services.ia_service import generar_estructura_prospectiva
-from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt
-
-import json
-import datetime
-
-
-
-from .services.ia_service import generar_estructura_prospectiva
 from .forms import SignUpForm
-
-from haapar_unla_app.models import (
-    Tema, Sistema, Subsistema, Variable,
-
-    Historial, TendenciaExterna, ActorClave, RelacionActor,
-    Influencia, PESTEL,  
-
-   TendenciaExterna, ActorClave, RelacionActor,
-
-    Historial, TendenciaExterna,ActorClave,RelacionActor
-
-
-)
-
-from haapar_unla_app.models import (Tema, Sistema, Subsistema, Variable, TendenciaExterna, ActorClave, RelacionActor, Historial, TendenciaExterna,ActorClave,RelacionActor)
-
-
 from .infraestructura.api_client.openai_client import generate_chat_completion
 
-from django.conf import settings
-from django.urls import reverse
+# Imports limpios
+from haapar_unla_app.models import (
+    Tema, Sistema, Subsistema, Variable,
+    Historial, TendenciaExterna, ActorClave, RelacionActor,
+    Influencia, PESTEL
+)
 
 User = get_user_model()
 
@@ -79,9 +59,7 @@ def inicio(request):
 # ---------------------------
 @login_required
 def crear_reporte(request):
-
     if request.method == "POST":
-
         nombre = request.POST.get("nombre")
         descripcion = request.POST.get("descripcion")
         horizonte = request.POST.get("horizonte")
@@ -99,8 +77,8 @@ def crear_reporte(request):
         generar_estructura_prospectiva(tema)
         
         # 2. Crea la matriz matemática lógica con la IA
-        from haapar_unla_app.services.ia_service import generar_evaluaciones_e_influencias_dummy
-        generar_evaluaciones_e_influencias_dummy(tema, request.user)
+        from haapar_unla_app.services.ia_service import generar_evaluaciones_e_influencias
+        generar_evaluaciones_e_influencias(tema, request.user)
 
         return redirect("subsistemas", tema_id=tema.id_tema)
 
@@ -271,7 +249,7 @@ def crear_subsistema(request, tema_id):
 
 @login_required
 def eliminar_subsistema(request, sub_id):
-    sub = get_object_or_404(Subsistema, id_subsistema=sub_id, sistema_tema_user=request.user)
+    sub = get_object_or_404(Subsistema, id_subsistema=sub_id, sistema__tema__user=request.user)
     if request.method == 'POST':
         sub.activo = False
         sub.save()
@@ -283,13 +261,11 @@ def eliminar_subsistema(request, sub_id):
 # ---------------------------
 def registro(request):
     if request.method == 'POST':
-        # Leer valores crudos antes de validar el form para detectar usuarios inactivos
         username = request.POST.get('username', '').strip()
         email = request.POST.get('email', '').strip().lower()
 
         existing = User.objects.filter(Q(username__iexact=username) | Q(email__iexact=email)).first()
         if existing and not existing.is_active:
-            # Enviar email de reactivación
             current_site = get_current_site(request)
             uid = urlsafe_base64_encode(force_bytes(existing.pk))
             token = default_token_generator.make_token(existing)
@@ -308,7 +284,6 @@ def registro(request):
             form = SignUpForm()
             return render(request, 'haapar_unla_app/autenticacion/signup.html', {'form': form})
 
-        # Proceder con validación normal si no hay usuario inactivo
         form = SignUpForm(request.POST)
         if form.is_valid():
             user = form.save()
@@ -330,7 +305,6 @@ def reactivar_cuenta(request, uidb64, token):
             form = SetPasswordForm(user, request.POST)
             if form.is_valid():
                 form.save()
-                # Permitir actualizar nombres opcionalmente
                 user.first_name = request.POST.get('first_name', user.first_name)
                 user.last_name = request.POST.get('last_name', user.last_name)
                 user.is_active = True
@@ -374,7 +348,6 @@ def iniciar_sesion(request):
 def perfil(request):
     user = request.user
 
-    # inicializar ambos formularios para evitar referencias no asignadas
     form = ProfileForm(instance=user)
     pass_form = PasswordChangeForm(user)
 
@@ -394,7 +367,6 @@ def perfil(request):
                 messages.success(request, 'Contraseña cambiada con éxito.')
                 return redirect('perfil')
             else:
-                # Mensaje genérico (no los errores campo por campo)
                 messages.error(request, 'No se pudo cambiar la contraseña. Revisa los errores del formulario.')
 
         elif 'delete_profile' in request.POST:
@@ -418,14 +390,11 @@ def perfil(request):
 def error_400_view(request, exception):
     return render(request, 'haapar_unla_app/error/400.html', status=400)
 
-
 def error_403_view(request, exception):
     return render(request, 'haapar_unla_app/error/403.html', status=403)
 
-
 def error_404_view(request, exception):
     return render(request, 'haapar_unla_app/error/404.html', status=404)
-
 
 def error_500_view(request):
     return render(request, 'haapar_unla_app/error/500.html', status=500)
@@ -434,7 +403,7 @@ def error_500_view(request):
 # ---------------------------
 # ACTORES
 # ---------------------------
-@login_required
+@login_required 
 def actor_detalle(request, subsistema_id):
     subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id)
     actores = ActorClave.objects.filter(subsistema=subsistema, activo=True)
@@ -444,7 +413,6 @@ def actor_detalle(request, subsistema_id):
         'actores': actores,
         'tema': tema
     })
-
 
 @login_required
 def crear_actor(request, subsistema_id):
@@ -475,7 +443,6 @@ def crear_actor(request, subsistema_id):
         'subsistema': subsistema
     })
 
-
 @login_required
 def editar_actor(request, pk):
     actor = get_object_or_404(ActorClave, pk=pk)
@@ -486,7 +453,7 @@ def editar_actor(request, pk):
         actor.descripcion = request.POST.get('descripcion', actor.descripcion)
         actor.puesto = request.POST.get('puesto', actor.puesto)
         actor.save()
-        # Actualizar o crear la relación de influencia
+        
         influencia = request.POST.get('influencia')
         if influencia:
             relacion, created = RelacionActor.objects.get_or_create(
@@ -512,7 +479,6 @@ def editar_actor(request, pk):
         'subsistema': subsistema
     })
 
-
 @login_required
 def eliminar_actor(request, pk):
     actor = get_object_or_404(ActorClave, pk=pk)
@@ -535,7 +501,6 @@ def listar_tendencias(request):
         'todas_las_tendencias': todas_las_tendencias,
     })
 
-
 @login_required
 def tendencia_detalle(request, tema_id=None, subsistema_id=None):
     if tema_id:
@@ -554,7 +519,6 @@ def tendencia_detalle(request, tema_id=None, subsistema_id=None):
             'subsistema': subsistema,
             'tendencias': tendencias,
         })
-
 
 @login_required
 def crear_tendencia(request, subsistema_id):
@@ -581,7 +545,6 @@ def crear_tendencia(request, subsistema_id):
         'subsistema': subsistema,
     })
 
-
 @login_required
 def editar_tendencia(request, pk):
     tendencia = get_object_or_404(TendenciaExterna, pk=pk, activo=True)
@@ -600,7 +563,6 @@ def editar_tendencia(request, pk):
         'tendencia': tendencia,
         'subsistema': subsistema,
     })
-
 
 @login_required
 def eliminar_tendencia(request, pk):
@@ -645,7 +607,6 @@ def password_reset_request(request):
     password_reset_form = PasswordResetForm()
     return render(request, "haapar_unla_app/autenticacion/password_reset.html", {"password_reset_form": password_reset_form})
 
-
 def password_reset_confirm(request, uidb64, token):
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
@@ -667,16 +628,11 @@ def password_reset_confirm(request, uidb64, token):
         messages.error(request, 'El enlace de restablecimiento es inválido o ha expirado.')
         return redirect('password_reset_request')
 
-
 def password_reset_done(request):
     return render(request, 'haapar_unla_app/autenticacion/password_reset_done.html')
 
-
 def password_reset_complete(request):
     return render(request, 'haapar_unla_app/autenticacion/password_reset_complete.html')
-
-
-
 
 # ---------------------------
 # ChatGPT API wrapper (simple)
@@ -702,7 +658,6 @@ def chatgpt_api(request):
 
 
 # ---------------------------------------------------------
-
 # VISTA PRINCIPAL (FODA Y GRÁFICOS)
 # ---------------------------------------------------------
 @login_required
@@ -713,7 +668,6 @@ def foda_graficos(request, tema_id):
     """
     tema = get_object_or_404(Tema, pk=tema_id, user=request.user)
 
-    # 1. Variables del proyecto pre-cargando los PESTEL para optimizar
     variables_obj = Variable.objects.filter(
         subsistema__sistema__tema=tema,
         activo=True
@@ -721,7 +675,6 @@ def foda_graficos(request, tema_id):
 
     nombres_vars = [v.nombre_corto if v.nombre_corto else v.nombre[:15] for v in variables_obj]
 
-    # --- DISPERSIÓN Y PETER-SCHWARTZ ---
     importancias = []
     incertidumbres = []
 
@@ -735,12 +688,10 @@ def foda_graficos(request, tema_id):
         "incertidumbre": incertidumbres
     }
 
-    # --- MATRIZ MIC-MAC DIRECTA ---
     n = len(variables_obj)
     matriz_valores = [[0] * n for _ in range(n)]
     var_index = {v.pk: i for i, v in enumerate(variables_obj)}
 
-    # Filtramos las influencias cruzadas reales del proyecto (usando variable_origen y variable_destino)
     influencias = Influencia.objects.filter(
         variable_origen__in=variables_obj,
         variable_destino__in=variables_obj
@@ -749,7 +700,6 @@ def foda_graficos(request, tema_id):
     for inf in influencias:
         i = var_index[inf.variable_origen.pk] 
         j = var_index[inf.variable_destino.pk] 
-        # inf.valor es Decimal, lo pasamos a int/float para que JSON.dumps no tire error
         matriz_valores[i][j] = int(inf.valor)
 
     matriz_indirecta = {
@@ -757,7 +707,6 @@ def foda_graficos(request, tema_id):
         "valores": matriz_valores
     }
 
-    # --- MIC-MAC INDIRECTO (Sumatorias de Influencia y Dependencia) ---
     influencia_totales = [sum(fila) for fila in matriz_valores]
     dependencia_totales = [sum(matriz_valores[i][j] for i in range(n)) for j in range(n)]
 
@@ -767,22 +716,16 @@ def foda_graficos(request, tema_id):
         "dependencia": dependencia_totales
     }
 
-    # --- ÁRBOL PESTEL ---
-    # Navegamos la relación ManyToMany de cada variable
     datos_pestel = {}
     
     for var in variables_obj:
         nombre_var = var.nombre_corto or var.nombre[:15]
-        
-        # Obtenemos todas las categorías PESTEL asignadas a esta variable
         for pestel in var.pestels.all():
-            categoria = pestel.get_tipo_display()  # Esto trae "Político", "Económico", etc.
-            
+            categoria = pestel.get_tipo_display() 
             if categoria not in datos_pestel:
                 datos_pestel[categoria] = []
             datos_pestel[categoria].append(nombre_var)
 
-    # 3. Enviamos todo consolidado al template
     contexto = {
         'tema': tema,
         'datos_dispersion': json.dumps(datos_dispersion),
@@ -791,112 +734,6 @@ def foda_graficos(request, tema_id):
         'matriz_indirecta': json.dumps(matriz_indirecta),
         'datos_micmac': json.dumps(datos_micmac),
         'datos_pestel': json.dumps(datos_pestel),
-    }
-# FUNCIONES AUXILIARES PARA LOS GRÁFICOS FODA
-# ---------------------------------------------------------
-
-def obtener_datos_dispersion():
-    """Genera datos para Gráfico de Dispersión (Importancia/Incertidumbre) y Peter-Schwartz."""
-    datos = {
-        "variables": ["Var1", "Var2", "Var3"],
-        "importancia": [5, 3, 7],
-        "incertidumbre": [2, 6, 4],
-    }
-    return json.dumps(datos)
-
-
-def obtener_matriz_directa():
-    """Genera datos para la Matriz MIC-MAC (Tabla HTML)."""
-    variables = [
-        "cant_de_min_de_jueg",
-        "nmer_de_gale_antl_po",
-        "tasa_de_lesi_por_tem",
-        "nive_de_comp_en_liJ",
-        "grad_de_desa_fisc_y"
-    ]
-    matriz = [
-        [0, 2, 2, 1, 3],
-        [1, 0, 1, 0, 2],
-        [3, 1, 0, 2, 3],
-        [2, 2, 2, 0, 3],
-        [1, 2, 2, 2, 0],
-    ]
-    filas = list(zip(variables, matriz))
-    return variables, filas
-
-
-def obtener_micmac_indirecto(variables):
-    """Genera datos para la Matriz MIC-MAC Indirecto (Heatmap) y Dispersión Indirecta."""
-    # Esta es la matriz que se mostrará en los cuadraditos celestes (Heatmap)
-    matriz_indirecta = [
-        [0, 2, 1, 3, 2],
-        [1, 0, 2, 2, 1],
-        [2, 1, 0, 3, 2],
-        [1, 2, 2, 0, 3],
-        [2, 1, 2, 2, 0],
-    ]
-    
-    # Cálculos matemáticos para el gráfico de puntos
-    influencia = [sum(fila) for fila in matriz_indirecta]
-    dependencia = [sum(col) for col in zip(*matriz_indirecta)]
-
-    datos_micmac_dispersion = {
-        "variables": variables,
-        "influencia": influencia,
-        "dependencia": dependencia,
-    }
-    
-    # Estructura requerida por Chart.js para armar la cuadrícula (Heatmap)
-    datos_heatmap = {
-        "variables": variables,
-        "valores": matriz_indirecta
-    }
-    
-    return json.dumps(datos_heatmap), json.dumps(datos_micmac_dispersion)
-
-
-def obtener_datos_pestel():
-    """Genera los datos para el Árbol PESTEL."""
-    pestel_data = {
-        "Político": ["Políticas públicas tecnológicas", "Estabilidad gubernamental"],
-        "Económico": ["Inflación", "Costo de infraestructura", "Financiamiento"],
-        "Social": ["Adopción tecnológica", "Capacitación de usuarios"],
-        "Tecnológico": ["Innovación en software", "Ciberseguridad"],
-        "Ecológico": ["Consumo energético", "Sustentabilidad"],
-        "Legal": ["Protección de datos", "Regulaciones IT"]
-    }
-    return json.dumps(pestel_data, ensure_ascii=False)
-
-
-# ---------------------------------------------------------
-# VISTA PRINCIPAL (FODA)
-# ---------------------------------------------------------
-
-# @login_required  <-- Descomenta esta línea si solo usuarios logueados pueden ver los gráficos
-def foda_graficos(request):
-    """
-    Vista maestra que recolecta los datos de las funciones auxiliares
-    y los envía a la plantilla HTML foda-graficos.html
-    """
-    
-    # 1. Llamamos a cada función individual
-    dispersion_json = obtener_datos_dispersion()
-    variables_html, filas_html = obtener_matriz_directa()
-    
-    # 2. Le pasamos las variables del MIC-MAC directo a la función de MIC-MAC indirecto
-    heatmap_json, micmac_json = obtener_micmac_indirecto(variables_html)
-    
-    pestel_json = obtener_datos_pestel()
-
-    # 3. Enviamos todo consolidado al template
-    contexto = {
-        "datos_dispersion": dispersion_json,
-        "variables": variables_html,  
-        "filas": filas_html,                 
-        "matriz_indirecta": heatmap_json,   # <-- AQUÍ ESTÁ LA MATRIZ INDIRECTA
-        "datos_micmac": micmac_json, 
-        "datos_pestel": pestel_json
-
     }
 
     return render(request, "haapar_unla_app/foda-graficos.html", contexto)

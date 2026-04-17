@@ -230,7 +230,7 @@ def generar_estructura_prospectiva(tema):
                 usuario=None
             )
 
-def generar_evaluaciones_e_influencias_dummy(tema, usuario):
+def generar_evaluaciones_e_influencias(tema, usuario):
     """
     Paso 2: Genera la matriz matemática (FODA / MIC-MAC) usando análisis lógico de la IA
     """
