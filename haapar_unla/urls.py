@@ -3,6 +3,8 @@ from django.urls import path
 from haapar_unla_app import views
 from django.urls import include
 
+from django.conf.urls import handler400, handler403, handler404, handler500
+
 urlpatterns = [
     # Admin
     path('admin/', admin.site.urls),

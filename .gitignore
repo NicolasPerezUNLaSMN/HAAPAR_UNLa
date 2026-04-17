@@ -41,3 +41,4 @@ db.sqlite3
 .Trashes
 ehthumbs.db
 Thumbs.db
+*/db.sqlite3 # Por si está en un subdirectorio
