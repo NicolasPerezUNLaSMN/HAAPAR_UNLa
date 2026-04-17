@@ -1,0 +1,30 @@
+{% extends 'haapar_unla_app/base.html' %}
+{% block title %} Reactivar Cuenta {% endblock %}
+
+{% block content %}
+
+<main class="container mt-3">
+  <div class="page-title">
+    <div class="container position-relative">
+      <h3 class="text-center heading-section">Reactivar cuenta: {{ reactivate_user.email }}</h3>
+      <p class="text-center text-muted">Completa el formulario para establecer una nueva contraseña. Actualiza nombre y apellido (Opcional).</p>
+
+      <form method="post" class="styled-form">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label">Nombre</label>
+          <input type="text" name="first_name" value="{{ reactivate_user.first_name }}" class="form-control" placeholder="Nombre">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Apellido</label>
+          <input type="text" name="last_name" value="{{ reactivate_user.last_name }}" class="form-control" placeholder="Apellido">
+        </div>
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary mt-3">Reactivar cuenta</button>
+      </form>
+
+    </div>
+  </div>
+</main>
+
+{% endblock %}

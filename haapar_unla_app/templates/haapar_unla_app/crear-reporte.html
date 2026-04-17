@@ -1,0 +1,79 @@
+{% extends 'haapar_unla_app/base.html' %}
+{% block title %}Crear Reporte{% endblock %}
+
+{% block content %}
+<!-- FORMULARIO CREAR REPORTES -->
+<div class="report-section p-2 mt-2 bg-white rounded">
+  <div class="container position-relative">
+
+
+  <section class="report-section">
+    <!-- Encabezado -->
+    <h3 class="text-center heading-section">Crear Proyectos</h3>
+    <p class="text-center text-muted">Ingrese la información necesaria para realizar el proyecto.</p>
+    <!-- Formulario -->
+
+    <form method="POST" action="{% url 'crear-reporte' %}" class="styled-form">
+      {% csrf_token %}
+
+      <!-- Tema de Interés -->
+      <div class="mb-4">
+        <label for="nombre" class="form-label">Tema de Interés</label>
+        <input type="text" class="form-control" id="nombre" name="nombre" required
+          placeholder="Describí brevemente el tema que querés explorar">
+      </div>
+
+      <!-- Descripción -->
+      <div class="mb-4">
+        <label for="descripcion" class="form-label">Descripción</label>
+        <textarea class="form-control" id="descripcion" name="descripcion" rows="3" required placeholder="Explicá brevemente de qué se trata el tema."></textarea>
+      </div>
+
+      <!-- Año -->
+      <div class="mb-4">
+        <label for="horizonte" class="form-label">Año de Estudio</label>
+        <input type="number" class="form-control" id="horizonte" name="horizonte" required placeholder="¿Hasta qué año querés proyectar?" min="2023" max="2100">
+      </div>
+
+      <!-- Territorio -->
+      <div class="mb-4">
+        <label for="territorio" class="form-label">Territorio</label>
+        <input type="text" class="form-control" id="territorio" name="territorio" required placeholder="Ej: Argentina, Buenos Aires, Región Sur, etc.">
+      </div>
+
+      <!-- Grado de investigación -->
+      <!-- <div class="mb-4">
+        <label class="form-label">Grado de Investigación</label>
+        <div class="radio-group d-flex gap-3">
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="grado" id="bajo" value="bajo" required>
+            <label class="form-check-label" for="bajo">Bajo</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="grado" id="estandar" value="estandar" required checked>
+            <label class="form-check-label" for="estandar">Estándar</label>
+          </div>
+          <div class="form-check">
+            <input class="form-check-input" type="radio" name="grado" id="profundo" value="profundo" required>
+            <label class="form-check-label" for="profundo">Profundo</label>
+          </div>
+        </div>
+      </div> -->
+      
+
+      <!-- Botón de envío -->
+      <button type="submit" class="btn btn-primary">
+        <i class="fa-solid fa-file-circle-plus me-2"></i> Crear proyecto
+      </button>
+    </form>
+  </section>
+</div>
+
+<!-- Script de toggle -->
+<script>
+  function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    sidebar.classList.toggle('collapsed');
+  }
+</script>
+{% endblock %}

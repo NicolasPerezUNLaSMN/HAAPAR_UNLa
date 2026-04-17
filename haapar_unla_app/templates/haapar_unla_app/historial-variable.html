@@ -1,0 +1,43 @@
+{% extends 'haapar_unla_app/base.html' %}
+{% block title %}Historial de Variables{% endblock %}
+{% block content %}
+
+<div class="container mt-4 position-relative">
+  <a href="{% url 'variable_detalle' subsistema_id %}" class="btn-back">
+     <i class="fa-solid fa-arrow-left"></i>
+  </a>
+  <h2 class="text-center heading-section">Historial de Variables</h2>
+  
+  <table class="table proyectos-table">
+    <thead>
+      <tr>
+        <th>Variable</th>
+        <th>Acción</th>
+        <th>Fecha</th>
+        <th>Usuario</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ev in historial %}
+      <tr>
+        <td>
+          {% if ev.variable %}
+            {{ ev.variable.nombre }}
+          {% else %}
+            <em>(Eliminada)</em>
+          {% endif %}
+        </td>
+        <td>{{ ev.get_accion_display }}</td>
+        <td>{{ ev.fecha|date:"d/m/Y H:i" }}</td>
+        <td>{{ ev.usuario.username }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="6" class="text-center">No hay registros históricos aún.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+
+{% endblock %}

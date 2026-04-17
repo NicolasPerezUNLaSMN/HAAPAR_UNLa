@@ -1,0 +1,67 @@
+{% extends 'haapar_unla_app/base.html' %}
+{% block title %} Variables del Subsistema - HAAPAR {% endblock %}
+{% block content %}
+
+<main class="main">
+  <div class="page-title dark-background">
+    <div class="container position-relative">
+       <!-- Flecha arriba a la izquierda -->
+    <a href="{% url 'proyecto_detalle' tema.id_tema subsistema.id_subsistema %}" 
+       class="btn-back position-absolute top-0 start-0 mt-3 ms-3">
+      <i class="fa-solid fa-arrow-left"></i>
+    </a>
+      <!-- Título centrado -->
+      <h1 class="text-center heading-section">VARIABLES DEL SUBSISTEMA</h1>
+      <p class="text-center fw-bold">Subsistema: {{ subsistema.nombre }}</p>
+
+      <div class="text-center mt-3">
+        <a href="{% url 'historial_variables_subsistema' subsistema.id_subsistema %}" class="btn btn-historial">
+          <i class="fas fa-clock me-2"></i> Historial de Variable
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Botones de acción fijos -->
+  <div class="container mt-4 text-center sticky-top botonera" style="z-index: 1000; background-color: #fff;">
+    <a href="{% url 'crear_variable' subsistema.id_subsistema %}" class="btn btn-primary">Agregar Variable</a>
+  </div>
+
+  <!-- Listado de variables -->
+  <div class="container mt-4">
+    {% for variable in variables %}
+      <div class="card mb-4 proyecto-base">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <div>
+            <span class="fw-bold">{{ forloop.counter }}</span>
+            <span class="ms-2 fw-bold text-primary">{{ variable.nombre }}</span>
+          </div>
+          <div>
+            <a href="{% url 'editar_variable' variable.id_variable %}" class="btn btn-sm btn-outline-primary">
+              <i class="fa-solid fa-edit"></i> Editar
+            </a>
+            <form action="{% url 'eliminar_variable' variable.id_variable %}" method="post" class="d-inline">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-sm btn-outline-danger ms-1"
+                      onclick="return confirm('¿Estás seguro de que quieres eliminar esta variable?')">
+                <i class="fa-solid fa-trash"></i> Eliminar
+              </button>
+            </form>
+          </div>
+        </div>
+        <div class="card-body">
+          <p class="text-muted mb-2"><strong>Nombre Corto:</strong> {{ variable.nombre_corto }}</p>
+          <p class="text-muted mb-2"><strong>Tipo:</strong> {{ variable.get_tipo_display }}</p>
+          <p><strong>Descripción:</strong> {{ variable.descripcion }}</p>
+        </div>
+      </div>
+    {% empty %}
+      <div class="alert alert-info text-center">
+        No hay variables definidas para este subsistema. 
+        <a href="{% url 'crear_variable' subsistema.id_subsistema %}" class="alert-link">Agrega la primera variable</a>.
+      </div>
+    {% endfor %}
+  </div>
+</main>
+
+{% endblock %}

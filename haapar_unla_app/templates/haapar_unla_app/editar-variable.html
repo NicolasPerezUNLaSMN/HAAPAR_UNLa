@@ -1,0 +1,63 @@
+{% extends 'haapar_unla_app/base.html' %}
+
+{% block title %}Editar Variable - HAAPAR{% endblock %}
+
+{% block content %}
+<main class="main">
+  <div class="page-title dark-background">
+    <div class="container position-relative">
+      <h1 class="text-center heading-section">Editar Variable</h1>
+      <p class="text-center text-muted">{{ actor.subsistema.nombre }}</p>
+    </div>
+  </div>
+
+
+            <form method="POST" class="styled-form">
+  <div class="container mt-4">
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <div class="card">
+          <div class="card-body">
+            <form method="POST">
+
+              {% csrf_token %}
+
+              <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre de la Variable</label>
+                <input type="text" class="form-control" id="nombre" name="nombre" 
+                       value="{{ variable.nombre }}" required>
+              </div>
+
+              <div class="mb-3">
+                <label for="nombre_corto" class="form-label">Nombre Corto</label>
+                <input type="text" class="form-control" id="nombre_corto" name="nombre_corto" 
+                       value="{{ variable.nombre_corto }}" required>
+              </div>
+
+              <div class="mb-3">
+                <label for="descripcion" class="form-label">Descripción</label>
+                <textarea class="form-control" id="descripcion" name="descripcion" 
+                          rows="3" required>{{ variable.descripcion }}</textarea>
+              </div>
+
+              <div class="mb-3">
+                <label for="tipo" class="form-label">Tipo</label>
+                <select class="form-select" id="tipo" name="tipo" required>
+                  <option value="I" {% if variable.tipo == "I" %}selected{% endif %}>Interna</option>
+                  <option value="E" {% if variable.tipo == "E" %}selected{% endif %}>Externa</option>
+                </select>
+              </div>
+              
+              <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                <a href="{% url 'variable_detalle' subsistema_id %}" class="btn btn-secondary me-md-2">Cancelar</a>
+                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+              </div>
+            </form>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock %}

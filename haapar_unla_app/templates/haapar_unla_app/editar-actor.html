@@ -1,0 +1,41 @@
+{% extends 'haapar_unla_app/base.html' %}  
+{% block title %} Editar Actor - HAAPAR {% endblock %} 
+{% block content %}
+
+<main class="main">
+  <div class="page-title dark-background">
+    <div class="container position-relative">
+      <h1 class="text-center heading-section">Editar Actor</h1>
+      <p class="text-center text-muted">{{ actor.subsistema.nombre }}</p>
+    </div>
+  </div>
+
+  <form method="post" class="styled-form">
+    {% csrf_token %}
+    
+    <div class="mb-3">
+      <label for="nombre" class="form-label">Nombre del Actor</label>
+      <input type="text" class="form-control" id="nombre" name="nombre" 
+              value="{{ actor.nombre }}" required>
+    </div>
+    
+    <div class="mb-3">
+      <label for="descripcion" class="form-label">Descripción</label>
+      <textarea class="form-control" id="descripcion" name="descripcion" 
+                rows="3" required>{{ actor.descripcion }}</textarea>
+    </div>
+    
+    <div class="mb-3">
+      <label for="puesto" class="form-label">Puesto/Rol</label>
+      <input type="text" class="form-control" id="puesto" name="puesto" 
+              value="{{ actor.puesto }}" required>
+    </div>
+
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+      <a href="{% url 'actor_detalle' actor.subsistema.id_subsistema %}" class="btn btn-secondary me-md-2">Cancelar</a>
+      <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+    </div>
+  </form>
+</main>
+
+{% endblock %}

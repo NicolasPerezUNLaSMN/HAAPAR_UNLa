@@ -1,0 +1,52 @@
+{% extends 'haapar_unla_app/base.html' %}
+{% block title %}Subsistemas{% endblock %}
+
+{% block content %}
+<div class="container d-flex justify-content-center align-items-center my-4">
+  <div class="contenedor-subsistema" style="max-width: 700px; width: 100%;">
+    <section class="report-section text-center">
+      
+      <h3 class="mb-4 heading-section">TEMA: <span class="heading-section">{{ tema.nombre }}</span></h3>
+      
+      {% for sistema in sistemas %}
+        <h4 class="mb-3 ">{{ sistema.nombre }}</h4>
+        <div class="section-divider"></div>
+
+        <div class="subsistemas-list">
+          {% for sub in sistema.subsistema_set.all %}
+            <div class="subsistema-item d-flex justify-content-between align-items-center">
+              <div class="d-flex align-items-center">
+                <i class="fas fa-layer-group me-2"></i>
+                  <a href="{% url 'proyecto_detalle' tema.id_tema sub.id_subsistema %}" class="text-decoration-none">
+                    {{ sub.nombre }}
+                  </a>
+              </div>
+              <form method="post" 
+                    action="{% url 'eliminar_subsistema' sub.id_subsistema %}"
+                    onsubmit="return confirm('¿Seguro que deseas dar de baja este subsistema?');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-danger eliminar-btn">
+                  <i class="fas fa-trash-alt"></i>
+                </button>
+              </form>
+            </div>
+          {% empty %}
+            <p class="text-muted">No hay subsistemas en este sistema.</p>
+          {% endfor %}
+        </div>
+      {% empty %}
+        <p class="text-muted">No hay sistemas en este tema.</p>
+      {% endfor %}
+      
+      <!-- Botón de agregar subsistema -->
+      <div class="mt-4">
+        <a href="{% url 'crear_subsistema' tema.id_tema %}" 
+           class="btn btn-primary" >
+          <i class="fas fa-plus-circle me-2"></i> Agregar subsistema
+        </a>
+      </div>
+    </section>
+  </div>
+</div>
+
+{% endblock %}

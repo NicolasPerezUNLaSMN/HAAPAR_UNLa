@@ -1,0 +1,114 @@
+{% extends 'haapar_unla_app/base.html' %}
+
+{% block title %}
+Detalle del Proyecto - HAAPAR
+{% endblock %}
+
+{% block content %}
+<main class="main">
+  <div class="page-title dark-background">
+    <div class="container mt-4 position-relative">
+      <a href="{% url 'subsistemas' tema.id_tema %}"  class="btn-back">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
+    <div class="container position-relative">
+      <h1 class="text-center heading-section">Detalle del proyecto</h1>
+      <p class="text-center text-muted">{{ tema.nombre }}</p>
+      {% if subsistema %}
+        <p class="text-center fw-bold">Subsistema: {{ subsistema.nombre }}</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <section>
+    <div class="container">
+      <div class="row gy-4">
+        
+        <!-- Variables -->
+        <div class="col-lg-3 col-md-6">
+          <div class="card proyecto-base h-100">
+            <div class="card-body text-center">
+              <div class="icon mb-3">
+                <i class="fa-solid fa-chart-line"></i>
+              </div>
+              <h3 class="card-title text-info">
+                {% if subsistema %}
+                  <a href="{% url 'variable_detalle' subsistema.id_subsistema %}" class="stretched-link text-decoration-none">Variables</a>
+                {% else %}
+                  <a href="#">Variables</a>
+                {% endif %}
+              </h3>
+              <p class="card-text">
+                Automatización de Variables de cada Subsistema
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tendencias -->
+        <div class="col-lg-3 col-md-6">
+          <div class="card proyecto-base h-100">
+            <div class="card-body text-center">
+              <div class="icon mb-3">
+                <i class="fa-solid fa-arrow-trend-up"></i>
+              </div>
+              <h3 class="card-title text-info">
+                {% if subsistema %}
+                  <a href="{% url 'tendencia_detalle' subsistema.id_subsistema %}" class="stretched-link text-decoration-none">Tendencias</a>
+                {% else %}
+                  <a href="#">Tendencias</a>
+                {% endif %}
+              </h3>
+              <p class="card-text">
+                Nuestro sistema de Tendencias ofrece una visión prospectiva crucial para la planificación de futuros.
+              </p>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- Actores -->
+        <div class="col-lg-3 col-md-6">
+          <div class="card proyecto-base h-100">
+            <div class="card-body text-center">
+              <div class="icon mb-3">
+                <i class="fa-solid fa-people-roof"></i>
+              </div>
+              <h3 class="card-title text-info">
+                {% if subsistema %}
+                  <a href="{% url 'actor_detalle' subsistema.id_subsistema %}" class="stretched-link text-decoration-none">Actores</a>
+                {% else %}
+                  <a href="#" class="stretched-link text-decoration-none">Actores</a>
+                {% endif %}
+              </h3>
+              <p class="card-text">
+                Automatización de Actores Claves de cada Subsistema
+              </p>
+            </div>
+          </div>
+        </div>
+        <!-- FODA -->
+        <div class="col-lg-3 col-md-6">
+          <div class="card proyecto-base h-100">
+            <div class="card-body text-center">
+              <div class="icon mb-3">
+                <i class="fa-solid fa-chart-simple"></i>
+              </div>
+              <h3 class="card-title text-info">
+
+                <a href="{% url 'foda_graficos' tema.id_tema %}"  class="stretched-link text-decoration-none">Análisis FODA</a>
+
+              </h3>
+              <p class="card-text">
+                El análisis FODA es una herramienta estratégica que permite realizar un diagnóstico interno y externo de un proyecto.
+              </p>
+            </div>
+          </div>
+        </div>
+
+      </div> 
+
+    </div>
+  </section>
+</main>
+{% endblock %}
