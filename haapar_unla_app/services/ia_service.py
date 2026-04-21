@@ -13,12 +13,12 @@ from ..models import Historial, Sistema, Subsistema, Variable, ActorClave, Tende
 api_key = os.getenv("API_KEY_OPENROUTER")
 
 # 3. Verificación de seguridad (esto saldrá en tu terminal de VS Code)
-if api_key and api_key.startswith("sk-proj"):
-    print("⚠️ ERROR: Sigues cargando una clave de OpenAI en lugar de OpenRouter")
-elif api_key:
-    print("✅ Clave de OpenRouter cargada correctamente")
-else:
-    print("❌ No se encontró ninguna clave")
+#if api_key and api_key.startswith("sk-proj"):
+    #print("⚠️ ERROR: Sigues cargando una clave de OpenAI en lugar de OpenRouter")
+#elif api_key:
+    #print("✅ Clave de OpenRouter cargada correctamente")
+#else:
+    #print("❌ No se encontró ninguna clave")
 
 client = OpenAI(
     api_key=api_key,
