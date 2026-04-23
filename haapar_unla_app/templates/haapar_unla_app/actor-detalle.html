@@ -19,7 +19,6 @@
   </div>
 
   <!-- Botones de acción FIJOS en la parte superior -->
-
   <div class="container mt-4 text-center sticky-top botonera" style="z-index: 1000; background-color: #fff;">
     <a href="{% url 'crear_actor' subsistema.id_subsistema %}" class="btn btn-primary">Agregar Actor</a>
   </div>
@@ -29,11 +28,13 @@
     {% for actor in actores %}
       <div class="card mb-4 proyecto-base">
         <div class="card-header d-flex justify-content-between align-items-center">
-          <div>
+          <div class="flex-grow-1">
             <span class="fw-bold">{{ forloop.counter }}</span>
-            <span class="ms-2 fw-bold text-primary">{{ actor.nombre }}</span>
+            <span class="ms-2 fw-bold text-primary titulo-actor">
+              {{ actor.nombre }}
+            </span>
           </div>
-          <div>
+          <div class="ms-3 text-nowrap">
             <a href="{% url 'editar_actor' actor.id_actor_clave %}" class="btn btn-sm btn-outline-primary">
               <i class="fa-solid fa-edit"></i> Editar
             </a>
