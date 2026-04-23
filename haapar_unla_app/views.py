@@ -22,10 +22,12 @@ from django.http import HttpResponse, JsonResponse
 from django.db.models import Prefetch, Count, Q
 from django.conf import settings
 from django.urls import reverse
+from django.contrib.auth.models import User
+from .models import Tema
 
 import json  
-import datetime
-
+from django.http import HttpResponseForbidden
+from django.contrib.auth.models import Group
 from .services.ia_service import generar_estructura_prospectiva
 from .forms import SignUpForm
 from .infraestructura.api_client.openai_client import generate_chat_completion
@@ -86,8 +88,18 @@ def crear_reporte(request):
 
 @login_required
 def listar_proyectos(request):
-    temas = Tema.objects.filter(user=request.user, activo=True)
-    return render(request, 'haapar_unla_app/listar-proyectos.html', {'temas': temas})
+    # Proyectos creados por el usuario
+    propios = Tema.objects.filter(user=request.user, activo=True)
+    # Proyectos donde el usuario es colaborador
+    colaborando = Tema.objects.filter(colaboradores=request.user, activo=True)
+
+    # Unir ambos conjuntos y evitar duplicados
+    temas = propios | colaborando
+
+    return render(request, 'haapar_unla_app/listar-proyectos.html', {
+        'temas': temas.distinct()
+    })
+
 
 
 @login_required
@@ -217,7 +229,12 @@ def historial_variables(request, subsistema_id):
 # ---------------------------
 @login_required
 def subsistemas(request, tema_id):
-    tema = get_object_or_404(Tema, id_tema=tema_id, user=request.user)
+    tema = get_object_or_404(Tema, id_tema=tema_id, activo=True)
+
+    # Verificar permisos: creador o colaborador
+    if request.user != tema.user and request.user not in tema.colaboradores.all():
+        return HttpResponseForbidden("No tenés permiso para ver este proyecto.")
+
     sistemas = Sistema.objects.filter(tema=tema).prefetch_related(
         Prefetch('subsistema_set', queryset=Subsistema.objects.filter(activo=True))
     )
@@ -667,7 +684,11 @@ def foda_graficos(request, tema_id):
     Vista maestra que recolecta los datos reales de la base de datos
     y los envía a la plantilla HTML foda-graficos.html
     """
-    tema = get_object_or_404(Tema, pk=tema_id, user=request.user)
+    tema = get_object_or_404(Tema, pk=tema_id, activo=True)
+
+    # Verificar permisos: creador o colaborador
+    if request.user != tema.user and request.user not in tema.colaboradores.all():
+        return HttpResponseForbidden("No tenés permiso para ver este proyecto.")
 
     variables_obj = Variable.objects.filter(
         subsistema__sistema__tema=tema,
@@ -738,6 +759,29 @@ def foda_graficos(request, tema_id):
     }
 
     return render(request, "haapar_unla_app/foda-graficos.html", contexto)
+
+def asignar_colaboradores(request, tema_id):
+    tema = get_object_or_404(Tema, pk=tema_id)
+    es_creador = (request.user == tema.user)
+
+    if request.method == "POST" and es_creador:
+        colaboradores_ids = request.POST.getlist("colaboradores")
+        colaboradores = User.objects.filter(id__in=colaboradores_ids)
+        tema.colaboradores.set(colaboradores)
+
+        # Asignar grupo "colaborador" a cada usuario
+        grupo_colaborador = Group.objects.get(name="colaborador")
+        for u in colaboradores:
+            u.groups.add(grupo_colaborador)
+
+        return redirect("listar_proyectos")
+
+    return render(request, "haapar_unla_app/asignar_colaboradores.html", {
+        "tema": tema,
+        "usuarios": User.objects.exclude(id=tema.user.id),
+        "es_creador": es_creador
+    })
+
 
 def about(request):
     return render(request, 'haapar_unla_app/about.html')

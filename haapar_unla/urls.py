@@ -63,6 +63,9 @@ urlpatterns = [
     
     # API interna para ChatGPT
     path('api/', include('haapar_unla_app.infraestructura.api_urls')),
+    
+    #Agregar colaboradores
+     path('tema/<int:tema_id>/colaboradores/', views.asignar_colaboradores, name='asignar_colaboradores'),
 ]
 
 handler400 = 'haapar_unla_app.views.error_400_view'

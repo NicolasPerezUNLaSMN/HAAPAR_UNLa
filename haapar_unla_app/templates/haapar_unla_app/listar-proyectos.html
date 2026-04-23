@@ -5,10 +5,6 @@
 <main class="main">
   <div class="page-title">
     <div class="container position-relative">
-      <div class="container position-relative">
-      <!-- Flecha arriba a la izquierda -->
-    
-
       <h3 class="text-center heading-section">Mis Proyectos</h3>
       <p class="text-center text-muted">Aquí puedes ver y gestionar todos tus proyectos de estudio.</p>
     </div>
@@ -21,7 +17,7 @@
         <a href="{% url 'inicio' %}" class="btn btn-primary btn-lg">Crear nuevo proyecto</a>
       </div>
 
-      <!-- Tabla de proyectos más grande -->
+      <!-- Tabla de proyectos -->
       <div class="table-responsive">
         <table class="table table-hover table-striped proyectos-table w-100">
           <thead>
@@ -33,6 +29,7 @@
               <th class="text-center" style="width: 10%;">Usuario</th>
               <th class="text-center" style="width: 12%;">Detalle</th>
               <th class="text-center" style="width: 13%;">Eliminar</th>
+              <th class="text-center" style="width: 15%;">Colaboradores</th>
             </tr>
           </thead>
           <tbody>
@@ -47,36 +44,64 @@
                   <a href="{% url 'subsistemas' tema.id_tema %}" class="btn btn-secondary">Ver detalles</a>
                 </td>
                 <td class="text-center align-middle">
-                  <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmModal{{ tema.id_tema }}">
-                    <i class="fa-solid fa-trash"></i>
-                  </button>
-                  <!-- Modal -->
-                  <div class="modal fade" id="confirmModal{{ tema.id_tema }}" tabindex="-1" aria-labelledby="confirmModalLabel{{ tema.id_tema }}" aria-hidden="true">
-                    <div class="modal-dialog">
-                      <div class="modal-content">
-                        <div class="modal-header" style="color: black;">
-                          <h5 class="modal-title" id="confirmModalLabel{{ tema.id_tema }}">Confirmar eliminación</h5>
-                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-                        </div>
-                        <div class="modal-body" style="color: black;">
-                          ¿Estás seguro de que quieres eliminar el proyecto <strong>{{ tema.nombre }}</strong>? 
-                          Esta acción no se puede deshacer.
-                        </div>
-                        <div class="modal-footer">
-                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                          <form method="POST" action="{% url 'eliminar_proyecto' tema.id_tema %}">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-danger">Eliminar</button>
-                          </form>
+                  {% if request.user == tema.user %}
+                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmModal{{ tema.id_tema }}">
+                      <i class="fa-solid fa-trash"></i>
+                    </button>
+                    <!-- Modal -->
+                    <div class="modal fade" id="confirmModal{{ tema.id_tema }}" tabindex="-1" aria-labelledby="confirmModalLabel{{ tema.id_tema }}" aria-hidden="true">
+                      <div class="modal-dialog">
+                        <div class="modal-content">
+                          <div class="modal-header" style="color: black;">
+                            <h5 class="modal-title" id="confirmModalLabel{{ tema.id_tema }}">Confirmar eliminación</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                          </div>
+                          <div class="modal-body" style="color: black;">
+                            ¿Estás seguro de que quieres eliminar el proyecto <strong>{{ tema.nombre }}</strong>? 
+                            Esta acción no se puede deshacer.
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                            <form method="POST" action="{% url 'eliminar_proyecto' tema.id_tema %}">
+                              {% csrf_token %}
+                              <button type="submit" class="btn btn-danger">Eliminar</button>
+                            </form>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
+                  {% else %}
+                    <span class="text-muted">No disponible</span>
+                  {% endif %}
+                </td>
+                <td class="text-center align-middle">
+                  {% if request.user == tema.user %}
+                    <div class="d-flex flex-column align-items-center">
+                      <span class="badge bg-primary mb-2">Creador</span>
+                      <a href="{% url 'asignar_colaboradores' tema.id_tema %}" class="btn btn-sm btn-outline-success">
+                        <i class="fa-solid fa-users"></i> Colaboradores
+                      </a>
+                    </div>
+                  {% elif request.user in tema.colaboradores.all %}
+                    <span class="badge bg-info">Colaborador</span>
+                  {% else %}
+                    <span class="badge bg-secondary">Lector</span>
+                  {% endif %}
+
+                  {% if tema.colaboradores.all %}
+                    <ul class="list-unstyled mb-0 mt-2">
+                      {% for colaborador in tema.colaboradores.all %}
+                        <li>{{ colaborador.username }}</li>
+                      {% endfor %}
+                    </ul>
+                  {% else %}
+                    <span class="text-muted">Sin colaboradores</span>
+                  {% endif %}
                 </td>
               </tr>
             {% empty %}
               <tr>
-                <td colspan="7" class="text-center">No hay proyectos aún.</td>
+                <td colspan="8" class="text-center">No hay proyectos aún.</td>
               </tr>
             {% endfor %}
           </tbody>
@@ -87,3 +112,4 @@
 </main>
 
 {% endblock %}
+
