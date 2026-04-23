@@ -6,7 +6,7 @@ from openai import OpenAI
 
 load_dotenv(override=True)
 
-from ..models import Historial, Sistema, Subsistema, Variable, ActorClave, TendenciaExterna,EvaluacionVariable, Influencia
+from ..models import Historial, Sistema, Subsistema, Variable, ActorClave, TendenciaExterna,EvaluacionVariable, Influencia, PESTEL, IndicadorVariable, VariableTendencia   
 
 
 # 2. Obtenemos la clave específicamente
@@ -93,6 +93,14 @@ def generar_estructura_prospectiva(tema):
     E = Externa (factor del entorno)
 
     Elegí correctamente si cada variable es I o E.
+    
+    - Asignar entre 1 y 3 categorías PESTEL (usar códigos: P, EC, S, T, EO, L)
+    - Generar entre 1 y 2 indicadores medibles
+    - Relacionar con tendencias del mismo subsistema
+    - El impacto debe ser un número entre 0.0 y 1.0
+
+    IMPORTANTE:
+    Las tendencias_relacionadas deben referenciar tendencias que existan en el mismo subsistema.
 
     Respondé SOLO en JSON válido.
 
@@ -105,7 +113,24 @@ def generar_estructura_prospectiva(tema):
                 {{
                 "nombre":"",
                 "descripcion":"",
-                "tipo":"I o E"
+                "tipo":"I o E",
+
+                "pestel": ["P", "EC", "S", "T", "EO", "L"],
+
+                "indicadores":[
+                    {{
+                    "nombre_corto":"",
+                    "descripcion":"",
+                    "formula":""
+                    }}
+                ],
+
+                "tendencias_relacionadas":[
+                    {{
+                    "nombre":"",
+                    "impacto": 0.0
+                    }}
+                ]
                 }}
             ],
             "actores":[
@@ -124,7 +149,7 @@ def generar_estructura_prospectiva(tema):
             ]
             }}
         ]
-    }}
+        }}
     """
     
     response = client.chat.completions.create(
@@ -172,11 +197,47 @@ def generar_estructura_prospectiva(tema):
             activo=True
         )
 
+
+        for a in s.get("actores", []):
+
+            ActorClave.objects.create(
+                subsistema=subsistema,
+                nombre=a.get("nombre", ""),
+                descripcion=a.get("descripcion", ""),
+                puesto=a.get("puesto", ""),
+                activo=True
+            )
+
+            tendencias_creadas = {}
+
+            for t in s.get("tendencias", []):
+
+                tipo = t.get("tipo", "CUALITATIVA")
+
+                if tipo not in ["CUALITATIVA", "CUANTITATIVA"]:
+                    tipo = "CUALITATIVA"
+
+                tendencia = TendenciaExterna.objects.create(
+                    subsistema=subsistema,
+                    nombre=t.get("nombre", ""),
+                    nombre_corto=t.get("nombre", "")[:40],
+                    tipo_dato=tipo,
+                    descripcion=t.get("descripcion", ""),
+                    activo=True
+                )
+
+                tendencias_creadas[t.get("nombre")] = tendencia
+
+                Historial.objects.create(
+                    tendencia=tendencia,
+                    accion='CREADO',
+                    usuario=None
+                )
+            
         for v in s.get("variables", []):
 
             tipo = v.get("tipo", "I")
 
-            # validar tipo permitido
             if tipo not in ["I", "E"]:
                 tipo = "I"
 
@@ -189,43 +250,63 @@ def generar_estructura_prospectiva(tema):
                 activo=True
             )
 
+            # 🔵 PESTEL
+            MAP_PESTEL = {
+                "POLITICO": "P",
+                "POLÍTICO": "P",
+                "P": "P",
+
+                "ECONOMICO": "EC",
+                "ECONÓMICO": "EC",
+                "EC": "EC",
+
+                "SOCIAL": "S",
+                "S": "S",
+
+                "TECNOLOGICO": "T",
+                "TECNOLÓGICO": "T",
+                "T": "T",
+
+                "ECOLOGICO": "EO",
+                "ECOLÓGICO": "EO",
+                "EO": "EO",
+
+                "LEGAL": "L",
+                "L": "L"
+            }
+
+            for p in v.get("pestel", []):
+                key = MAP_PESTEL.get(p.upper())
+
+                if key:
+                    pestel_obj = PESTEL.objects.filter(tipo=key).first()
+                    if pestel_obj:
+                        variable.pestels.add(pestel_obj)
+
+
+            # 🟣 INDICADORES
+            for ind in v.get("indicadores", []):
+                IndicadorVariable.objects.create(
+                    variable=variable,
+                    nombre_corto=ind.get("nombre_corto", ""),
+                    descripcion=ind.get("descripcion", ""),
+                    formula=ind.get("formula", "")
+                )
+
+            # 🟠 TENDENCIAS RELACIONADAS
+            for tr in v.get("tendencias_relacionadas", []):
+                tendencia = tendencias_creadas.get(tr.get("nombre"))
+
+                if tendencia:
+                    VariableTendencia.objects.create(
+                        variable=variable,
+                        tendencia=tendencia,
+                        impacto=tr.get("impacto", 0)
+                    )
+
+            # 🟢 HISTORIAL
             Historial.objects.create(
                 variable=variable,
-                accion='CREADO',
-                usuario=None
-            )
-
-        for a in s.get("actores", []):
-
-            ActorClave.objects.create(
-                subsistema=subsistema,
-                nombre=a.get("nombre", ""),
-                descripcion=a.get("descripcion", ""),
-                puesto=a.get("puesto", ""),
-                activo=True
-            )
-
-        for t in s.get("tendencias", []):
-
-            tipo = t.get("tipo", "CUALITATIVA")
-
-            # validar tipo
-            if tipo not in ["CUALITATIVA", "CUANTITATIVA"]:
-                tipo = "CUALITATIVA"
-
-            tendencia = TendenciaExterna.objects.create(
-
-                subsistema=subsistema,
-                nombre=t.get("nombre", ""),
-                nombre_corto=t.get("nombre", "")[:40],
-                tipo_dato=tipo,  # ahora guarda el tipo real
-                descripcion=t.get("descripcion", ""),
-                activo=True
-            )
-            
-            
-            Historial.objects.create(
-                tendencia=tendencia,
                 accion='CREADO',
                 usuario=None
             )

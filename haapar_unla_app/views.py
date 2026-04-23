@@ -34,7 +34,7 @@ from .infraestructura.api_client.openai_client import generate_chat_completion
 from haapar_unla_app.models import (
     Tema, Sistema, Subsistema, Variable,
     Historial, TendenciaExterna, ActorClave, RelacionActor,
-    Influencia, PESTEL
+    Influencia, PESTEL, IndicadorVariable, VariableTendencia
 )
 
 User = get_user_model()
@@ -138,6 +138,9 @@ def variable_detalle(request, subsistema_id):
 def crear_variable(request, subsistema_id):
     subsistema = get_object_or_404(Subsistema, pk=subsistema_id, activo=True)
 
+    pestels = PESTEL.objects.all()
+    tendencias = TendenciaExterna.objects.filter(subsistema=subsistema, activo=True)
+
     if request.method == "POST":
         variable = Variable.objects.create(
             nombre=request.POST.get("nombre"),
@@ -146,15 +149,52 @@ def crear_variable(request, subsistema_id):
             tipo=request.POST.get("tipo"),
             subsistema=subsistema
         )
+
+        # 🔵 PESTEL
+        pestel_ids = request.POST.getlist("pestel")
+        for p in pestel_ids:
+            pestel_obj = PESTEL.objects.filter(tipo=p).first()
+            if pestel_obj:
+                variable.pestels.add(pestel_obj)
+
+        # 🟣 INDICADOR (simple)
+        nombre_ind = request.POST.get("indicador_nombre")
+        desc_ind = request.POST.get("indicador_desc")
+        formula_ind = request.POST.get("indicador_formula")
+
+        if nombre_ind:
+            IndicadorVariable.objects.create(
+                variable=variable,
+                nombre_corto=nombre_ind,
+                descripcion=desc_ind,
+                formula=formula_ind
+            )
+
+        # 🟠 RELACIÓN CON TENDENCIAS
+        tendencias_ids = request.POST.getlist("tendencias")
+        for tid in tendencias_ids:
+            tendencia = TendenciaExterna.objects.filter(id_tendencia_externa=tid).first()
+            if tendencia:
+                VariableTendencia.objects.create(
+                    variable=variable,
+                    tendencia=tendencia,
+                    impacto=0  # después lo podés editar
+                )
+
+        # 🟢 HISTORIAL
         Historial.objects.create(
             variable=variable,
             usuario=request.user,
             accion='AGREGADO'
         )
-        
+
         return redirect("variable_detalle", subsistema_id=subsistema.id_subsistema)
 
-    return render(request, "haapar_unla_app/crear-variable.html", {"subsistema": subsistema})
+    return render(request, "haapar_unla_app/crear-variable.html", {
+        "subsistema": subsistema,
+        "pestels": pestels,
+        "tendencias": tendencias
+    })
 
 
 @login_required
@@ -211,6 +251,22 @@ def historial_variables(request, subsistema_id):
         "subsistema_id": subsistema_id
     })
 
+@login_required
+def variable_completa(request, variable_id):
+    variable = get_object_or_404(Variable, pk=variable_id, activo=True)
+
+    indicadores = IndicadorVariable.objects.filter(variable=variable)
+
+    relaciones = VariableTendencia.objects.select_related('tendencia').filter(variable=variable)
+
+    pestels = variable.pestels.all()
+
+    return render(request, 'haapar_unla_app/variable-completa.html', {
+        'variable': variable,
+        'indicadores': indicadores,
+        'relaciones': relaciones,
+        'pestels': pestels
+    })
 
 # ---------------------------
 # SUBSISTEMAS

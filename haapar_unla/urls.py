@@ -30,7 +30,8 @@ urlpatterns = [
     path("variables/<int:pk>/editar/", views.editar_variable, name="editar_variable"),
     path('variables/crear/<int:subsistema_id>/', views.crear_variable, name='crear_variable'),
     path('variables/historial/<int:subsistema_id>/', views.historial_variables, name='historial_variables_subsistema'),
-
+    path('variable/<int:variable_id>/', views.variable_completa, name='variable_completa'),
+    
     # Perfil
     path('perfil/', views.perfil, name='perfil'),
 
