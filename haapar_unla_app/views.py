@@ -31,7 +31,7 @@ from django.contrib.auth.models import Group
 from .services.ia_service import generar_estructura_prospectiva
 from .forms import SignUpForm
 from .infraestructura.api_client.openai_client import generate_chat_completion
-
+from django.contrib.auth.models import Group
 # Imports limpios
 from haapar_unla_app.models import (
     Tema, Sistema, Subsistema, Variable,
@@ -760,6 +760,7 @@ def foda_graficos(request, tema_id):
 
     return render(request, "haapar_unla_app/foda-graficos.html", contexto)
 
+@login_required
 def asignar_colaboradores(request, tema_id):
     tema = get_object_or_404(Tema, pk=tema_id)
     es_creador = (request.user == tema.user)
@@ -769,8 +770,8 @@ def asignar_colaboradores(request, tema_id):
         colaboradores = User.objects.filter(id__in=colaboradores_ids)
         tema.colaboradores.set(colaboradores)
 
-        # Asignar grupo "colaborador" a cada usuario
-        grupo_colaborador = Group.objects.get(name="colaborador")
+        # ✅ Cambio aquí: usar get_or_create en vez de get
+        grupo_colaborador, _ = Group.objects.get_or_create(name="colaborador")
         for u in colaboradores:
             u.groups.add(grupo_colaborador)
 
@@ -781,7 +782,6 @@ def asignar_colaboradores(request, tema_id):
         "usuarios": User.objects.exclude(id=tema.user.id),
         "es_creador": es_creador
     })
-
 
 def about(request):
     return render(request, 'haapar_unla_app/about.html')
