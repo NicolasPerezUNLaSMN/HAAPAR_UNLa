@@ -187,33 +187,54 @@ def editar_variable(request, pk):
     variable = get_object_or_404(Variable, pk=pk, activo=True)
     subsistema_id = variable.subsistema.id_subsistema
     
-    # Leemos de dónde viene (el parámetro invisible)
+    # Leemos el parámetro oculto
     next_view = request.GET.get('next', '')
 
     if request.method == "POST":
-        variable.nombre = request.POST.get("nombre")
-        variable.nombre_corto = request.POST.get("nombre_corto")
+        # 1. Guardamos cómo se llamaba ANTES de pisar los datos
+        old_nombre = variable.nombre
+        old_nombre_corto = variable.nombre_corto
+
+        # 2. Obtenemos los datos NUEVOS del formulario
+        new_nombre = request.POST.get("nombre")
+        new_nombre_corto = request.POST.get("nombre_corto")
+
+        # 3. Actualizamos la variable
+        variable.nombre = new_nombre
+        variable.nombre_corto = new_nombre_corto
         variable.descripcion = request.POST.get("descripcion")
         variable.tipo = request.POST.get("tipo")
         variable.save()
 
+        # 4. Armamos el texto para la columna "Detalles"
+        cambios = []
+        if old_nombre != new_nombre:
+            cambios.append(f"Nombre: '{old_nombre}' ➔ '{new_nombre}'")
+        if old_nombre_corto != new_nombre_corto:
+            cambios.append(f"Corto: '{old_nombre_corto}' ➔ '{new_nombre_corto}'")
+        
+        # Si cambiaron los nombres, los unimos. Si no, ponemos un mensaje genérico.
+        texto_detalle = " | ".join(cambios) if cambios else "Modificación de descripción/tipo"
+
+        # 5. Guardamos en el historial CON el detalle
         Historial.objects.create(
             variable=variable,
             usuario=request.user,
-            accion='MODIFICADO'
+            accion='MODIFICADO',
+            detalles=texto_detalle
         )
         
-        # Leemos el parámetro oculto que nos mandó el formulario
+        # Redirección
         next_post = request.POST.get('next', '')
         if next_post == 'matriz':
             return redirect("editar-matriz", subsistema_id=subsistema_id)
-        
+            
         return redirect("variable_detalle", subsistema_id=subsistema_id)
 
     return render(request, "haapar_unla_app/editar-variable.html", {
         "variable": variable,
         "subsistema_id": subsistema_id,
-        "next": next_view # Se lo pasamos al HTML
+        "next": next_view
     })
 
 
