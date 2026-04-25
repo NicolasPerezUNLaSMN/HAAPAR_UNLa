@@ -32,7 +32,7 @@ from .services.ia_service import generar_estructura_prospectiva
 from .forms import SignUpForm
 from .infraestructura.api_client.openai_client import generate_chat_completion
 
-# Imports limpios
+
 from haapar_unla_app.models import (
     Tema, Sistema, Subsistema, Variable,
     Historial, TendenciaExterna, ActorClave, RelacionActor,
@@ -149,6 +149,9 @@ def variable_detalle(request, subsistema_id):
 @login_required
 def crear_variable(request, subsistema_id):
     subsistema = get_object_or_404(Subsistema, pk=subsistema_id, activo=True)
+    
+    # Captura el origen cuando entramos a la página (GET)
+    next_view = request.GET.get('next', '')
 
     if request.method == "POST":
         variable = Variable.objects.create(
@@ -164,9 +167,19 @@ def crear_variable(request, subsistema_id):
             accion='AGREGADO'
         )
         
-        return redirect("variable_detalle", subsistema_id=subsistema.id_subsistema)
+        # Lee el origen cuando mandamos el formulario (POST)
+        next_post = request.POST.get('next', '')
+        
+        if next_post == 'matriz':
+            # REDIRECCIÓN CORREGIDA CON GUION MEDIO
+            return redirect("editar-matriz", subsistema_id=subsistema_id)
+            
+        return redirect("variable_detalle", subsistema_id=subsistema_id)
 
-    return render(request, "haapar_unla_app/crear-variable.html", {"subsistema": subsistema})
+    return render(request, "haapar_unla_app/crear-variable.html", {
+        "subsistema": subsistema,
+        "next": next_view
+    })
 
 
 @login_required
@@ -193,7 +206,7 @@ def editar_variable(request, pk):
         # Leemos el parámetro oculto que nos mandó el formulario
         next_post = request.POST.get('next', '')
         if next_post == 'matriz':
-            return redirect("editar_matriz", subsistema_id=subsistema_id)
+            return redirect("editar-matriz", subsistema_id=subsistema_id)
         
         return redirect("variable_detalle", subsistema_id=subsistema_id)
 
@@ -223,7 +236,7 @@ def eliminar_variable(request, pk):
     
     # Decidimos a dónde redireccionar
     if next_view == 'matriz':
-        return redirect("editar_matriz", subsistema_id=subsistema_id)
+        return redirect("editar-matriz", subsistema_id=subsistema_id)
         
     return redirect("variable_detalle", subsistema_id=subsistema_id)
 
@@ -872,7 +885,7 @@ def editar_matriz(request, subsistema_id):
     variables = list(Variable.objects.filter(subsistema=subsistema, activo=True).order_by('pk'))
 
     if request.method == 'POST':
-        # 1. Guardar Evaluaciones (Imp e Inc) y chequear cambios
+        #ALTA/MODIFICACIÓN DE EVALUACIONES MANUALES ---
         for var in variables:
             imp_val = request.POST.get(f'imp_{var.pk}')
             inc_val = request.POST.get(f'inc_{var.pk}')
@@ -881,13 +894,12 @@ def editar_matriz(request, subsistema_id):
                 imp_val = int(imp_val)
                 inc_val = int(inc_val)
                 
-                # Buscamos si ya tenía valores guardados
                 eval_obj = EvaluacionVariable.objects.filter(variable=var, usuario=request.user).first()
                 old_imp = eval_obj.importancia if eval_obj else "Vacío"
                 old_inc = eval_obj.incertidumbre if eval_obj else "Vacío"
 
-                # Solo guardamos en historial si hubo un cambio real o si es nuevo
                 if not eval_obj or old_imp != imp_val or old_inc != inc_val:
+                    # Esto hace el ALTA si no existe, o MODIFICA si ya existe
                     EvaluacionVariable.objects.update_or_create(
                         variable=var,
                         usuario=request.user,
@@ -895,51 +907,40 @@ def editar_matriz(request, subsistema_id):
                     )
                     
                     texto_detalle = f"Imp: {old_imp} ➔ {imp_val} | Inc: {old_inc} ➔ {inc_val}"
-                    
-                    Historial.objects.create(
-                        variable=var,
-                        usuario=request.user,
-                        accion='EVALUACION',
-                        detalles=texto_detalle
-                    )
+                    Historial.objects.create(variable=var, usuario=request.user, accion='EVALUACION', detalles=texto_detalle)
 
-        # 2. Guardar Influencias Cruzadas y chequear cambios
+        # ALTA/MODIFICACIÓN DE INFLUENCIAS ---
         for origen in variables:
             for destino in variables:
                 if origen.pk != destino.pk:
                     inf_val = request.POST.get(f'inf_{origen.pk}_{destino.pk}')
                     if inf_val is not None:
                         inf_val = float(inf_val)
-                        
                         inf_obj = Influencia.objects.filter(variable_origen=origen, variable_destino=destino).first()
                         old_inf = float(inf_obj.valor) if inf_obj else "Vacío"
                         
-                        # Solo guardamos en historial si cambió la influencia
                         if not inf_obj or old_inf != inf_val:
+                            # Esto hace el ALTA si no existe, o MODIFICA si ya existe
                             Influencia.objects.update_or_create(
                                 variable_origen=origen,
                                 variable_destino=destino,
                                 defaults={'valor': inf_val}
                             )
-                            
-                            # Registramos que "Origen" modificó su influencia sobre "Destino"
                             texto_detalle = f"Influencia sobre '{destino.nombre_corto}': {old_inf} ➔ {int(inf_val)}"
-                            Historial.objects.create(
-                                variable=origen,
-                                usuario=request.user,
-                                accion='MODIFICADO',
-                                detalles=texto_detalle
-                            )
+                            Historial.objects.create(variable=origen, usuario=request.user, accion='MODIFICADO', detalles=texto_detalle)
         
         messages.success(request, '¡Valores actualizados! Los gráficos se recalcularon.')
         return redirect('foda_graficos', subsistema_id=subsistema.id_subsistema)
 
+    # --- ACÁ SE PREPARA LA VISTA Y SE CALCULAN LOS PROMEDIOS ---
     filas_tabla = []
     for origen in variables:
         eval_obj = EvaluacionVariable.objects.filter(variable=origen, usuario=request.user).first()
         
+        # ACÁ SE APLICA EL PROMEDIO: Si el usuario no votó, trae el promedio (IA + otros usuarios)
         try: imp_clean = max(1, min(10, int(round(float(eval_obj.importancia if eval_obj else (origen.promedio_importancia() or 1))))))
         except: imp_clean = 1
+        
         try: inc_clean = max(1, min(10, int(round(float(eval_obj.incertidumbre if eval_obj else (origen.promedio_incertidumbre() or 1))))))
         except: inc_clean = 1
 
@@ -955,7 +956,7 @@ def editar_matriz(request, subsistema_id):
 
         filas_tabla.append({'origen': origen, 'imp': imp_clean, 'inc': inc_clean, 'celdas': celdas})
 
-    return render(request, 'haapar_unla_app/editar_matriz.html', {
+    return render(request, 'haapar_unla_app/editar-matriz.html', {
         'tema': tema,
         'subsistema': subsistema,
         'variables': variables,

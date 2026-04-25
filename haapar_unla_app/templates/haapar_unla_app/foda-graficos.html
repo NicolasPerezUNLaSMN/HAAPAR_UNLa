@@ -93,7 +93,7 @@
         </div>
 
         <div class="text-center mb-5 mt-2">
-            <a href="{% url 'editar_matriz' subsistema.id_subsistema %}" class="btn btn-warning btn-lg fw-bold shadow">
+            <a href="{% url 'editar-matriz' subsistema.id_subsistema %}" class="btn btn-warning btn-lg fw-bold shadow">
                 <i class="fa-solid fa-pen-to-square"></i> Ajustar Matriz Manualmente
             </a>
         </div>
@@ -291,19 +291,41 @@
             });
 
             Highcharts.chart('pestelChartContainer', {
-                chart: { type: 'treegraph', inverted: true },
+                chart: { 
+                    type: 'treegraph',
+                    spacingLeft: 20,
+                    spacingRight: 200 
+                },
                 title: { text: '' },
                 series: [{
                     type: 'treegraph',
                     data: highchartsData,
                     tooltip: { pointFormat: '{point.name}' },
-                    marker: { symbol: 'rect', radius: 5 }, 
+                    marker: { symbol: 'circle', radius: 7 }, 
                     dataLabels: {
                         pointFormat: '{point.name}',
-                        style: { whiteSpace: 'nowrap', textOutline: 'none', color: '#333333', fontSize: '11px', fontWeight: 'bold' },
-                        align: 'left',
-                        x: 15
-                    }
+                        style: { 
+                            whiteSpace: 'nowrap', 
+                            textOutline: '3px #ffffff', 
+                            color: '#333333', 
+                            fontSize: '12px', 
+                            fontWeight: '500' 
+                        }
+                    },
+                    levels: [
+                        {
+                            level: 1, 
+                            dataLabels: { align: 'right', x: -10, style: { fontWeight: 'bold', fontSize: '14px' } }
+                        },
+                        {
+                            level: 2, 
+                            dataLabels: { align: 'center', y: -18, x: 0, style: { fontWeight: 'bold', fontSize: '13px' } }
+                        },
+                        {
+                            level: 3, 
+                            dataLabels: { align: 'left', x: 10 }
+                        }
+                    ]
                 }],
                 credits: { enabled: false }
             });

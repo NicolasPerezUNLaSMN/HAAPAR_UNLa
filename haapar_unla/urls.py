@@ -22,8 +22,8 @@ urlpatterns = [
     path('crear-reporte/', views.crear_reporte, name='crear-reporte'),
     
     # Graficos FODA
-   path('foda/<int:subsistema_id>/', views.foda_graficos, name='foda_graficos'),
-    path('matriz/<int:subsistema_id>/', views.editar_matriz, name='editar_matriz'),
+    path('foda/<int:subsistema_id>/', views.foda_graficos, name='foda_graficos'),
+    path('matriz/<int:subsistema_id>/', views.editar_matriz, name='editar-matriz'),
     
 
     # Variables

@@ -6,22 +6,28 @@
 <main class="main">
     <div class="container mt-4">
         
-        <div class="d-flex justify-content-between mb-3">
-            <a href="{% url 'foda_graficos' subsistema.id_subsistema %}" class="btn btn-outline-secondary">
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+            <a href="{% url 'foda_graficos' subsistema.id_subsistema %}" class="btn btn-outline-secondary mb-2">
                 <i class="fa-solid fa-arrow-left"></i> Volver a los Gráficos
             </a>
             
-            <a href="{% url 'historial_variables_subsistema' subsistema.id_subsistema %}?from=matriz" class="btn btn-outline-info text-dark fw-bold">
-                <i class="fa-solid fa-clock-rotate-left"></i> Ver Historial de Cambios
-            </a>
+            <div class="mb-2">
+                <a href="{% url 'crear_variable' subsistema.id_subsistema %}?next=matriz" class="btn btn-success fw-bold me-2 shadow-sm">
+                    <i class="fa-solid fa-plus"></i> Nueva Variable
+                </a>
+                
+                <a href="{% url 'historial_variables_subsistema' subsistema.id_subsistema %}?from=matriz" class="btn btn-outline-info text-dark fw-bold shadow-sm">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Ver Historial de Cambios
+                </a>
+            </div>
         </div>
         
         <h2 class="mb-4 text-center">Edición Manual de Datos</h2>
-        <p class="text-center text-muted mb-5">
+        <p class="text-center text-muted mb-4">
             Ajustá la Importancia/Incertidumbre (1-10) y las Influencias (0-3) para recalcular los gráficos.
         </p>
 
-        <form method="POST" action="{% url 'editar_matriz' subsistema.id_subsistema %}">
+        <form method="POST" action="{% url 'editar-matriz' subsistema.id_subsistema %}">
             {% csrf_token %}
             
             <div class="table-responsive shadow-sm rounded mb-4" style="background-color: white;">
@@ -49,10 +55,10 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <span>{{ fila.origen.nombre_corto }}</span>
                                     <div class="text-nowrap ms-2">
-                                        <a href="{% url 'editar_variable' fila.origen.pk %}?next=matriz" class="btn btn-sm btn-outline-primary py-0 px-1" title="Editar Variable">
+                                        <a href="{% url 'editar_variable' fila.origen.pk %}?next=matriz" class="btn btn-sm btn-outline-primary py-0 px-1">
                                             <i class="fa-solid fa-pen"></i>
                                         </a>
-                                        <a href="{% url 'eliminar_variable' fila.origen.pk %}?next=matriz" class="btn btn-sm btn-outline-danger py-0 px-1" title="Eliminar Variable" onclick="return confirm('¿Estás seguro de eliminar la variable {{ fila.origen.nombre_corto }}?');">
+                                        <a href="{% url 'eliminar_variable' fila.origen.pk %}?next=matriz" class="btn btn-sm btn-outline-danger py-0 px-1" onclick="return confirm('¿Eliminar variable?');">
                                             <i class="fa-solid fa-trash"></i>
                                         </a>
                                     </div>
