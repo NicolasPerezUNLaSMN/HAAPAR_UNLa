@@ -65,6 +65,13 @@
 </head>
 <body>
     <div class="container mt-5">
+        
+        <div class="text-center mb-5">
+            <a href="{% url 'editar_matriz' tema.id_tema %}" class="btn btn-warning btn-lg fw-bold shadow">
+                <i class="fa-solid fa-pen-to-square"></i> Ajustar Matriz Manualmente
+            </a>
+        </div>
+
         <div class="card">
             <h2>Gráfico de Dispersión: Importancia e Incertidumbre</h2>
             <canvas id="scatterChart"></canvas>

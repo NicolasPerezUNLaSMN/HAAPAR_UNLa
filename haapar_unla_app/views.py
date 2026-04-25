@@ -36,7 +36,7 @@ from .infraestructura.api_client.openai_client import generate_chat_completion
 from haapar_unla_app.models import (
     Tema, Sistema, Subsistema, Variable,
     Historial, TendenciaExterna, ActorClave, RelacionActor,
-    Influencia, PESTEL
+    Influencia, PESTEL, EvaluacionVariable
 )
 
 User = get_user_model()
@@ -781,7 +781,7 @@ def asignar_colaboradores(request, tema_id):
         "usuarios": User.objects.exclude(id=tema.user.id),
         "es_creador": es_creador
     })
-
+    
 
 def about(request):
     return render(request, 'haapar_unla_app/about.html')
@@ -842,3 +842,98 @@ def error_404_view(request, exception):
 def error_500_view(request):
     return render(request, 'haapar_unla_app/error/500.html', status=500)
 
+# ---------------------------------------------------------
+# ABM MANUAL DE LA MATRIZ MATEMÁTICA
+# ---------------------------------------------------------
+@login_required
+def editar_matriz(request, tema_id):
+    tema = get_object_or_404(Tema, pk=tema_id, activo=True)
+
+    if request.user != tema.user and request.user not in tema.colaboradores.all():
+        return HttpResponseForbidden("No tenés permiso para editar este proyecto.")
+
+    variables = list(Variable.objects.filter(subsistema__sistema__tema=tema, activo=True).order_by('pk'))
+
+    if request.method == 'POST':
+        # 1. Guardar Evaluaciones (Imp e Inc)
+        for var in variables:
+            imp_val = request.POST.get(f'imp_{var.pk}')
+            inc_val = request.POST.get(f'inc_{var.pk}')
+            
+            if imp_val and inc_val:
+                EvaluacionVariable.objects.update_or_create(
+                    variable=var,
+                    usuario=request.user,
+                    defaults={'importancia': int(imp_val), 'incertidumbre': int(inc_val)}
+                )
+
+        # 2. Guardar Influencias Cruzadas
+        for origen in variables:
+            for destino in variables:
+                if origen.pk != destino.pk:
+                    inf_val = request.POST.get(f'inf_{origen.pk}_{destino.pk}')
+                    if inf_val is not None:
+                        Influencia.objects.update_or_create(
+                            variable_origen=origen,
+                            variable_destino=destino,
+                            defaults={'valor': float(inf_val)}
+                        )
+        
+        messages.success(request, '¡Valores actualizados! Los gráficos se recalcularon.')
+        return redirect('foda_graficos', tema_id=tema.id_tema)
+
+    # Preparar el contexto para armar la tabla HTML
+    filas_tabla = []
+    for origen in variables:
+        eval_obj = EvaluacionVariable.objects.filter(variable=origen, usuario=request.user).first()
+        
+        # --- PARSEO SEGURO PARA IMPORTANCIA ---
+        try:
+            if eval_obj and eval_obj.importancia is not None:
+                imp_raw = float(eval_obj.importancia)
+            else:
+                imp_raw = float(origen.promedio_importancia() or 1)
+            imp_clean = int(round(imp_raw))
+        except (ValueError, TypeError):
+            imp_clean = 1
+        imp_clean = max(1, min(10, imp_clean))
+
+        # --- PARSEO SEGURO PARA INCERTIDUMBRE ---
+        try:
+            if eval_obj and eval_obj.incertidumbre is not None:
+                inc_raw = float(eval_obj.incertidumbre)
+            else:
+                inc_raw = float(origen.promedio_incertidumbre() or 1)
+            inc_clean = int(round(inc_raw))
+        except (ValueError, TypeError):
+            inc_clean = 1
+        inc_clean = max(1, min(10, inc_clean))
+
+        celdas = []
+        for destino in variables:
+            if origen.pk == destino.pk:
+                celdas.append({'destino_id': destino.pk, 'valor': '-', 'is_self': True})
+            else:
+                inf_obj = Influencia.objects.filter(variable_origen=origen, variable_destino=destino).first()
+                # --- PARSEO SEGURO PARA INFLUENCIA ---
+                try:
+                    inf_raw = float(inf_obj.valor) if inf_obj and inf_obj.valor is not None else 0
+                    inf_clean = int(round(inf_raw))
+                except (ValueError, TypeError):
+                    inf_clean = 0
+                inf_clean = max(0, min(3, inf_clean))
+                
+                celdas.append({'destino_id': destino.pk, 'valor': inf_clean, 'is_self': False})
+
+        filas_tabla.append({
+            'origen': origen,
+            'imp': imp_clean,
+            'inc': inc_clean,
+            'celdas': celdas
+        })
+
+    return render(request, 'haapar_unla_app/editar_matriz.html', {
+        'tema': tema,
+        'variables': variables,
+        'filas_tabla': filas_tabla
+    })
