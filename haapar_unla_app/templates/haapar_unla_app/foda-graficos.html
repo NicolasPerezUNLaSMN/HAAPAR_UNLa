@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Gráficos FODA</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.4.0"></script>
@@ -28,6 +29,19 @@
             margin-bottom: 30px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
+        .header-card {
+            background-color: #ffffff !important;
+            color: #333 !important;
+        }
+        .btn-back-arrow {
+            color: #005c3d; 
+            font-size: 1.5rem;
+            transition: transform 0.2s;
+        }
+        .btn-back-arrow:hover {
+            color: #003d29;
+            transform: scale(1.1);
+        }
         h2 {
             text-align: center;
             margin-bottom: 20px;
@@ -51,23 +65,35 @@
         td { text-align: center; color: #fff; }
         td[style] { color: #000; font-weight: bold; }
         
-        /* Contenedores Blancos para Highcharts */
         .hc-container {
             width: 100%;
             max-width: 900px;
             height: 600px; 
             margin: 0 auto;
-            background-color: #ffffff; /* Fondo blanco */
+            background-color: #ffffff;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
     </style>
 </head>
 <body>
-    <div class="container mt-5">
+    <div class="container mt-4">
         
-        <div class="text-center mb-5">
-            <a href="{% url 'editar_matriz' tema.id_tema %}" class="btn btn-warning btn-lg fw-bold shadow">
+        <div class="card header-card shadow-sm py-4 px-3 mb-4">
+            <div class="d-flex align-items-center position-relative">
+                <a href="{% url 'proyecto_detalle' tema.id_tema subsistema.id_subsistema %}" class="position-absolute start-0 text-decoration-none btn-back-arrow ps-3">
+                    <i class="fa-solid fa-arrow-left"></i>
+                </a>
+                <div class="w-100 text-center">
+                    <h1 class="fw-bold" style="color: #004d40; text-transform: uppercase; font-size: 2.2rem; letter-spacing: 1px;">GRÁFICOS DEL SUBSISTEMA</h1>
+                    <p class="text-muted mb-2" style="font-size: 1.1rem;">{{ tema.nombre }}</p>
+                    <p class="fw-bold mb-0" style="color: #495057;">Subsistema: {{ subsistema.nombre }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mb-5 mt-2">
+            <a href="{% url 'editar_matriz' subsistema.id_subsistema %}" class="btn btn-warning btn-lg fw-bold shadow">
                 <i class="fa-solid fa-pen-to-square"></i> Ajustar Matriz Manualmente
             </a>
         </div>
@@ -249,17 +275,14 @@
 
             const nombreProyecto = '{{ tema.nombre|escapejs }}' || 'Proyecto';
             
-            // Estructura oficial del árbol
             const highchartsData = [{ id: 'root', name: nombreProyecto, color: '#333333' }];
 
             Object.keys(pestel).forEach((categoria, index) => {
                 let colorRama = coloresPestel[categoria] || '#aaaaaa';
                 let catId = 'cat_' + index;
                 
-                // Nodo Categoría (Ej: Social)
                 highchartsData.push({ id: catId, parent: 'root', name: categoria, color: colorRama });
 
-                // Nodo Hojas (Ej: Adopción tecnológica)
                 if (Array.isArray(pestel[categoria])) {
                     pestel[categoria].forEach((factor, fIndex) => {
                         highchartsData.push({ id: catId + '_f_' + fIndex, parent: catId, name: factor, color: colorRama });
@@ -274,10 +297,12 @@
                     type: 'treegraph',
                     data: highchartsData,
                     tooltip: { pointFormat: '{point.name}' },
-                    marker: { symbol: 'rect', radius: 5 }, // Nodos estilo "píldora"
+                    marker: { symbol: 'rect', radius: 5 }, 
                     dataLabels: {
                         pointFormat: '{point.name}',
-                        style: { whiteSpace: 'nowrap', textOutline: 'none', color: '#333333' }
+                        style: { whiteSpace: 'nowrap', textOutline: 'none', color: '#333333', fontSize: '11px', fontWeight: 'bold' },
+                        align: 'left',
+                        x: 15
                     }
                 }],
                 credits: { enabled: false }

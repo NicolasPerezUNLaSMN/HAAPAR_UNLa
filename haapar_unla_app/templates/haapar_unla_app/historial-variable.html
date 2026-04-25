@@ -3,9 +3,16 @@
 {% block content %}
 
 <div class="container mt-4 position-relative">
-  <a href="{% url 'variable_detalle' subsistema_id %}" class="btn-back">
-     <i class="fa-solid fa-arrow-left"></i>
-  </a>
+  {% if from_view == 'matriz' %}
+    <a href="{% url 'editar_matriz' subsistema_id %}" class="btn-back">
+       <i class="fa-solid fa-arrow-left"></i>
+    </a>
+  {% else %}
+    <a href="{% url 'variable_detalle' subsistema_id %}" class="btn-back">
+       <i class="fa-solid fa-arrow-left"></i>
+    </a>
+  {% endif %}
+
   <h2 class="text-center heading-section">Historial de Variables</h2>
   
   <table class="table proyectos-table">
@@ -13,7 +20,7 @@
       <tr>
         <th>Variable</th>
         <th>Acción</th>
-        <th>Fecha</th>
+        <th>Detalles</th> <th>Fecha</th>
         <th>Usuario</th>
       </tr>
     </thead>
@@ -28,16 +35,17 @@
           {% endif %}
         </td>
         <td>{{ ev.get_accion_display }}</td>
+        <td class="text-muted" style="font-size: 0.9rem;">{{ ev.detalles|default:"-" }}</td>
         <td>{{ ev.fecha|date:"d/m/Y H:i" }}</td>
         <td>{{ ev.usuario.username }}</td>
       </tr>
       {% empty %}
       <tr>
-        <td colspan="6" class="text-center">No hay registros históricos aún.</td>
+        <td colspan="5" class="text-center">No hay registros históricos aún.</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
-
+</div>
 
 {% endblock %}

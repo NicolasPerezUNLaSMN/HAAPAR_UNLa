@@ -189,7 +189,6 @@ class VariableTendencia(models.Model):
 
 
 class Historial(models.Model):
-    
     ACCIONES = [
         ('CREADO', 'Creado'),
         ('AGREGADO', 'Agregado'),
@@ -204,8 +203,9 @@ class Historial(models.Model):
     tendencia = models.ForeignKey(TendenciaExterna, on_delete=models.SET_NULL, null=True, blank=True)
     
     usuario = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
-    
     accion = models.CharField(max_length=20, choices=ACCIONES)
+    
+    detalles = models.TextField(null=True, blank=True) 
     
     def __str__(self):
         if self.usuario:

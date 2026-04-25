@@ -7,41 +7,41 @@
   <div class="page-title dark-background">
     <div class="container position-relative">
       <h1 class="text-center heading-section">Editar Variable</h1>
-      <p class="text-center text-muted">{{ actor.subsistema.nombre }}</p>
+      <p class="text-center text-muted">{{ variable.subsistema.nombre }}</p>
     </div>
   </div>
 
-
-            <form method="POST" class="styled-form">
-  <div class="container mt-4">
+  <div class="container mt-4 mb-5">
     <div class="row justify-content-center">
       <div class="col-md-8">
-        <div class="card">
-          <div class="card-body">
-            <form method="POST">
-
+        <div class="card shadow-sm">
+          <div class="card-body p-4">
+            
+            <form method="POST" class="styled-form">
               {% csrf_token %}
+              
+              <input type="hidden" name="next" value="{{ next }}">
 
               <div class="mb-3">
-                <label for="nombre" class="form-label">Nombre de la Variable</label>
+                <label for="nombre" class="form-label fw-bold">Nombre de la Variable</label>
                 <input type="text" class="form-control" id="nombre" name="nombre" 
                        value="{{ variable.nombre }}" required>
               </div>
 
               <div class="mb-3">
-                <label for="nombre_corto" class="form-label">Nombre Corto</label>
+                <label for="nombre_corto" class="form-label fw-bold">Nombre Corto (foda)</label>
                 <input type="text" class="form-control" id="nombre_corto" name="nombre_corto" 
                        value="{{ variable.nombre_corto }}" required>
               </div>
 
               <div class="mb-3">
-                <label for="descripcion" class="form-label">Descripción</label>
+                <label for="descripcion" class="form-label fw-bold">Descripción</label>
                 <textarea class="form-control" id="descripcion" name="descripcion" 
-                          rows="3" required>{{ variable.descripcion }}</textarea>
+                          rows="4" required>{{ variable.descripcion }}</textarea>
               </div>
 
-              <div class="mb-3">
-                <label for="tipo" class="form-label">Tipo</label>
+              <div class="mb-4">
+                <label for="tipo" class="form-label fw-bold">Tipo</label>
                 <select class="form-select" id="tipo" name="tipo" required>
                   <option value="I" {% if variable.tipo == "I" %}selected{% endif %}>Interna</option>
                   <option value="E" {% if variable.tipo == "E" %}selected{% endif %}>Externa</option>
@@ -49,8 +49,19 @@
               </div>
               
               <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                <a href="{% url 'variable_detalle' subsistema_id %}" class="btn btn-secondary me-md-2">Cancelar</a>
-                <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                {% if next == 'matriz' %}
+                    <a href="{% url 'editar_matriz' subsistema_id %}" class="btn btn-outline-secondary me-md-2">
+                      <i class="fa-solid fa-xmark"></i> Cancelar
+                    </a>
+                {% else %}
+                    <a href="{% url 'variable_detalle' subsistema_id %}" class="btn btn-outline-secondary me-md-2">
+                      <i class="fa-solid fa-xmark"></i> Cancelar
+                    </a>
+                {% endif %}
+                
+                <button type="submit" class="btn btn-success px-4">
+                  <i class="fa-solid fa-check"></i> Guardar Cambios
+                </button>
               </div>
             </form>
 

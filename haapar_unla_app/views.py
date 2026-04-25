@@ -173,6 +173,9 @@ def crear_variable(request, subsistema_id):
 def editar_variable(request, pk):
     variable = get_object_or_404(Variable, pk=pk, activo=True)
     subsistema_id = variable.subsistema.id_subsistema
+    
+    # Leemos de dónde viene (el parámetro invisible)
+    next_view = request.GET.get('next', '')
 
     if request.method == "POST":
         variable.nombre = request.POST.get("nombre")
@@ -186,11 +189,18 @@ def editar_variable(request, pk):
             usuario=request.user,
             accion='MODIFICADO'
         )
+        
+        # Leemos el parámetro oculto que nos mandó el formulario
+        next_post = request.POST.get('next', '')
+        if next_post == 'matriz':
+            return redirect("editar_matriz", subsistema_id=subsistema_id)
+        
         return redirect("variable_detalle", subsistema_id=subsistema_id)
 
     return render(request, "haapar_unla_app/editar-variable.html", {
         "variable": variable,
-        "subsistema_id": subsistema_id
+        "subsistema_id": subsistema_id,
+        "next": next_view # Se lo pasamos al HTML
     })
 
 
@@ -198,6 +208,9 @@ def editar_variable(request, pk):
 def eliminar_variable(request, pk):
     variable = get_object_or_404(Variable, pk=pk, activo=True)
     subsistema_id = variable.subsistema.id_subsistema
+    
+    # Leemos de dónde viene el clic
+    next_view = request.GET.get('next', '')
 
     variable.activo = False
     variable.save()
@@ -207,6 +220,11 @@ def eliminar_variable(request, pk):
         usuario=request.user,
         accion='ELIMINADO'
     )
+    
+    # Decidimos a dónde redireccionar
+    if next_view == 'matriz':
+        return redirect("editar_matriz", subsistema_id=subsistema_id)
+        
     return redirect("variable_detalle", subsistema_id=subsistema_id)
 
 
@@ -218,9 +236,13 @@ def historial_variables(request, subsistema_id):
         variable__subsistema_id=subsistema_id
     ).order_by('-fecha')
 
+    # Capturamos de dónde viene el usuario
+    from_view = request.GET.get('from', '')
+
     return render(request, "haapar_unla_app/historial-variable.html", {
         "historial": historial,
-        "subsistema_id": subsistema_id
+        "subsistema_id": subsistema_id,
+        "from_view": from_view  # Se lo pasamos al HTML
     })
 
 
@@ -679,30 +701,23 @@ def chatgpt_api(request):
 # VISTA PRINCIPAL (FODA Y GRÁFICOS)
 # ---------------------------------------------------------
 @login_required
-def foda_graficos(request, tema_id):
-    """
-    Vista maestra que recolecta los datos reales de la base de datos
-    y los envía a la plantilla HTML foda-graficos.html
-    """
-    tema = get_object_or_404(Tema, pk=tema_id, activo=True)
+def foda_graficos(request, subsistema_id):
+    subsistema = get_object_or_404(Subsistema, pk=subsistema_id, activo=True)
+    tema = subsistema.sistema.tema
 
-    # Verificar permisos: creador o colaborador
     if request.user != tema.user and request.user not in tema.colaboradores.all():
         return HttpResponseForbidden("No tenés permiso para ver este proyecto.")
 
+    # ACÁ SE FILTRA POR SUBSISTEMA PARA QUE NO SE REPITAN LAS VARIABLES
     variables_obj = Variable.objects.filter(
-        subsistema__sistema__tema=tema,
+        subsistema=subsistema,
         activo=True
     ).prefetch_related('pestels').order_by('pk')
 
     nombres_vars = [v.nombre_corto if v.nombre_corto else v.nombre[:15] for v in variables_obj]
 
-    importancias = []
-    incertidumbres = []
-
-    for v in variables_obj:
-        importancias.append(int(v.promedio_importancia()))
-        incertidumbres.append(int(v.promedio_incertidumbre()))
+    importancias = [int(v.promedio_importancia()) for v in variables_obj]
+    incertidumbres = [int(v.promedio_incertidumbre()) for v in variables_obj]
 
     datos_dispersion = {
         "variables": nombres_vars,
@@ -750,6 +765,7 @@ def foda_graficos(request, tema_id):
 
     contexto = {
         'tema': tema,
+        'subsistema': subsistema,
         'datos_dispersion': json.dumps(datos_dispersion),
         'variables': nombres_vars,
         'filas': zip(nombres_vars, matriz_valores),
@@ -846,68 +862,86 @@ def error_500_view(request):
 # ABM MANUAL DE LA MATRIZ MATEMÁTICA
 # ---------------------------------------------------------
 @login_required
-def editar_matriz(request, tema_id):
-    tema = get_object_or_404(Tema, pk=tema_id, activo=True)
+def editar_matriz(request, subsistema_id):
+    subsistema = get_object_or_404(Subsistema, pk=subsistema_id, activo=True)
+    tema = subsistema.sistema.tema
 
     if request.user != tema.user and request.user not in tema.colaboradores.all():
         return HttpResponseForbidden("No tenés permiso para editar este proyecto.")
 
-    variables = list(Variable.objects.filter(subsistema__sistema__tema=tema, activo=True).order_by('pk'))
+    variables = list(Variable.objects.filter(subsistema=subsistema, activo=True).order_by('pk'))
 
     if request.method == 'POST':
-        # 1. Guardar Evaluaciones (Imp e Inc)
+        # 1. Guardar Evaluaciones (Imp e Inc) y chequear cambios
         for var in variables:
             imp_val = request.POST.get(f'imp_{var.pk}')
             inc_val = request.POST.get(f'inc_{var.pk}')
             
             if imp_val and inc_val:
-                EvaluacionVariable.objects.update_or_create(
-                    variable=var,
-                    usuario=request.user,
-                    defaults={'importancia': int(imp_val), 'incertidumbre': int(inc_val)}
-                )
+                imp_val = int(imp_val)
+                inc_val = int(inc_val)
+                
+                # Buscamos si ya tenía valores guardados
+                eval_obj = EvaluacionVariable.objects.filter(variable=var, usuario=request.user).first()
+                old_imp = eval_obj.importancia if eval_obj else "Vacío"
+                old_inc = eval_obj.incertidumbre if eval_obj else "Vacío"
 
-        # 2. Guardar Influencias Cruzadas
+                # Solo guardamos en historial si hubo un cambio real o si es nuevo
+                if not eval_obj or old_imp != imp_val or old_inc != inc_val:
+                    EvaluacionVariable.objects.update_or_create(
+                        variable=var,
+                        usuario=request.user,
+                        defaults={'importancia': imp_val, 'incertidumbre': inc_val}
+                    )
+                    
+                    texto_detalle = f"Imp: {old_imp} ➔ {imp_val} | Inc: {old_inc} ➔ {inc_val}"
+                    
+                    Historial.objects.create(
+                        variable=var,
+                        usuario=request.user,
+                        accion='EVALUACION',
+                        detalles=texto_detalle
+                    )
+
+        # 2. Guardar Influencias Cruzadas y chequear cambios
         for origen in variables:
             for destino in variables:
                 if origen.pk != destino.pk:
                     inf_val = request.POST.get(f'inf_{origen.pk}_{destino.pk}')
                     if inf_val is not None:
-                        Influencia.objects.update_or_create(
-                            variable_origen=origen,
-                            variable_destino=destino,
-                            defaults={'valor': float(inf_val)}
-                        )
+                        inf_val = float(inf_val)
+                        
+                        inf_obj = Influencia.objects.filter(variable_origen=origen, variable_destino=destino).first()
+                        old_inf = float(inf_obj.valor) if inf_obj else "Vacío"
+                        
+                        # Solo guardamos en historial si cambió la influencia
+                        if not inf_obj or old_inf != inf_val:
+                            Influencia.objects.update_or_create(
+                                variable_origen=origen,
+                                variable_destino=destino,
+                                defaults={'valor': inf_val}
+                            )
+                            
+                            # Registramos que "Origen" modificó su influencia sobre "Destino"
+                            texto_detalle = f"Influencia sobre '{destino.nombre_corto}': {old_inf} ➔ {int(inf_val)}"
+                            Historial.objects.create(
+                                variable=origen,
+                                usuario=request.user,
+                                accion='MODIFICADO',
+                                detalles=texto_detalle
+                            )
         
         messages.success(request, '¡Valores actualizados! Los gráficos se recalcularon.')
-        return redirect('foda_graficos', tema_id=tema.id_tema)
+        return redirect('foda_graficos', subsistema_id=subsistema.id_subsistema)
 
-    # Preparar el contexto para armar la tabla HTML
     filas_tabla = []
     for origen in variables:
         eval_obj = EvaluacionVariable.objects.filter(variable=origen, usuario=request.user).first()
         
-        # --- PARSEO SEGURO PARA IMPORTANCIA ---
-        try:
-            if eval_obj and eval_obj.importancia is not None:
-                imp_raw = float(eval_obj.importancia)
-            else:
-                imp_raw = float(origen.promedio_importancia() or 1)
-            imp_clean = int(round(imp_raw))
-        except (ValueError, TypeError):
-            imp_clean = 1
-        imp_clean = max(1, min(10, imp_clean))
-
-        # --- PARSEO SEGURO PARA INCERTIDUMBRE ---
-        try:
-            if eval_obj and eval_obj.incertidumbre is not None:
-                inc_raw = float(eval_obj.incertidumbre)
-            else:
-                inc_raw = float(origen.promedio_incertidumbre() or 1)
-            inc_clean = int(round(inc_raw))
-        except (ValueError, TypeError):
-            inc_clean = 1
-        inc_clean = max(1, min(10, inc_clean))
+        try: imp_clean = max(1, min(10, int(round(float(eval_obj.importancia if eval_obj else (origen.promedio_importancia() or 1))))))
+        except: imp_clean = 1
+        try: inc_clean = max(1, min(10, int(round(float(eval_obj.incertidumbre if eval_obj else (origen.promedio_incertidumbre() or 1))))))
+        except: inc_clean = 1
 
         celdas = []
         for destino in variables:
@@ -915,25 +949,15 @@ def editar_matriz(request, tema_id):
                 celdas.append({'destino_id': destino.pk, 'valor': '-', 'is_self': True})
             else:
                 inf_obj = Influencia.objects.filter(variable_origen=origen, variable_destino=destino).first()
-                # --- PARSEO SEGURO PARA INFLUENCIA ---
-                try:
-                    inf_raw = float(inf_obj.valor) if inf_obj and inf_obj.valor is not None else 0
-                    inf_clean = int(round(inf_raw))
-                except (ValueError, TypeError):
-                    inf_clean = 0
-                inf_clean = max(0, min(3, inf_clean))
-                
+                try: inf_clean = max(0, min(3, int(round(float(inf_obj.valor if inf_obj else 0)))))
+                except: inf_clean = 0
                 celdas.append({'destino_id': destino.pk, 'valor': inf_clean, 'is_self': False})
 
-        filas_tabla.append({
-            'origen': origen,
-            'imp': imp_clean,
-            'inc': inc_clean,
-            'celdas': celdas
-        })
+        filas_tabla.append({'origen': origen, 'imp': imp_clean, 'inc': inc_clean, 'celdas': celdas})
 
     return render(request, 'haapar_unla_app/editar_matriz.html', {
         'tema': tema,
+        'subsistema': subsistema,
         'variables': variables,
         'filas_tabla': filas_tabla
     })
