@@ -5,12 +5,10 @@
 <main class="main">
   <div class="page-title dark-background">
     <div class="container position-relative">
-       <!-- Flecha arriba a la izquierda -->
-      <a href="{% url 'proyecto_detalle' tema.id_tema subsistema.id_subsistema %}" 
+       <a href="{% url 'proyecto_detalle' tema.id_tema subsistema.id_subsistema %}" 
          class="btn-back position-absolute top-0 start-0 mt-3 ms-3">
         <i class="fa-solid fa-arrow-left"></i>
       </a>
-      <!-- Título centrado -->
       <h1 class="text-center heading-section">VARIABLES DEL SUBSISTEMA</h1>
       <p class="text-center fw-bold">Subsistema: {{ subsistema.nombre }}</p>
 
@@ -22,12 +20,10 @@
     </div>
   </div>
 
-  <!-- Botones de acción fijos -->
   <div class="container mt-4 text-center sticky-top botonera" style="z-index: 1000; background-color: #fff;">
     <a href="{% url 'crear_variable' subsistema.id_subsistema %}" class="btn btn-primary">Agregar Variable</a>
   </div>
 
-  <!-- Listado de variables -->
   <div class="container mt-4">
     {% for variable in variables %}
       <div class="card mb-4 proyecto-base">
@@ -42,7 +38,7 @@
             <a href="{% url 'editar_variable' variable.id_variable %}" class="btn btn-sm btn-outline-primary">
               <i class="fa-solid fa-edit"></i> Editar
             </a>
-            <form action="{% url 'eliminar_variable' variable.id_variable %}" method="post" class="d-inline">
+            <form action="{% url 'eliminar_variable' variable.id_variable %}" method="POST" style="display:inline;">
               {% csrf_token %}
               <button type="submit" class="btn btn-sm btn-outline-danger ms-1"
                       onclick="return confirm('¿Estás seguro de que quieres eliminar esta variable?')">

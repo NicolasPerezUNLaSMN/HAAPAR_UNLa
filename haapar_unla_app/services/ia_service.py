@@ -1,24 +1,24 @@
 import json
+import logging
 from dotenv import load_dotenv 
 import os
 from openai import OpenAI 
 
-
-load_dotenv(override=True)
+# Configuramos el logger
+logger = logging.getLogger(__name__)
 
 from ..models import Historial, Sistema, Subsistema, Variable, ActorClave, TendenciaExterna,EvaluacionVariable, Influencia
 
+load_dotenv(override=True)
 
 # 2. Obtenemos la clave específicamente
 api_key = os.getenv("API_KEY_OPENROUTER")
 
-# 3. Verificación de seguridad (esto saldrá en tu terminal de VS Code)
-#if api_key and api_key.startswith("sk-proj"):
-    #print("⚠️ ERROR: Sigues cargando una clave de OpenAI en lugar de OpenRouter")
-#elif api_key:
-    #print("✅ Clave de OpenRouter cargada correctamente")
-#else:
-    #print("❌ No se encontró ninguna clave")
+# 3. Verificación de seguridad usando logging en vez de print
+if api_key:
+    logger.info("Clave de IA cargada correctamente.")
+else:
+    logger.error("No se encontró ninguna clave de IA.")
 
 client = OpenAI(
     api_key=api_key,

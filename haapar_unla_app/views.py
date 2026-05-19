@@ -239,6 +239,7 @@ def editar_variable(request, pk):
 
 
 @login_required
+@require_POST
 def eliminar_variable(request, pk):
     variable = get_object_or_404(Variable, pk=pk, activo=True)
     subsistema_id = variable.subsistema.id_subsistema
@@ -554,6 +555,7 @@ def editar_actor(request, pk):
     })
 
 @login_required
+@require_POST
 def eliminar_actor(request, pk):
     actor = get_object_or_404(ActorClave, pk=pk)
     actor.activo = False

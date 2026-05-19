@@ -55,21 +55,27 @@
                                 <div class="d-flex justify-content-between align-items-center">
                                     <span>{{ fila.origen.nombre_corto }}</span>
                                     <div class="text-nowrap ms-2">
-                                        <a href="{% url 'editar_variable' fila.origen.pk %}?next=matriz" class="btn btn-sm btn-outline-primary py-0 px-1">
+                                        <a href="{% url 'editar_variable' fila.origen.pk %}?next=matriz" class="btn btn-sm btn-outline-primary py-0 px-1" title="Editar Variable">
                                             <i class="fa-solid fa-pen"></i>
                                         </a>
-                                        <a href="{% url 'eliminar_variable' fila.origen.pk %}?next=matriz" class="btn btn-sm btn-outline-danger py-0 px-1" onclick="return confirm('¿Eliminar variable?');">
+                                        
+                                        <button type="submit" 
+                                                formaction="{% url 'eliminar_variable' fila.origen.pk %}?next=matriz" 
+                                                class="btn btn-sm btn-outline-danger py-0 px-1" 
+                                                onclick="return confirm('¿Estás seguro de eliminar la variable {{ fila.origen.nombre_corto }}? (Se perderán los cambios no guardados en la matriz)');">
                                             <i class="fa-solid fa-trash"></i>
-                                        </a>
+                                        </button>
                                     </div>
                                 </div>
                             </td>
+                            
                             <td>
                                 <input type="number" name="imp_{{ fila.origen.pk }}" class="form-control fw-bold text-primary" value="{{ fila.imp|floatformat:'0' }}" min="1" max="10" required>
                             </td>
                             <td>
                                 <input type="number" name="inc_{{ fila.origen.pk }}" class="form-control fw-bold text-primary" value="{{ fila.inc|floatformat:'0' }}" min="1" max="10" required>
                             </td>
+                            
                             {% for celda in fila.celdas %}
                                 <td>
                                     {% if celda.is_self %}

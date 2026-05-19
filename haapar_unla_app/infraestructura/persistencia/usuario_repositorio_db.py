@@ -1,9 +1,12 @@
+import logging
 from haapar_unla_app.dominio.puertos.salida.usuario_repositorio import UsuarioRepositorio
 from haapar_unla_app.dominio.entidades.usuario import Usuario as UsuarioEntidad
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.hashers import check_password
 
+# Configuramos el logger
+logger = logging.getLogger(__name__)
 
 UsuarioModel = get_user_model()
 
@@ -55,12 +58,11 @@ class UsuarioRepositorioDB(UsuarioRepositorio):
     
     
     def _convertir_a_entidad(self, usuario_db) -> UsuarioEntidad:
-        
-        print(f"DEBUG: Password en BD: {usuario_db.password}")
-        print(f"DEBUG: Tipo: {type(usuario_db.password)}")
-        print(f"DEBUG: Empieza con pbkdf2: {'pbkdf2_sha256' in usuario_db.password}")
-        
         """Convierte el modelo Django a entidad de dominio"""
+        
+        # Usamos un log de nivel debug sin exponer información sensible como la contraseña
+        logger.debug(f"Convirtiendo usuario ID {usuario_db.id} a entidad de dominio.")
+        
         return UsuarioEntidad(
             id=usuario_db.id,
             username=usuario_db.username,
