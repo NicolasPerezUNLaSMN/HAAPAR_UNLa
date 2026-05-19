@@ -214,7 +214,6 @@ def generar_estructura_prospectiva(tema):
                 tipo = "CUALITATIVA"
 
             tendencia = TendenciaExterna.objects.create(
-
                 subsistema=subsistema,
                 nombre=t.get("nombre", ""),
                 nombre_corto=t.get("nombre", "")[:40],
