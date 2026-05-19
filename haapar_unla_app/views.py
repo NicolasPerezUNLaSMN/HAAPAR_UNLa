@@ -1,3 +1,4 @@
+from .services.ai_client import generar_respuesta_llm
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import (
     AuthenticationForm, PasswordChangeForm,
@@ -30,7 +31,6 @@ from django.http import HttpResponseForbidden
 from django.contrib.auth.models import Group
 from .services.ia_service import generar_estructura_prospectiva
 from .forms import SignUpForm
-from .infraestructura.api_client.openai_client import generate_chat_completion
 from django.contrib.auth.models import Group
 # Imports limpios
 from haapar_unla_app.models import (
@@ -713,9 +713,9 @@ def password_reset_complete(request):
 # ---------------------------
 # ChatGPT API wrapper (simple)
 # ---------------------------
-@csrf_exempt
-@require_POST
-def chatgpt_api(request):
+# @csrf_exempt
+# @require_POST
+# def chatgpt_api(request):
     """Endpoint simple que recibe JSON {"prompt": "..."} y retorna la respuesta de ChatGPT en JSON."""
     try:
         payload = json.loads(request.body.decode('utf-8'))
@@ -731,7 +731,7 @@ def chatgpt_api(request):
         return JsonResponse({'success': False, 'error': result.get('error')}, status=500)
 
     return JsonResponse({'success': True, 'text': result.get('text')})
-
+#
 
 # ---------------------------------------------------------
 # VISTA PRINCIPAL (FODA Y GRÁFICOS)
@@ -988,3 +988,26 @@ def editar_matriz(request, subsistema_id):
         'variables': variables,
         'filas_tabla': filas_tabla
     })
+    
+    # ==========================================
+# ENDPOINT DE IA UNIFICADO
+# ==========================================
+@login_required
+@require_POST
+def chatgpt_api(request):
+    try:
+        payload = json.loads(request.body.decode('utf-8'))
+    except Exception:
+        return JsonResponse({'success': False, 'error': 'JSON inválido en cuerpo'}, status=400)
+
+    prompt = payload.get('prompt')
+    if not prompt:
+        return JsonResponse({'success': False, 'error': 'Falta campo "prompt"'}, status=400)
+
+    # Usamos el cliente unificado nuevo
+    result = generar_respuesta_llm(prompt)
+    
+    if not result.get('success'):
+        return JsonResponse({'success': False, 'error': result.get('error')}, status=500)
+
+    return JsonResponse({'success': True, 'text': result.get('text')})

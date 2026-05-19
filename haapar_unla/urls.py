@@ -63,8 +63,6 @@ urlpatterns = [
     path('tendencias/<int:pk>/editar/', views.editar_tendencia, name='editar_tendencia'),
     path('tendencias/<int:pk>/eliminar/', views.eliminar_tendencia, name='eliminar_tendencia'),
     
-    # API interna para ChatGPT
-    path('api/', include('haapar_unla_app.infraestructura.api_urls')),
     
     #Agregar colaboradores
      path('tema/<int:tema_id>/colaboradores/', views.asignar_colaboradores, name='asignar_colaboradores'),
