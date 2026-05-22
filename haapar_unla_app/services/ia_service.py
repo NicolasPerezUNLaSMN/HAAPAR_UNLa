@@ -212,29 +212,44 @@ def generar_evaluaciones_e_influencias(tema, usuario):
     if not variables:
         return
 
-    lista_vars_texto = "\n".join([f"[{i}] {v.nombre}" for i, v in enumerate(variables)])
+    # IMPORTANTE: Eliminamos el índice "[i]" para no confundir a la IA
+    lista_vars_texto = "\n".join([f"- {v.nombre}" for v in variables])
     cantidad = len(variables)
 
     prompt = f"""
-    Sos un expert en prospectiva estratégica y análisis MIC-MAC.
-    Acabo de identificar {cantidad} variables clave para el proyecto académico: "{tema.nombre}".
+    Sos un experto en prospectiva estratégica y análisis MIC-MAC.
+    Acabo de identificar exactamente {cantidad} variables clave para el proyecto: "{tema.nombre}".
     
     Las variables, en su orden exacto, son:
     {lista_vars_texto}
 
-    Necesito que actúes como un panel de expertos y evalúes las relaciones matemáticas entre ellas.
+    Necesito que actúes como un panel de expertos y evalúes matemáticamente estas {cantidad} variables.
     
-    IMPORTANTE: Respondé ÚNICAMENTE con el objeto JSON estructurado tal cual el ejemplo. 
-    NO incluyas introducciones, NO incluyas conclusiones, ni bloques de código markdown (```json). Solo el JSON puro.
+    REGLAS ESTRICTAS (Si no las cumplís, el análisis fallará):
+    1. "evaluaciones": DEBE ser una lista con exactamente {cantidad} objetos. Un objeto para cada variable.
+       Cada objeto debe tener "importancia" (entero del 1 al 10) e "incertidumbre" (entero del 1 al 10).
+    2. "matriz_influencia": DEBE ser una matriz cuadrada exacta de {cantidad} filas por {cantidad} columnas.
+    3. VALORES DE INFLUENCIA: Los únicos números que podés usar dentro de la matriz son 0, 1, 2 o 3. 
+       - 0 = Sin influencia
+       - 1 = Influencia débil
+       - 2 = Influencia moderada
+       - 3 = Influencia fuerte
+       ¡PROHIBIDO USAR NÚMEROS MAYORES A 3! ¡PROHIBIDO PONER EL NÚMERO DE LA VARIABLE!
+    4. La diagonal de la matriz (una variable contra sí misma) siempre debe ser 0.
 
-    Estructura requerida:
+    Respondé ÚNICAMENTE con un JSON válido. No uses bloques de código markdown, ni texto extra.
+    
+    Ejemplo de estructura esperada:
     {{
       "evaluaciones": [
-        {{"importancia": 8, "incertidumbre": 5}}
+        {{"importancia": 8, "incertidumbre": 5}},
+        {{"importancia": 7, "incertidumbre": 8}}
+        // ... (debe haber {cantidad} objetos en total)
       ],
       "matriz_influencia": [
-        [0, 2, 1, 3],
-        [1, 0, 2, 0]
+        [0, 2, 1, 3], // ... (debe tener {cantidad} números, todos entre 0 y 3)
+        [1, 0, 2, 0]  // ... (debe tener {cantidad} números, todos entre 0 y 3)
+        // ... (debe haber {cantidad} filas en total)
       ]
     }}
     """
@@ -248,31 +263,33 @@ def generar_evaluaciones_e_influencias(tema, usuario):
 
     content = resultado.get('text').strip()
 
-    # Buscador robusto con expresiones regulares para quedarse solo con el contenido entre llaves
+    # Buscador robusto con expresiones regulares para quedarse solo con el JSON
     match = re.search(r'\{.*\}', content, re.DOTALL)
     if match:
         content = match.group(0)
     else:
-        logger.error("ERROR: No se encontró estructura de JSON en la respuesta de la IA.")
-        logger.error(f"Contenido crudo recibido: {content}")
+        logger.error("ERROR: No se encontró estructura JSON en la respuesta de la IA.")
         return
 
     try:
         data = json.loads(content)
     except json.JSONDecodeError:
-        logger.error("ERROR: La IA falló al parsear la matriz matemática JSON. Las variables quedarán en 0.")
-        logger.error(f"Contenido que falló al parsear: {content}")
+        logger.error("ERROR: La IA falló al parsear la matriz matemática JSON.")
         return 
 
     evaluaciones = data.get("evaluaciones", [])
     matriz = data.get("matriz_influencia", [])
 
     for i, var in enumerate(variables):
-        imp = 0
-        inc = 0
+        # Valores por defecto de 5 en caso de que la IA se quede corta
+        imp, inc = 5, 5
         if i < len(evaluaciones):
-            imp = evaluaciones[i].get("importancia", 0)
-            inc = evaluaciones[i].get("incertidumbre", 0)
+            try:
+                # Blindaje contra alucinaciones (forzar a estar entre 1 y 10)
+                imp = max(1, min(10, int(evaluaciones[i].get("importancia", 5))))
+                inc = max(1, min(10, int(evaluaciones[i].get("incertidumbre", 5))))
+            except (ValueError, TypeError):
+                pass
             
         EvaluacionVariable.objects.create(
             variable=var,
@@ -291,7 +308,12 @@ def generar_evaluaciones_e_influencias(tema, usuario):
             if i != j:
                 valor_ia = 0
                 if i < len(matriz) and j < len(matriz[i]):
-                    valor_ia = matriz[i][j]
+                    try:
+                        # Blindaje absoluto: Si la IA tira un 15, lo bajamos a 3. Si tira un texto, va 0.
+                        val = int(matriz[i][j])
+                        valor_ia = max(0, min(3, val))
+                    except (ValueError, TypeError):
+                        valor_ia = 0
                 
                 Influencia.objects.create(
                     variable_origen=var_origen,
