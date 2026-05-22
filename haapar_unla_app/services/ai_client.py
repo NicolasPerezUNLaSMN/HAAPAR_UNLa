@@ -1,25 +1,21 @@
-import os
 import logging
 from openai import OpenAI
-from dotenv import load_dotenv
+from decouple import config
 
 logger = logging.getLogger(__name__)
 
-# Cargamos las variables de entorno usando dotenv
-load_dotenv(override=True)
-
 def get_ai_client():
     """Configura el cliente de IA dependiendo del proveedor elegido en el .env"""
-    provider = os.getenv("AI_PROVIDER", "openrouter").lower()
+    provider = config("AI_PROVIDER", default="openrouter").lower()
     
     if provider == "openai":
-        api_key = os.getenv("OPENAI_API_KEY")
-        base_url = None  # Usa la oficial de OpenAI
+        api_key = config("OPENAI_API_KEY", default="")
+        base_url = None
         default_model = "gpt-3.5-turbo"
         if not api_key:
             logger.warning("Falta OPENAI_API_KEY en el .env")
     else:
-        api_key = os.getenv("API_KEY_OPENROUTER")
+        api_key = config("API_KEY_OPENROUTER", default="")
         base_url = "https://openrouter.ai/api/v1"
         default_model = "meta-llama/llama-3.1-8b-instruct"
         if not api_key:
