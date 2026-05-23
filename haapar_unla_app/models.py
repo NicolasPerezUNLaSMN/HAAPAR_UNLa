@@ -231,3 +231,19 @@ class RelacionActor(models.Model):
 
     def __str__(self):
         return f"{self.actor_clave} - {self.subsistema} (Influencia: {self.influencia})"
+
+class IAInteraction(models.Model):
+    id_interaccion = models.AutoField(primary_key=True, verbose_name='ID Interacción IA')
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    tema = models.ForeignKey(Tema, on_delete=models.CASCADE, null=True, blank=True)
+    usuario = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+
+    prompt = models.TextField()
+    respuesta = models.TextField(null=True, blank=True)
+    success = models.BooleanField(default=False)
+    error = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        estado = "OK" if self.success else "ERROR"
+        return f"IA {estado} - {self.fecha.strftime('%Y-%m-%d %H:%M:%S')}"
