@@ -3,7 +3,7 @@ import logging
 import re
 from ..models import Historial, Sistema, Subsistema, Variable, ActorClave, TendenciaExterna, EvaluacionVariable, Influencia
 from .ai_client import generar_respuesta_llm
-
+from ..models import IAInteraction
 logger = logging.getLogger(__name__)
 
 def generar_estructura_prospectiva(tema):
@@ -108,6 +108,15 @@ def generar_estructura_prospectiva(tema):
     
     logger.info("Enviando solicitud de estructura a la IA...")
     resultado = generar_respuesta_llm(prompt, temperature=0.7)
+     # Guardar interacción en la base de datos
+    IAInteraction.objects.create(
+        tema=tema,
+        usuario=None,  # o el usuario actual si lo tenés en contexto
+        prompt=prompt,
+        respuesta=resultado.get('text'),
+        success=resultado.get('success', False),
+        error=resultado.get('error')
+    )
 
     if not resultado.get('success'):
         logger.error(f"La IA falló al estructurar: {resultado.get('error')}")
@@ -204,6 +213,7 @@ def generar_estructura_prospectiva(tema):
                 accion='CREADO',
                 usuario=None
             )
+            
 
 def generar_evaluaciones_e_influencias(tema, usuario):
     
@@ -298,3 +308,4 @@ def generar_evaluaciones_e_influencias(tema, usuario):
                     variable_destino=var_destino,
                     valor=valor_ia
                 )
+                
