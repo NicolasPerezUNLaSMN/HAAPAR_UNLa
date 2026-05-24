@@ -100,6 +100,9 @@ class EvaluacionVariable(models.Model):
 
     class Meta:
         unique_together = ('variable', 'usuario')
+        indexes = [
+            models.Index(fields=['variable', 'usuario']),
+        ]
 
     def __str__(self):
         return f"{self.variable.nombre} - {self.usuario or 'IA'}"
@@ -121,6 +124,11 @@ class Influencia(models.Model):
     variable_origen = models.ForeignKey(Variable, on_delete=models.CASCADE, related_name='influencias_origen')
     variable_destino = models.ForeignKey(Variable, on_delete=models.CASCADE, related_name='influencias_destino')
     
+    class Meta:
+        indexes = [
+            models.Index(fields=['variable_origen', 'variable_destino']),
+        ]
+
     def __str__(self):
         return f"{self.variable_origen} → {self.variable_destino}"
 
@@ -207,6 +215,12 @@ class Historial(models.Model):
     
     detalles = models.TextField(null=True, blank=True) 
     
+    class Meta:
+        indexes = [
+            models.Index(fields=['variable']),
+            models.Index(fields=['fecha']),
+        ]
+
     def __str__(self):
         if self.usuario:
             return f"{self.accion} - {self.usuario}"
@@ -246,4 +260,4 @@ class IAInteraction(models.Model):
 
     def __str__(self):
         estado = "OK" if self.success else "ERROR"
-        return f"IA {estado} - {self.fecha.strftime('%Y-%m-%d %H:%M:%S')}"
+        return "IA {estado} - {self.fecha.strftime('%Y-%m-%d %H:%M:%S')}"
