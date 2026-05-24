@@ -578,23 +578,15 @@ def listar_tendencias(request):
     })
 
 @login_required
-def tendencia_detalle(request, tema_id=None, subsistema_id=None):
-    if tema_id:
-        tema = get_object_or_404(Tema, id_tema=tema_id)
-        tendencias = TendenciaExterna.objects.filter(tema=tema, activo=True)
-        return render(request, 'haapar_unla_app/tendencia-detalle.html', {
-            'tema': tema,
-            'tendencias': tendencias
-        })
-    elif subsistema_id:
-        subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id, activo=True)
-        tema = subsistema.sistema.tema
-        tendencias = TendenciaExterna.objects.filter(subsistema=subsistema, activo=True)
-        return render(request, 'haapar_unla_app/tendencia-detalle.html', {
-            'tema': tema,
-            'subsistema': subsistema,
-            'tendencias': tendencias,
-        })
+def tendencia_detalle(request, subsistema_id):
+    subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id, activo=True)
+    tema = subsistema.sistema.tema
+    tendencias = TendenciaExterna.objects.filter(subsistema=subsistema, activo=True)
+    return render(request, 'haapar_unla_app/tendencia-detalle.html', {
+        'tema': tema,
+        'subsistema': subsistema,
+        'tendencias': tendencias,
+    })
 
 @login_required
 def crear_tendencia(request, subsistema_id):
