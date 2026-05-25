@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -11,12 +12,25 @@ from haapar_unla_app.models import ActorClave, RelacionActor, Subsistema
 @login_required
 def actor_detalle(request, subsistema_id):
     subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id)
-    actores = ActorClave.objects.filter(subsistema=subsistema, activo=True)
+
+    # Ordenamos y paginamos los actores
+    actores_list = ActorClave.objects.filter(
+        subsistema=subsistema, activo=True
+    ).order_by("-pk")
+    paginator = Paginator(actores_list, 5)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     tema = subsistema.sistema.tema
+
     return render(
         request,
         "haapar_unla_app/actor-detalle.html",
-        {"subsistema": subsistema, "actores": actores, "tema": tema},
+        {
+            "subsistema": subsistema,
+            "page_obj": page_obj,  # Pasamos page_obj en lugar de la lista cruda
+            "tema": tema,
+        },
     )
 
 

@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -15,13 +16,21 @@ def listar_tendencias(request):
             "tendenciaexterna", filter=Q(tendenciaexterna__activo=True), distinct=True
         )
     ).filter(num_tendencias__gt=0)
-    todas_las_tendencias = TendenciaExterna.objects.filter(activo=True)
+
+    todas_las_tendencias = TendenciaExterna.objects.filter(activo=True).order_by(
+        "-id_tendencia_externa"
+    )
+
+    paginator = Paginator(todas_las_tendencias, 5)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     return render(
         request,
         "haapar_unla_app/tendencias.html",
         {
             "tendencias_por_subsistema": tendencias_por_subsistema,
-            "todas_las_tendencias": todas_las_tendencias,
+            "page_obj": page_obj,
         },
     )
 
@@ -30,14 +39,23 @@ def listar_tendencias(request):
 def tendencia_detalle(request, subsistema_id):
     subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id, activo=True)
     tema = subsistema.sistema.tema
-    tendencias = TendenciaExterna.objects.filter(subsistema=subsistema, activo=True)
+
+    # Ordenamos y paginamos las tendencias de este subsistema específico
+    tendencias_list = TendenciaExterna.objects.filter(
+        subsistema=subsistema, activo=True
+    ).order_by("-id_tendencia_externa")
+
+    paginator = Paginator(tendencias_list, 5)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     return render(
         request,
         "haapar_unla_app/tendencia-detalle.html",
         {
             "tema": tema,
             "subsistema": subsistema,
-            "tendencias": tendencias,
+            "page_obj": page_obj,  # Pasamos page_obj en lugar de la lista completa
         },
     )
 

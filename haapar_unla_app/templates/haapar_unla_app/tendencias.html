@@ -11,11 +11,11 @@
     </div>
 
     <div class="container mt-4">
-        {% if todas_las_tendencias %}
+        {% if page_obj %}
         <div class="row">
             <div class="col-lg-8">
                 <h2 class="mb-3">Todas las Tendencias</h2>
-                {% for tendencia in todas_las_tendencias %}
+                {% for tendencia in page_obj %}
                 <div class="card mb-3">
                     <div class="card-body">
                         <div class="d-flex justify-content-between align-items-start">
@@ -45,6 +45,24 @@
                     </div>
                 </div>
                 {% endfor %}
+
+                <div class="pagination-container d-flex justify-content-center mt-4 mb-4">
+                    <span class="step-links">
+                        {% if page_obj.has_previous %}
+                            <a href="?page=1" class="btn btn-sm btn-outline-secondary">&laquo; Primera</a>
+                            <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-sm btn-outline-primary">Anterior</a>
+                        {% endif %}
+
+                        <span class="current fw-bold mx-3" style="font-size: 1.1rem; color: #555;">
+                            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                        </span>
+
+                        {% if page_obj.has_next %}
+                            <a href="?page={{ page_obj.next_page_number }}" class="btn btn-sm btn-outline-primary">Siguiente</a>
+                            <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-sm btn-outline-secondary">Última &raquo;</a>
+                        {% endif %}
+                    </span>
+                </div>
             </div>
 
             <div class="col-lg-4">

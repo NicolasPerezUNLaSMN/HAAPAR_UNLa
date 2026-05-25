@@ -1,5 +1,6 @@
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group, User
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 
 from haapar_unla_app.models import Subsistema, Tema, Variable
@@ -44,10 +45,17 @@ def crear_reporte(request):
 def listar_proyectos(request):
     propios = Tema.objects.filter(user=request.user, activo=True)
     colaborando = Tema.objects.filter(colaboradores=request.user, activo=True)
-    temas = propios | colaborando
+
+    # Unimos, aplicamos distinct y ordenamos para que el paginador no se rompa
+    temas = (propios | colaborando).distinct().order_by("-id_tema")
+
+    # Configuramos el paginador: 5 proyectos por página
+    paginator = Paginator(temas, 5)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
 
     return render(
-        request, "haapar_unla_app/listar-proyectos.html", {"temas": temas.distinct()}
+        request, "haapar_unla_app/listar-proyectos.html", {"page_obj": page_obj}
     )
 
 

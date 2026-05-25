@@ -1,4 +1,5 @@
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
@@ -11,14 +12,22 @@ from haapar_unla_app.models import Historial, Subsistema, Variable
 @login_required
 def variable_detalle(request, subsistema_id):
     subsistema = get_object_or_404(Subsistema, pk=subsistema_id, activo=True)
-    variables = Variable.objects.filter(subsistema=subsistema, activo=True)
+
+    # Ordenamos y paginamos las variables
+    variables_list = Variable.objects.filter(
+        subsistema=subsistema, activo=True
+    ).order_by("-id_variable")
+    paginator = Paginator(variables_list, 5)  # 5 variables por página
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     tema = subsistema.sistema.tema
     return render(
         request,
         "haapar_unla_app/variable-detalle.html",
         {
             "subsistema": subsistema,
-            "variables": variables,
+            "page_obj": page_obj,  # Pasamos page_obj
             "tema": tema,
         },
     )
@@ -121,18 +130,24 @@ def eliminar_variable(request, pk):
 
 @login_required
 def historial_variables(request, subsistema_id):
-    historial = (
+    historial_list = (
         Historial.objects.select_related("variable", "usuario")
         .filter(variable__subsistema_id=subsistema_id)
         .order_by("-fecha")
     )
+
+    # Paginación del historial: 15 registros por página
+    paginator = Paginator(historial_list, 15)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     from_view = request.GET.get("from", "")
 
     return render(
         request,
         "haapar_unla_app/historial-variable.html",
         {
-            "historial": historial,
+            "page_obj": page_obj,
             "subsistema_id": subsistema_id,
             "from_view": from_view,
         },

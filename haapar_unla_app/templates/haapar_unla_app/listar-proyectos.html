@@ -12,12 +12,10 @@
 
   <section>
     <div class="container">
-      <!-- Botón centrado -->
       <div class="text-center my-4">
         <a href="{% url 'inicio' %}" class="btn btn-primary btn-lg">Crear nuevo proyecto</a>
       </div>
 
-      <!-- Tabla de proyectos -->
       <div class="table-responsive">
         <table class="table table-hover table-striped proyectos-table w-100">
           <thead>
@@ -33,7 +31,7 @@
             </tr>
           </thead>
           <tbody>
-            {% for tema in temas %}
+            {% for tema in page_obj %}
               <tr>
                 <td class="text-center align-middle">{{ tema.nombre }}</td>
                 <td class="align-middle descripcion-col">{{ tema.descripcion }}</td>
@@ -48,7 +46,6 @@
                     <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#confirmModal{{ tema.id_tema }}">
                       <i class="fa-solid fa-trash"></i>
                     </button>
-                    <!-- Modal -->
                     <div class="modal fade" id="confirmModal{{ tema.id_tema }}" tabindex="-1" aria-labelledby="confirmModalLabel{{ tema.id_tema }}" aria-hidden="true">
                       <div class="modal-dialog">
                         <div class="modal-content">
@@ -107,9 +104,27 @@
           </tbody>
         </table>
       </div>
+
+      <div class="pagination-container d-flex justify-content-center mt-4 mb-4">
+          <span class="step-links">
+              {% if page_obj.has_previous %}
+                  <a href="?page=1" class="btn btn-sm btn-outline-secondary">&laquo; Primera</a>
+                  <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-sm btn-outline-primary">Anterior</a>
+              {% endif %}
+
+              <span class="current fw-bold mx-3" style="font-size: 1.1rem; color: #555;">
+                  Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+              </span>
+
+              {% if page_obj.has_next %}
+                  <a href="?page={{ page_obj.next_page_number }}" class="btn btn-sm btn-outline-primary">Siguiente</a>
+                  <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-sm btn-outline-secondary">Última &raquo;</a>
+              {% endif %}
+          </span>
+      </div>
+
     </div>
   </section>
 </main>
 
 {% endblock %}
-

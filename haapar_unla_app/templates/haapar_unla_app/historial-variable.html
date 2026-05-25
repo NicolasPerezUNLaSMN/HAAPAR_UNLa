@@ -25,7 +25,7 @@
       </tr>
     </thead>
     <tbody>
-      {% for ev in historial %}
+      {% for ev in page_obj %}
       <tr>
         <td>
           {% if ev.variable %}
@@ -46,6 +46,27 @@
       {% endfor %}
     </tbody>
   </table>
+
+  {% if page_obj.paginator.num_pages > 1 %}
+  <div class="pagination-container d-flex justify-content-center mt-4 mb-4">
+      <span class="step-links">
+          {% if page_obj.has_previous %}
+              <a href="?page=1" class="btn btn-sm btn-outline-secondary">&laquo; Primera</a>
+              <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-sm btn-outline-primary">Anterior</a>
+          {% endif %}
+
+          <span class="current fw-bold mx-3" style="font-size: 1.1rem; color: #555;">
+              Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+          </span>
+
+          {% if page_obj.has_next %}
+              <a href="?page={{ page_obj.next_page_number }}" class="btn btn-sm btn-outline-primary">Siguiente</a>
+              <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-sm btn-outline-secondary">Última &raquo;</a>
+          {% endif %}
+      </span>
+  </div>
+  {% endif %}
+  
 </div>
 
 {% endblock %}
