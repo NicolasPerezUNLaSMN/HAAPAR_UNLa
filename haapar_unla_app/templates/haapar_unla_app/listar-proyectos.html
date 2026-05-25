@@ -62,7 +62,7 @@
                           </div>
                           <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                            <form method="POST" action="{% url 'eliminar_proyecto' tema.id_tema %}">
+                            <form method="POST" action="{% url 'eliminar-proyecto' tema.id_tema %}">
                               {% csrf_token %}
                               <button type="submit" class="btn btn-danger">Eliminar</button>
                             </form>
@@ -78,7 +78,7 @@
                   {% if request.user == tema.user %}
                     <div class="d-flex flex-column align-items-center">
                       <span class="badge bg-primary mb-2">Creador</span>
-                      <a href="{% url 'asignar_colaboradores' tema.id_tema %}" class="btn btn-sm btn-outline-success">
+                      <a href="{% url 'asignar-colaboradores' tema.id_tema %}" class="btn btn-sm btn-outline-success">
                         <i class="fa-solid fa-users"></i> Colaboradores
                       </a>
                     </div>

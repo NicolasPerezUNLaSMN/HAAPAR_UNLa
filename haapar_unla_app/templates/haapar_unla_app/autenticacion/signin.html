@@ -13,7 +13,7 @@
 
   <div class="row">
     <div class="col-md-6 offset-md-3 mt-5">
-      <form action="{% url 'iniciar_sesion' %}" method="POST" class="styled-form">
+      <form action="{% url 'sign-in' %}" method="POST" class="styled-form">
 
         {% if error %}
         <p class="alert alert-danger text-danger fw-bold">{{ error }}</p>
@@ -35,7 +35,7 @@
           Ingresar
         </button>
 
-        <p class="text-center mt-3"><a class="password-reset" href="{% url 'password_reset_request' %}">¿Olvidaste tu contraseña?</a></p>
+        <p class="text-center mt-3"><a class="password-reset" href="{% url 'password-reset-request' %}">¿Olvidaste tu contraseña?</a></p>
       </form>
     </div>
   </div>

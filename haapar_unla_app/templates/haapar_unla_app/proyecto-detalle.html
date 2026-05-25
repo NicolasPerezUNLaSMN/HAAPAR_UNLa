@@ -33,7 +33,7 @@ Detalle del Proyecto - HAAPAR
               </div>
               <h3 class="card-title text-info">
                 {% if subsistema %}
-                  <a href="{% url 'variable_detalle' subsistema.id_subsistema %}" class="stretched-link text-decoration-none">Variables</a>
+                  <a href="{% url 'variable-detalle' subsistema.id_subsistema %}" class="stretched-link text-decoration-none">Variables</a>
                 {% else %}
                   <a href="#">Variables</a>
                 {% endif %}
@@ -53,7 +53,7 @@ Detalle del Proyecto - HAAPAR
               </div>
               <h3 class="card-title text-info">
                 {% if subsistema %}
-                  <a href="{% url 'tendencia_detalle' subsistema.id_subsistema %}" class="stretched-link text-decoration-none">Tendencias</a>
+                  <a href="{% url 'tendencia-detalle' subsistema.id_subsistema %}" class="stretched-link text-decoration-none">Tendencias</a>
                 {% else %}
                   <a href="#">Tendencias</a>
                 {% endif %}
@@ -74,7 +74,7 @@ Detalle del Proyecto - HAAPAR
               </div>
               <h3 class="card-title text-info">
                 {% if subsistema %}
-                  <a href="{% url 'actor_detalle' subsistema.id_subsistema %}" class="stretched-link text-decoration-none">Actores</a>
+                  <a href="{% url 'actor-detalle' subsistema.id_subsistema %}" class="stretched-link text-decoration-none">Actores</a>
                 {% else %}
                   <a href="#" class="stretched-link text-decoration-none">Actores</a>
                 {% endif %}
@@ -94,7 +94,7 @@ Detalle del Proyecto - HAAPAR
               </div>
               <h3 class="card-title text-info">
                 {% if subsistema %}
-                    <a href="{% url 'foda_graficos' subsistema.id_subsistema %}" class="stretched-link text-decoration-none">Análisis FODA</a>
+                    <a href="{% url 'foda-graficos' subsistema.id_subsistema %}" class="stretched-link text-decoration-none">Análisis FODA</a>
                 {% else %}
                     <a href="#">Análisis FODA</a>
                 {% endif %}

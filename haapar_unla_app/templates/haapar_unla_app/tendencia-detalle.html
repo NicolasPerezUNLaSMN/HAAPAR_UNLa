@@ -6,7 +6,7 @@
   <div class="page-title dark-background">
     <div class="container position-relative">
       <!-- Flecha arriba a la izquierda -->
-      <a href="{% url 'proyecto_detalle' tema.id_tema subsistema.id_subsistema %}" 
+      <a href="{% url 'proyecto-detalle' tema.id_tema subsistema.id_subsistema %}" 
          class="btn-back position-absolute top-0 start-0 mt-3 ms-3">
         <i class="fa-solid fa-arrow-left"></i>
       </a>
@@ -19,7 +19,7 @@
 
   <!-- Botón fijo arriba -->
   <div class="container mt-4 text-center sticky-top botonera" style="z-index: 1000;">
-    <a href="{% url 'crear_tendencia' subsistema.id_subsistema %}" class="btn btn-primary"> Agregar Tendencia</a>
+    <a href="{% url 'crear-tendencia' subsistema.id_subsistema %}" class="btn btn-primary"> Agregar Tendencia</a>
   </div>
 
   <div class="container mt-4">
@@ -33,10 +33,10 @@
     </span>
   </div>
   <div class="ms-4 text-nowrap"> <!-- margen automático -->
-    <a href="{% url 'editar_tendencia' tendencia.pk %}" class="btn btn-sm btn-outline-primary">
+    <a href="{% url 'editar-tendencia' tendencia.pk %}" class="btn btn-sm btn-outline-primary">
       <i class="fa-solid fa-edit"></i> Editar
     </a>
-    <form action="{% url 'eliminar_tendencia' tendencia.pk %}" method="post" class="d-inline">
+    <form action="{% url 'eliminar-tendencia' tendencia.pk %}" method="post" class="d-inline">
       {% csrf_token %}
       <button type="submit" class="btn btn-sm btn-outline-danger ms-1"
               onclick="return confirm('¿Estás seguro de que quieres eliminar esta tendencia?')">
@@ -55,7 +55,7 @@
     {% empty %}
       <div class="alert alert-info text-center">
         No hay tendencias definidas para este subsistema. 
-        <a href="{% url 'crear_tendencia' subsistema.id_subsistema %}" class="alert-link">Agrega la primera tendencia</a>.
+        <a href="{% url 'crear-tendencia' subsistema.id_subsistema %}" class="alert-link">Agrega la primera tendencia</a>.
       </div>
     {% endfor %}
   </div>

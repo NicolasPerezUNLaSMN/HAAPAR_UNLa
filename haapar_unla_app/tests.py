@@ -49,6 +49,6 @@ class ViewsTests(TestCase):
     def test_listar_proyectos_view(self):
         Tema.objects.create(user=self.user, nombre="Proyecto", descripcion="Desc", horizonte="2026", territorio="AR")
         self.client.login(username="tester3", password="12345")
-        response = self.client.get(reverse("listar_proyectos"))
+        response = self.client.get(reverse("listar-proyectos"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Proyecto")

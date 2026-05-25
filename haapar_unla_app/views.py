@@ -127,7 +127,7 @@ def eliminar_proyecto(request, id_tema):
     if request.method == 'POST':
         tema.activo = False
         tema.save()
-        return redirect('listar_proyectos')
+        return redirect('listar-proyectos')
     return render(request, 'haapar_unla_app/eliminar-proyecto-confirmacion.html', {'tema': tema})
 
 
@@ -174,7 +174,7 @@ def crear_variable(request, subsistema_id):
             # REDIRECCIÓN CORREGIDA CON GUION MEDIO
             return redirect("editar-matriz", subsistema_id=subsistema_id)
             
-        return redirect("variable_detalle", subsistema_id=subsistema_id)
+        return redirect("variable-detalle", subsistema_id=subsistema_id)
 
     return render(request, "haapar_unla_app/crear-variable.html", {
         "subsistema": subsistema,
@@ -229,7 +229,7 @@ def editar_variable(request, pk):
         if next_post == 'matriz':
             return redirect("editar-matriz", subsistema_id=subsistema_id)
             
-        return redirect("variable_detalle", subsistema_id=subsistema_id)
+        return redirect("variable-detalle", subsistema_id=subsistema_id)
 
     return render(request, "haapar_unla_app/editar-variable.html", {
         "variable": variable,
@@ -260,7 +260,7 @@ def eliminar_variable(request, pk):
     if next_view == 'matriz':
         return redirect("editar-matriz", subsistema_id=subsistema_id)
         
-    return redirect("variable_detalle", subsistema_id=subsistema_id)
+    return redirect("variable-detalle", subsistema_id=subsistema_id)
 
 
 @login_required
@@ -344,7 +344,7 @@ def registro(request):
             current_site = get_current_site(request)
             uid = urlsafe_base64_encode(force_bytes(existing.pk))
             token = default_token_generator.make_token(existing)
-            reactivate_link = request.build_absolute_uri(reverse('reactivar_cuenta', kwargs={'uidb64': uid, 'token': token}))
+            reactivate_link = request.build_absolute_uri(reverse('reactivar-cuenta', kwargs={'uidb64': uid, 'token': token}))
             subject = 'Reactivar tu cuenta'
             message = render_to_string('haapar_unla_app/autenticacion/reactivar_cuenta_email.txt', {
                 'user': existing,
@@ -395,7 +395,7 @@ def reactivar_cuenta(request, uidb64, token):
         })
     else:
         messages.error(request, 'El enlace de reactivación no es válido o ha expirado.')
-        return redirect('registro')
+        return redirect('sign-up')
 
 def cerrar_sesion(request):
     logout(request)
@@ -512,7 +512,7 @@ def crear_actor(request, subsistema_id):
                 subsistema=subsistema,
                 influencia=influencia
             )
-        return redirect('actor_detalle', subsistema_id=subsistema.id_subsistema)
+        return redirect('actor-detalle', subsistema_id=subsistema.id_subsistema)
 
     return render(request, 'haapar_unla_app/crear-actor.html', {
         'subsistema': subsistema
@@ -540,7 +540,7 @@ def editar_actor(request, pk):
                 relacion.influencia = influencia
                 relacion.save()
 
-        return redirect('actor_detalle', subsistema_id=subsistema.id_subsistema)
+        return redirect('actor-detalle', subsistema_id=subsistema.id_subsistema)
 
     try:
         relacion = RelacionActor.objects.get(actor_clave=actor, subsistema=subsistema)
@@ -560,7 +560,7 @@ def eliminar_actor(request, pk):
     actor = get_object_or_404(ActorClave, pk=pk)
     actor.activo = False
     actor.save()
-    return redirect('actor_detalle', subsistema_id=actor.subsistema.id_subsistema)
+    return redirect('actor-detalle', subsistema_id=actor.subsistema.id_subsistema)
 
 
 # ---------------------------
@@ -607,7 +607,7 @@ def crear_tendencia(request, subsistema_id):
             activo=True
         )
 
-        return redirect('tendencia_detalle', subsistema_id=subsistema.id_subsistema)
+        return redirect('tendencia-detalle', subsistema_id=subsistema.id_subsistema)
 
     return render(request, 'haapar_unla_app/crear-tendencia.html', {
         'subsistema': subsistema,
@@ -625,7 +625,7 @@ def editar_tendencia(request, pk):
         tendencia.descripcion = request.POST.get('descripcion', tendencia.descripcion)
         tendencia.save()
 
-        return redirect('tendencia_detalle', subsistema_id=subsistema.id_subsistema)
+        return redirect('tendencia-detalle', subsistema_id=subsistema.id_subsistema)
 
     return render(request, 'haapar_unla_app/editar-tendencia.html', {
         'tendencia': tendencia,
@@ -639,7 +639,7 @@ def eliminar_tendencia(request, pk):
     if request.method == 'POST':
         tendencia.activo = False
         tendencia.save()
-    return redirect('tendencia_detalle', subsistema_id=subsistema_id)
+    return redirect('tendencia-detalle', subsistema_id=subsistema_id)
 
 
 # ---------------------------
@@ -670,7 +670,7 @@ def password_reset_request(request):
                     except BadHeaderError:
                         return HttpResponse('Invalid header found.')
                 messages.success(request, 'Se ha enviado un correo con las instrucciones para restablecer su contraseña.')
-                return redirect('password_reset_done')
+                return redirect('password-reset-done')
             messages.error(request, 'El correo electrónico no está registrado.')
     password_reset_form = PasswordResetForm()
     return render(request, "haapar_unla_app/autenticacion/password_reset.html", {"password_reset_form": password_reset_form})
@@ -688,13 +688,13 @@ def password_reset_confirm(request, uidb64, token):
             if form.is_valid():
                 form.save()
                 messages.success(request, 'Tu contraseña ha sido restablecida. Ya puedes iniciar sesión.')
-                return redirect('password_reset_complete')
+                return redirect('password-reset-complete')
         else:
             form = SetPasswordForm(user)
         return render(request, 'haapar_unla_app/autenticacion/password_reset_confirm.html', {'form': form})
     else:
         messages.error(request, 'El enlace de restablecimiento es inválido o ha expirado.')
-        return redirect('password_reset_request')
+        return redirect('password-reset-request')
 
 def password_reset_done(request):
     return render(request, 'haapar_unla_app/autenticacion/password_reset_done.html')
@@ -819,7 +819,7 @@ def asignar_colaboradores(request, tema_id):
         for u in colaboradores:
             u.groups.add(grupo_colaborador)
 
-        return redirect("listar_proyectos")
+        return redirect("listar-proyectos")
 
     return render(request, "haapar_unla_app/asignar_colaboradores.html", {
         "tema": tema,
@@ -906,7 +906,7 @@ def editar_matriz(request, subsistema_id):
                             Historial.objects.create(variable=origen, usuario=request.user, accion='MODIFICADO', detalles=texto_detalle)
         
         messages.success(request, '¡Valores actualizados! Los gráficos se recalcularon.')
-        return redirect('foda_graficos', subsistema_id=subsistema.id_subsistema)
+        return redirect('foda-graficos', subsistema_id=subsistema.id_subsistema)
 
     # --- ACÁ SE PREPARA LA VISTA Y SE CALCULAN LOS PROMEDIOS ---
     filas_tabla = []

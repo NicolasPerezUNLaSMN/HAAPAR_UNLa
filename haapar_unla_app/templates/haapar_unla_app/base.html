@@ -58,7 +58,7 @@
                     <i class="fa-solid fa-pen-to-square"></i>
                     <span class="hide-on-collapse">Nuevo Proyecto</span>
                 </a>
-                <a href="{% url 'listar_proyectos' %}" class="sidebar-link active text-decoration-none proyectos" data-title="Proyectos">
+                <a href="{% url 'listar-proyectos' %}" class="sidebar-link active text-decoration-none proyectos" data-title="Proyectos">
                     <i class="fa-solid fa-clock-rotate-left"></i>
                     <span class="hide-on-collapse">Proyectos</span>
                 </a>
@@ -90,10 +90,10 @@
                             <hr class="dropdown-divider">
                         </li>
                         {% if user.is_authenticated %}
-                          <li><a class="dropdown-item text-danger" href="{% url 'cerrar_sesion' %}">Cerrar Sesion</a></li>
+                          <li><a class="dropdown-item text-danger" href="{% url 'log-out' %}">Cerrar Sesion</a></li>
                         {% else %}
-                          <li><a class="dropdown-item text-secondary" href="{% url 'registro' %}">Registrarse</a></li>
-                          <li><a class="dropdown-item text-success" href="{% url 'iniciar_sesion' %}">Iniciar Sesion</a></li>
+                          <li><a class="dropdown-item text-secondary" href="{% url 'sign-up' %}">Registrarse</a></li>
+                          <li><a class="dropdown-item text-success" href="{% url 'sign-in' %}">Iniciar Sesion</a></li>
                         {% endif %}
                     </ul>
                 </div>
