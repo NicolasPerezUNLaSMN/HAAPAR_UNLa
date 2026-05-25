@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from haapar_unla_app import views
+from haapar_unla_app import views, api  # endpoints de API
 from django.urls import include
 
 from django.conf.urls import handler400, handler403, handler404, handler500
@@ -25,7 +25,6 @@ urlpatterns = [
     path('foda/<int:subsistema_id>/', views.foda_graficos, name='foda_graficos'),
     path('matriz/<int:subsistema_id>/', views.editar_matriz, name='editar-matriz'),
     
-
     # Variables
     path('variables/<int:subsistema_id>/', views.variable_detalle, name='variable_detalle'),
     path("variables/<int:pk>/eliminar/", views.eliminar_variable, name="eliminar_variable"),
@@ -63,9 +62,15 @@ urlpatterns = [
     path('tendencias/<int:pk>/editar/', views.editar_tendencia, name='editar_tendencia'),
     path('tendencias/<int:pk>/eliminar/', views.eliminar_tendencia, name='eliminar_tendencia'),
     
-    
-    #Agregar colaboradores
-     path('tema/<int:tema_id>/colaboradores/', views.asignar_colaboradores, name='asignar_colaboradores'),
+    # Agregar colaboradores
+    path('tema/<int:tema_id>/colaboradores/', views.asignar_colaboradores, name='asignar_colaboradores'),
+
+    # ==========================================
+    # Endpoints API REST 
+    # ==========================================
+    path('api/temas/', api.api_listar_temas, name='api-temas'),
+    path('api/variables/', api.api_listar_variables, name='api-variables'),
+    path('api/foda/<int:tema_id>/', api.api_foda_tema, name='api-foda'),
 ]
 
 handler400 = 'haapar_unla_app.views.error_400_view'

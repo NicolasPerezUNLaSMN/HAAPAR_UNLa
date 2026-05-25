@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'haapar_unla_app',
+    'rest_framework'
 ]
 
 MIDDLEWARE = [
