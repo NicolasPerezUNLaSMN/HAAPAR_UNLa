@@ -4,6 +4,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from haapar_unla_app.models import Tema, Sistema, Subsistema, Variable, EvaluacionVariable
 
+# Tests de IA Service: validan que el parser de JSON funcione correctamente y maneje errores de formato.
 class IAServicesTests(TestCase):
     def test_parser_json_valido(self):
         respuesta = """
@@ -15,6 +16,8 @@ class IAServicesTests(TestCase):
     def test_parser_json_invalido(self):
         with self.assertRaises(json.JSONDecodeError):
             json.loads("texto sin JSON")
+
+# Tests de Models: verifican restricciones de integridad (unique_together) y cálculos de promedios en variables.
 
 class ModelsTests(TestCase):
     def test_unique_together_evaluacionvariable(self):
@@ -40,6 +43,8 @@ class ModelsTests(TestCase):
 
         self.assertEqual(variable.promedio_importancia(), 6)
         self.assertEqual(variable.promedio_incertidumbre(), 4)
+
+# Tests de Views: smoke tests que validan que las vistas críticas (listar proyectos) respondan correctamente.
 
 class ViewsTests(TestCase):
     def setUp(self):
