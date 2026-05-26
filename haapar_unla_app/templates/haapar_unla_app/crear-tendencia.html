@@ -11,7 +11,7 @@
   </div>
 
   <section>
-            <form method="post" action="{% url 'crear_tendencia' subsistema.id_subsistema %}" class="styled-form">
+            <form method="post" action="{% url 'crear-tendencia' subsistema.id_subsistema %}" class="styled-form">
               {% csrf_token %}
 
               <div class="mb-3">
@@ -58,7 +58,7 @@
               <div class="d-flex justify-content-center">
                 <button type="submit" class="btn btn-success me-2">Guardar</button>
                 <a
-                  href="{% url 'tendencia_detalle' subsistema.id_subsistema %}"
+                  href="{% url 'tendencia-detalle' subsistema.id_subsistema %}"
                   class="btn btn-secondary"
                 >
                   Cancelar
