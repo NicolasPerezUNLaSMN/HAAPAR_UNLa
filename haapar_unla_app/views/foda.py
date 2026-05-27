@@ -247,3 +247,28 @@ def editar_matriz(request, subsistema_id):
             "filas_tabla": filas_tabla,
         },
     )
+    
+@login_required
+def editar_pestel(request, pk):
+    variable = get_object_or_404(Variable, pk=pk, activo=True)
+    subsistema = variable.subsistema
+    tema = subsistema.sistema.tema
+
+    if request.user != tema.user and request.user not in tema.colaboradores.all():
+        return HttpResponseForbidden("No tenés permiso para editar este proyecto.")
+
+    if request.method == "POST":
+        form = VariablePESTELForm(request.POST, instance=variable)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "PESTEL actualizado correctamente.")
+            return redirect("foda-graficos", subsistema_id=subsistema.id_subsistema)
+    else:
+        form = VariablePESTELForm(instance=variable)
+
+    return render(request, "haapar_unla_app/editar-pestel.html", {
+        "form": form,
+        "variable": variable,
+        "subsistema": subsistema,
+        "tema": tema,
+    })

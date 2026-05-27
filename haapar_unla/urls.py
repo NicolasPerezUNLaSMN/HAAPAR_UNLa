@@ -49,6 +49,11 @@ urlpatterns = [
         views.historial_variables,
         name="historial-variables-subsistema",
     ),
+    path(
+    "variables/<int:pk>/editar-pestel/",
+    views.editar_pestel,
+    name="editar-pestel",
+    ),
     # Perfil
     path("perfil/", views.perfil, name="perfil"),
     # Subsistemas

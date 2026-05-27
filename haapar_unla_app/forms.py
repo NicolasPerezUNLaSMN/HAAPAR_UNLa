@@ -1,6 +1,7 @@
 from django import forms
 from django.contrib.auth import get_user_model
 from django.contrib.auth.forms import UserCreationForm
+from .models import Variable, PESTEL
 
 User = get_user_model()
     
@@ -61,3 +62,14 @@ class SignUpForm(UserCreationForm):
         if commit:
             user.save()
         return user
+
+#Para el formulario de EDITAR PESTEL 
+class VariablePESTELForm(forms.ModelForm):
+    pestels = forms.ModelMultipleChoiceField(
+        queryset=PESTEL.objects.all(),
+        widget=forms.CheckboxSelectMultiple
+    )
+
+    class Meta:
+        model = Variable
+        fields = ['pestels']

@@ -110,7 +110,10 @@
                     <tr>
                         <th></th>
                         {% for var in variables %}
-                            <th>{{ var }}</th>
+                            <th>
+                                {{ var }}
+                               
+                            </th>
                         {% endfor %}
                     </tr>
                 </thead>
@@ -150,9 +153,21 @@
         </div>
         
         <div class="card"> 
-            <h2>Árbol PESTEL del Proyecto</h2> 
-            <div id="pestelChartContainer" class="hc-container"></div> 
-        </div>
+    <h2>Árbol PESTEL del Proyecto</h2> 
+    <div id="pestelChartContainer" class="hc-container"></div> 
+
+    {% for categoria, vars in datos_pestel.items %}
+    <h3>{{ categoria }}</h3>
+    <ul>
+        {% for var in vars %}
+            <li>
+                {{ var.nombre_corto }}
+                <a href="{% url 'editar-pestel' var.pk %}" class="btn btn-sm btn-primary">Editar PESTEL</a>
+            </li>
+        {% endfor %}
+    </ul>
+{% endfor %}
+</div>
     </div>
 
     <script>
