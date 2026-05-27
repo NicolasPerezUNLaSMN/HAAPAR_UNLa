@@ -2,7 +2,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group, User
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
-
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+from haapar_unla_app.models import Tema
+from haapar_unla_app.serializers import TemaSerializer
 from haapar_unla_app.models import Subsistema, Tema, Variable
 from haapar_unla_app.services.ia_service import (
     generar_estructura_prospectiva,
@@ -134,3 +137,7 @@ def asignar_colaboradores(request, tema_id):
             "es_creador": es_creador,
         },
     )
+class TemaViewSet(viewsets.ModelViewSet):
+    queryset = Tema.objects.filter(activo=True)
+    serializer_class = TemaSerializer
+    permission_classes = [IsAuthenticated]

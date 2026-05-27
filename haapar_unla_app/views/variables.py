@@ -2,7 +2,10 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
-
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+from haapar_unla_app.models import Variable
+from haapar_unla_app.serializers import VariableSerializer
 from haapar_unla_app.models import Historial, Subsistema, Variable
 
 
@@ -152,3 +155,7 @@ def historial_variables(request, subsistema_id):
             "from_view": from_view,
         },
     )
+class VariableViewSet(viewsets.ModelViewSet):
+    queryset = Variable.objects.filter(activo=True)
+    serializer_class = VariableSerializer
+    permission_classes = [IsAuthenticated]

@@ -2,7 +2,12 @@ from django.contrib import admin
 from django.urls import path, include
 import debug_toolbar
 from haapar_unla_app import api, views  # endpoints de API
-
+from rest_framework import routers
+from haapar_unla_app.views.proyectos import TemaViewSet
+from haapar_unla_app.views.variables import VariableViewSet
+router = routers.DefaultRouter()
+router.register(r"proyectos", TemaViewSet, basename="proyectos")
+router.register(r"variables", VariableViewSet, basename="variables")
 urlpatterns = [
     # Admin
     path("admin/", admin.site.urls),
@@ -57,6 +62,7 @@ urlpatterns = [
     ),
     
     path("__debug__/", include(debug_toolbar.urls)),
+    path("api/", include(router.urls)), 
     # Perfil
     path("perfil/", views.perfil, name="perfil"),
     # Subsistemas
