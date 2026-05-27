@@ -46,10 +46,15 @@ def listar_proyectos(request):
     propios = Tema.objects.filter(user=request.user, activo=True)
     colaborando = Tema.objects.filter(colaboradores=request.user, activo=True)
 
-    # Unimos, aplicamos distinct y ordenamos para que el paginador no se rompa
-    temas = (propios | colaborando).distinct().order_by("-id_tema")
+    # 🔎 Optimización: precargar user y colaboradores con grupos
+    temas = (
+        (propios | colaborando)
+        .distinct()
+        .select_related("user")                       # carga el creador en la misma query
+        .prefetch_related("colaboradores__groups")    # carga colaboradores y sus grupos
+        .order_by("-id_tema")
+    )
 
-    # Configuramos el paginador: 5 proyectos por página
     paginator = Paginator(temas, 5)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
@@ -61,14 +66,24 @@ def listar_proyectos(request):
 
 @login_required
 def proyecto_detalle(request, tema_id, subsistema_id=None):
-    tema = get_object_or_404(Tema, pk=tema_id, activo=True)
+    # 🔎 Optimización: precargar user y colaboradores con grupos
+    tema = (
+        Tema.objects.select_related("user")
+        .prefetch_related("colaboradores__groups")
+        .get(pk=tema_id, activo=True)
+    )
+
     subsistema, subsistemas, variables = None, None, []
 
     if subsistema_id:
-        subsistema = get_object_or_404(Subsistema, pk=subsistema_id, activo=True)
-        variables = Variable.objects.filter(subsistema=subsistema, activo=True)
+        # 🔎 Optimización: precargar sistema y tema
+        subsistema = Subsistema.objects.select_related("sistema", "sistema__tema").get(
+            pk=subsistema_id, activo=True
+        )
+        # 🔎 Optimización: precargar subsistema en variables
+        variables = Variable.objects.filter(subsistema=subsistema, activo=True).select_related("subsistema")
     else:
-        subsistemas = Subsistema.objects.filter(sistema__tema=tema, activo=True)
+        subsistemas = Subsistema.objects.filter(sistema__tema=tema, activo=True).select_related("sistema")
 
     return render(
         request,

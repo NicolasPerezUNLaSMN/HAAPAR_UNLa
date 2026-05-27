@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
+from django.core.cache import cache
 
 from haapar_unla_app.models import (
     EvaluacionVariable,
@@ -13,9 +14,8 @@ from haapar_unla_app.models import (
     Variable,
 )
 
-
 # ---------------------------------------------------------
-# VISTA PRINCIPAL (FODA Y GRÁFICOS)
+# VISTA PRINCIPAL (FODA Y GRÁFICOS) con CACHE
 # ---------------------------------------------------------
 @login_required
 def foda_graficos(request, subsistema_id):
@@ -25,71 +25,82 @@ def foda_graficos(request, subsistema_id):
     if request.user != tema.user and request.user not in tema.colaboradores.all():
         return HttpResponseForbidden("No tenés permiso para ver este proyecto.")
 
-    variables_obj = (
-        Variable.objects.filter(subsistema=subsistema, activo=True)
-        .prefetch_related("pestels")
-        .order_by("pk")
-    )
+    cache_key = f"foda_micmac_pestel_{subsistema_id}"
+    contexto = cache.get(cache_key)
 
-    nombres_vars = [
-        v.nombre_corto if v.nombre_corto else v.nombre[:15] for v in variables_obj
-    ]
+    if contexto is None:
+        # 🔎 Optimización: select_related + prefetch_related
+        variables_obj = (
+            Variable.objects.filter(subsistema=subsistema, activo=True)
+            .select_related("subsistema", "subsistema__sistema", "subsistema__sistema__tema")
+            .prefetch_related("pestels")
+            .order_by("pk")
+        )
 
-    importancias = [int(v.promedio_importancia()) for v in variables_obj]
-    incertidumbres = [int(v.promedio_incertidumbre()) for v in variables_obj]
+        nombres_vars = [
+            v.nombre_corto if v.nombre_corto else v.nombre[:15] for v in variables_obj
+        ]
 
-    datos_dispersion = {
-        "variables": nombres_vars,
-        "importancia": importancias,
-        "incertidumbre": incertidumbres,
-    }
+        importancias = [int(v.promedio_importancia()) for v in variables_obj]
+        incertidumbres = [int(v.promedio_incertidumbre()) for v in variables_obj]
 
-    n = len(variables_obj)
-    matriz_valores = [[0] * n for _ in range(n)]
-    var_index = {v.pk: i for i, v in enumerate(variables_obj)}
+        datos_dispersion = {
+            "variables": nombres_vars,
+            "importancia": importancias,
+            "incertidumbre": incertidumbres,
+        }
 
-    influencias = Influencia.objects.filter(
-        variable_origen__in=variables_obj, variable_destino__in=variables_obj
-    )
+        n = len(variables_obj)
+        matriz_valores = [[0] * n for _ in range(n)]
+        var_index = {v.pk: i for i, v in enumerate(variables_obj)}
 
-    for inf in influencias:
-        i = var_index[inf.variable_origen.pk]
-        j = var_index[inf.variable_destino.pk]
-        matriz_valores[i][j] = int(inf.valor)
+        # 🔎 Optimización: select_related en Influencias
+        influencias = (
+            Influencia.objects.filter(
+                variable_origen__in=variables_obj, variable_destino__in=variables_obj
+            )
+            .select_related("variable_origen", "variable_destino")
+        )
 
-    matriz_indirecta = {"variables": nombres_vars, "valores": matriz_valores}
+        for inf in influencias:
+            i = var_index[inf.variable_origen.pk]
+            j = var_index[inf.variable_destino.pk]
+            matriz_valores[i][j] = int(inf.valor)
 
-    influencia_totales = [sum(fila) for fila in matriz_valores]
-    dependencia_totales = [
-        sum(matriz_valores[i][j] for i in range(n)) for j in range(n)
-    ]
+        matriz_indirecta = {"variables": nombres_vars, "valores": matriz_valores}
 
-    datos_micmac = {
-        "variables": nombres_vars,
-        "influencia": influencia_totales,
-        "dependencia": dependencia_totales,
-    }
+        influencia_totales = [sum(fila) for fila in matriz_valores]
+        dependencia_totales = [
+            sum(matriz_valores[i][j] for i in range(n)) for j in range(n)
+        ]
 
-    datos_pestel = {}
+        datos_micmac = {
+            "variables": nombres_vars,
+            "influencia": influencia_totales,
+            "dependencia": dependencia_totales,
+        }
 
-    for var in variables_obj:
-        nombre_var = var.nombre_corto or var.nombre[:15]
-        for pestel in var.pestels.all():
-            categoria = pestel.get_tipo_display()
-            if categoria not in datos_pestel:
-                datos_pestel[categoria] = []
-            datos_pestel[categoria].append(nombre_var)
+        datos_pestel = {}
+        for var in variables_obj:
+            nombre_var = var.nombre_corto or var.nombre[:15]
+            for pestel in var.pestels.all():
+                categoria = pestel.get_tipo_display()
+                if categoria not in datos_pestel:
+                    datos_pestel[categoria] = []
+                datos_pestel[categoria].append(nombre_var)
 
-    contexto = {
-        "tema": tema,
-        "subsistema": subsistema,
-        "datos_dispersion": json.dumps(datos_dispersion),
-        "variables": nombres_vars,
-        "filas": zip(nombres_vars, matriz_valores),
-        "matriz_indirecta": json.dumps(matriz_indirecta),
-        "datos_micmac": json.dumps(datos_micmac),
-        "datos_pestel": json.dumps(datos_pestel),
-    }
+        contexto = {
+            "tema": tema,
+            "subsistema": subsistema,
+            "datos_dispersion": json.dumps(datos_dispersion),
+            "variables": nombres_vars,
+            "filas": zip(nombres_vars, matriz_valores),
+            "matriz_indirecta": json.dumps(matriz_indirecta),
+            "datos_micmac": json.dumps(datos_micmac),
+            "datos_pestel": json.dumps(datos_pestel),
+        }
+
+        cache.set(cache_key, contexto, timeout=3600)
 
     return render(request, "haapar_unla_app/foda-graficos.html", contexto)
 
@@ -106,10 +117,26 @@ def editar_matriz(request, subsistema_id):
         return HttpResponseForbidden("No tenés permiso para editar este proyecto.")
 
     variables = list(
-        Variable.objects.filter(subsistema=subsistema, activo=True).order_by("pk")
+        Variable.objects.filter(subsistema=subsistema, activo=True)
+        .select_related("subsistema")
+        .order_by("pk")
     )
 
+    # 🔎 Optimización: precargar evaluaciones e influencias
+    evaluaciones = (
+        EvaluacionVariable.objects.filter(usuario=request.user, variable__in=variables)
+        .select_related("variable")
+    )
+    eval_map = {e.variable_id: e for e in evaluaciones}
+
+    influencias = Influencia.objects.filter(
+        variable_origen__in=variables, variable_destino__in=variables
+    ).select_related("variable_origen", "variable_destino")
+    inf_map = {(i.variable_origen_id, i.variable_destino_id): i for i in influencias}
+
     if request.method == "POST":
+
+        # Guardar importancia e incertidumbre
         for var in variables:
             imp_val = request.POST.get(f"imp_{var.pk}")
             inc_val = request.POST.get(f"inc_{var.pk}")
@@ -118,9 +145,7 @@ def editar_matriz(request, subsistema_id):
                 imp_val = int(imp_val)
                 inc_val = int(inc_val)
 
-                eval_obj = EvaluacionVariable.objects.filter(
-                    variable=var, usuario=request.user
-                ).first()
+                eval_obj = eval_map.get(var.pk)
                 old_imp = eval_obj.importancia if eval_obj else "Vacío"
                 old_inc = eval_obj.incertidumbre if eval_obj else "Vacío"
 
@@ -130,26 +155,21 @@ def editar_matriz(request, subsistema_id):
                         usuario=request.user,
                         defaults={"importancia": imp_val, "incertidumbre": inc_val},
                     )
-
-                    texto_detalle = (
-                        f"Imp: {old_imp} ➔ {imp_val} | Inc: {old_inc} ➔ {inc_val}"
-                    )
                     Historial.objects.create(
                         variable=var,
                         usuario=request.user,
                         accion="EVALUACION",
-                        detalles=texto_detalle,
+                        detalles=f"Imp: {old_imp} ➔ {imp_val} | Inc: {old_inc} ➔ {inc_val}",
                     )
 
+        # Guardar influencias
         for origen in variables:
             for destino in variables:
                 if origen.pk != destino.pk:
                     inf_val = request.POST.get(f"inf_{origen.pk}_{destino.pk}")
                     if inf_val is not None:
                         inf_val = float(inf_val)
-                        inf_obj = Influencia.objects.filter(
-                            variable_origen=origen, variable_destino=destino
-                        ).first()
+                        inf_obj = inf_map.get((origen.pk, destino.pk))
                         old_inf = float(inf_obj.valor) if inf_obj else "Vacío"
 
                         if not inf_obj or old_inf != inf_val:
@@ -158,24 +178,21 @@ def editar_matriz(request, subsistema_id):
                                 variable_destino=destino,
                                 defaults={"valor": inf_val},
                             )
-                            texto_detalle = f"Influencia sobre '{destino.nombre_corto}': {old_inf} ➔ {int(inf_val)}"
                             Historial.objects.create(
                                 variable=origen,
                                 usuario=request.user,
                                 accion="MODIFICADO",
-                                detalles=texto_detalle,
+                                detalles=f"Influencia sobre '{destino.nombre_corto}': {old_inf} ➔ {int(inf_val)}",
                             )
 
-        messages.success(
-            request, "¡Valores actualizados! Los gráficos se recalcularon."
-        )
-        return redirect("foda-graficos", subsistema_id=subsistema.id_subsistema)
+        cache.delete(f"foda_micmac_pestel_{subsistema_id}")
+        messages.success(request, "¡Valores actualizados! Los gráficos se recalcularon.")
+        return redirect("foda-graficos", subsistema_id=subsistema_id)
 
+    # 👉 GET: armar tabla y devolver render
     filas_tabla = []
     for origen in variables:
-        eval_obj = EvaluacionVariable.objects.filter(
-            variable=origen, usuario=request.user
-        ).first()
+        eval_obj = eval_map.get(origen.pk)
 
         try:
             imp_clean = max(
@@ -220,9 +237,7 @@ def editar_matriz(request, subsistema_id):
             if origen.pk == destino.pk:
                 celdas.append({"destino_id": destino.pk, "valor": "-", "is_self": True})
             else:
-                inf_obj = Influencia.objects.filter(
-                    variable_origen=origen, variable_destino=destino
-                ).first()
+                inf_obj = inf_map.get((origen.pk, destino.pk))
                 try:
                     inf_clean = max(
                         0, min(3, int(round(float(inf_obj.valor if inf_obj else 0))))
@@ -247,7 +262,11 @@ def editar_matriz(request, subsistema_id):
             "filas_tabla": filas_tabla,
         },
     )
-    
+
+
+# ---------------------------------------------------------
+# EDICIÓN DE PESTEL
+# ---------------------------------------------------------
 @login_required
 def editar_pestel(request, pk):
     variable = get_object_or_404(Variable, pk=pk, activo=True)
@@ -261,14 +280,20 @@ def editar_pestel(request, pk):
         form = VariablePESTELForm(request.POST, instance=variable)
         if form.is_valid():
             form.save()
+            cache.delete(f"foda_micmac_pestel_{subsistema.id_subsistema}")  # 🔑 misma clave
             messages.success(request, "PESTEL actualizado correctamente.")
             return redirect("foda-graficos", subsistema_id=subsistema.id_subsistema)
     else:
         form = VariablePESTELForm(instance=variable)
 
-    return render(request, "haapar_unla_app/editar-pestel.html", {
-        "form": form,
-        "variable": variable,
-        "subsistema": subsistema,
-        "tema": tema,
-    })
+    return render(
+        request,
+        "haapar_unla_app/editar-pestel.html",
+        {
+            "form": form,
+            "variable": variable,
+            "subsistema": subsistema,
+            "tema": tema,
+        },
+    )
+        

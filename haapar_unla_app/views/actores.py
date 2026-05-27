@@ -13,10 +13,15 @@ from haapar_unla_app.models import ActorClave, RelacionActor, Subsistema
 def actor_detalle(request, subsistema_id):
     subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id)
 
-    # Ordenamos y paginamos los actores
-    actores_list = ActorClave.objects.filter(
-        subsistema=subsistema, activo=True
-    ).order_by("-pk")
+    # 🔎 Optimización: cargar actores con subsistema y relaciones en una sola query
+    actores_list = (
+        ActorClave.objects.filter(subsistema=subsistema, activo=True)
+        .select_related("subsistema")              # evita consultas extra al acceder al subsistema
+        .prefetch_related("actor_fuente")          # precarga todas las relaciones RelacionActor
+        .order_by("-pk")
+    )
+
+    # Paginación
     paginator = Paginator(actores_list, 5)
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
@@ -28,7 +33,7 @@ def actor_detalle(request, subsistema_id):
         "haapar_unla_app/actor-detalle.html",
         {
             "subsistema": subsistema,
-            "page_obj": page_obj,  # Pasamos page_obj en lugar de la lista cruda
+            "page_obj": page_obj,
             "tema": tema,
         },
     )

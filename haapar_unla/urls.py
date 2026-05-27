@@ -1,6 +1,6 @@
 from django.contrib import admin
-from django.urls import path
-
+from django.urls import path, include
+import debug_toolbar
 from haapar_unla_app import api, views  # endpoints de API
 
 urlpatterns = [
@@ -49,11 +49,14 @@ urlpatterns = [
         views.historial_variables,
         name="historial-variables-subsistema",
     ),
+    
     path(
     "variables/<int:pk>/editar-pestel/",
     views.editar_pestel,
     name="editar-pestel",
     ),
+    
+    path("__debug__/", include(debug_toolbar.urls)),
     # Perfil
     path("perfil/", views.perfil, name="perfil"),
     # Subsistemas
