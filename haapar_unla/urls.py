@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 import debug_toolbar
+
 from haapar_unla_app import api, views  # endpoints de API
 from rest_framework import routers
 from haapar_unla_app.views.proyectos import TemaViewSet
@@ -14,7 +15,7 @@ urlpatterns = [
     # Autenticación
     path("", views.inicio, name="inicio"),
     path("sign-up/", views.registro, name="sign-up"),
-    path("sign-in/", views.iniciar_sesion, name="sign-in"),
+    path("sign-in/", views.iniciar_sesion, name="iniciar_sesion"),
     path("log-out/", views.cerrar_sesion, name="log-out"),
     # Proyectos
     path("proyectos/", views.listar_proyectos, name="listar-proyectos"),
