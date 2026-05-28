@@ -2,10 +2,12 @@ import json
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
-from django.core.cache import cache
+from django.urls import reverse  # 🔑 Importante para armar la URL con el ancla
 
+from haapar_unla_app.forms import VariablePESTELForm
 from haapar_unla_app.models import (
     EvaluacionVariable,
     Historial,
@@ -13,6 +15,7 @@ from haapar_unla_app.models import (
     Subsistema,
     Variable,
 )
+
 
 # ---------------------------------------------------------
 # VISTA PRINCIPAL (FODA Y GRÁFICOS) con CACHE
@@ -25,14 +28,16 @@ def foda_graficos(request, subsistema_id):
     if request.user != tema.user and request.user not in tema.colaboradores.all():
         return HttpResponseForbidden("No tenés permiso para ver este proyecto.")
 
-    cache_key = f"foda_micmac_pestel_{subsistema_id}"
+    cache_key = f"foda_micmac_pestel_v2_{subsistema_id}"
     contexto = cache.get(cache_key)
 
     if contexto is None:
         # 🔎 Optimización: select_related + prefetch_related
         variables_obj = (
             Variable.objects.filter(subsistema=subsistema, activo=True)
-            .select_related("subsistema", "subsistema__sistema", "subsistema__sistema__tema")
+            .select_related(
+                "subsistema", "subsistema__sistema", "subsistema__sistema__tema"
+            )
             .prefetch_related("pestels")
             .order_by("pk")
         )
@@ -55,12 +60,9 @@ def foda_graficos(request, subsistema_id):
         var_index = {v.pk: i for i, v in enumerate(variables_obj)}
 
         # 🔎 Optimización: select_related en Influencias
-        influencias = (
-            Influencia.objects.filter(
-                variable_origen__in=variables_obj, variable_destino__in=variables_obj
-            )
-            .select_related("variable_origen", "variable_destino")
-        )
+        influencias = Influencia.objects.filter(
+            variable_origen__in=variables_obj, variable_destino__in=variables_obj
+        ).select_related("variable_origen", "variable_destino")
 
         for inf in influencias:
             i = var_index[inf.variable_origen.pk]
@@ -80,14 +82,38 @@ def foda_graficos(request, subsistema_id):
             "dependencia": dependencia_totales,
         }
 
-        datos_pestel = {}
+        # --- LÓGICA PESTEL (NUEVA INTERFAZ Y GRÁFICO) ---
+        variables_sin_pestel = []
+
+        datos_pestel_nombres = {
+            "Político": [],
+            "Económico": [],
+            "Social": [],
+            "Tecnológico": [],
+            "Ecológico": [],
+            "Legal": [],
+        }
+        tarjetas_pestel = {
+            "Político": [],
+            "Económico": [],
+            "Social": [],
+            "Tecnológico": [],
+            "Ecológico": [],
+            "Legal": [],
+        }
+
         for var in variables_obj:
-            nombre_var = var.nombre_corto or var.nombre[:15]
-            for pestel in var.pestels.all():
-                categoria = pestel.get_tipo_display()
-                if categoria not in datos_pestel:
-                    datos_pestel[categoria] = []
-                datos_pestel[categoria].append(nombre_var)
+            mis_pestels = var.pestels.all()
+            if not mis_pestels:
+                variables_sin_pestel.append(var)
+            else:
+                for pestel in mis_pestels:
+                    categoria = pestel.get_tipo_display()
+                    if categoria in datos_pestel_nombres:
+                        datos_pestel_nombres[categoria].append(
+                            var.nombre_corto or var.nombre[:15]
+                        )
+                        tarjetas_pestel[categoria].append(var)
 
         contexto = {
             "tema": tema,
@@ -97,7 +123,9 @@ def foda_graficos(request, subsistema_id):
             "filas": zip(nombres_vars, matriz_valores),
             "matriz_indirecta": json.dumps(matriz_indirecta),
             "datos_micmac": json.dumps(datos_micmac),
-            "datos_pestel": json.dumps(datos_pestel),
+            "datos_pestel": json.dumps(datos_pestel_nombres),
+            "variables_sin_pestel": variables_sin_pestel,
+            "tarjetas_pestel": tarjetas_pestel,
         }
 
         cache.set(cache_key, contexto, timeout=3600)
@@ -123,10 +151,9 @@ def editar_matriz(request, subsistema_id):
     )
 
     # 🔎 Optimización: precargar evaluaciones e influencias
-    evaluaciones = (
-        EvaluacionVariable.objects.filter(usuario=request.user, variable__in=variables)
-        .select_related("variable")
-    )
+    evaluaciones = EvaluacionVariable.objects.filter(
+        usuario=request.user, variable__in=variables
+    ).select_related("variable")
     eval_map = {e.variable_id: e for e in evaluaciones}
 
     influencias = Influencia.objects.filter(
@@ -185,8 +212,10 @@ def editar_matriz(request, subsistema_id):
                                 detalles=f"Influencia sobre '{destino.nombre_corto}': {old_inf} ➔ {int(inf_val)}",
                             )
 
-        cache.delete(f"foda_micmac_pestel_{subsistema_id}")
-        messages.success(request, "¡Valores actualizados! Los gráficos se recalcularon.")
+        cache.delete(f"foda_micmac_pestel_v2_{subsistema_id}")
+        messages.success(
+            request, "¡Valores actualizados! Los gráficos se recalcularon."
+        )
         return redirect("foda-graficos", subsistema_id=subsistema_id)
 
     # 👉 GET: armar tabla y devolver render
@@ -280,9 +309,14 @@ def editar_pestel(request, pk):
         form = VariablePESTELForm(request.POST, instance=variable)
         if form.is_valid():
             form.save()
-            cache.delete(f"foda_micmac_pestel_{subsistema.id_subsistema}")  # 🔑 misma clave
+            cache.delete(f"foda_micmac_pestel_v2_{subsistema.id_subsistema}")
             messages.success(request, "PESTEL actualizado correctamente.")
-            return redirect("foda-graficos", subsistema_id=subsistema.id_subsistema)
+
+            # 🔑 SOLUCIÓN AQUÍ: Redirigimos usando reverse y le concatenamos el ancla #gestion-pestel
+            url = reverse(
+                "foda-graficos", kwargs={"subsistema_id": subsistema.id_subsistema}
+            )
+            return redirect(f"{url}#gestion-pestel")
     else:
         form = VariablePESTELForm(instance=variable)
 
@@ -296,4 +330,3 @@ def editar_pestel(request, pk):
             "tema": tema,
         },
     )
-        

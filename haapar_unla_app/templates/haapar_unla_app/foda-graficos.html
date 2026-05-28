@@ -112,7 +112,6 @@
                         {% for var in variables %}
                             <th>
                                 {{ var }}
-                               
                             </th>
                         {% endfor %}
                     </tr>
@@ -153,21 +152,94 @@
         </div>
         
         <div class="card"> 
-    <h2>Árbol PESTEL del Proyecto</h2> 
-    <div id="pestelChartContainer" class="hc-container"></div> 
+            <h2>Árbol PESTEL del Proyecto</h2> 
+            <div id="pestelChartContainer" class="hc-container" style="height: 750px;"></div> 
+        </div>
 
-    {% for categoria, vars in datos_pestel.items %}
-    <h3>{{ categoria }}</h3>
-    <ul>
-        {% for var in vars %}
-            <li>
-                {{ var.nombre_corto }}
-                <a href="{% url 'editar-pestel' var.pk %}" class="btn btn-sm btn-primary">Editar PESTEL</a>
-            </li>
-        {% endfor %}
-    </ul>
-{% endfor %}
-</div>
+        <div id="gestion-pestel" class="mt-5 mb-5 px-2">
+            <h2 class="text-center fw-bold mb-4" style="color: #fff; text-transform: uppercase; letter-spacing: 1px;">
+                <i class="fa-solid fa-list-check"></i> Gestión Manual del PESTEL
+            </h2>
+            
+            <div class="text-center mb-4">
+                <a href="{% url 'crear-variable' subsistema.id_subsistema %}?next=pestel" class="btn btn-light text-success fw-bold shadow-sm px-4 py-2">
+                    <i class="fa-solid fa-plus"></i> Crear Nueva Variable
+                </a>
+            </div>
+
+            {% if variables_sin_pestel %}
+            <div class="row justify-content-center mb-5">
+                <div class="col-md-8">
+                    <div class="card shadow-sm" style="background: rgba(255, 255, 255, 0.95); border: 2px solid #ffc107; padding: 0;">
+                        <div class="card-body p-4 text-center">
+                            <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">
+                                <i class="fa-solid fa-triangle-exclamation text-warning"></i> Variables Pendientes de Clasificar
+                            </h5>
+                            <p class="text-muted small">Estas variables existen en el proyecto pero aún no se asignaron al árbol PESTEL.</p>
+                            <ul class="list-group list-group-flush mb-0 mt-3">
+                            {% for var in variables_sin_pestel %}
+                                <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-bottom-0 px-1">
+                                    <span class="text-dark fw-semibold">{{ var.nombre_corto|default:var.nombre }}</span>
+                                    
+                                    <div class="d-flex gap-2">
+                                        <a href="{% url 'editar-pestel' var.pk %}" class="btn btn-sm btn-warning fw-bold text-dark">
+                                            <i class="fa-solid fa-sitemap"></i> Asignar Categoría
+                                        </a>
+                                        <form action="{% url 'eliminar-variable' var.pk %}?next=pestel" method="POST" class="m-0 p-0" onsubmit="return confirm('¿Estás seguro de que querés eliminar esta variable de forma permanente?');">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-sm btn-danger" title="Eliminar Variable">
+                                                <i class="fa-solid fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="row">
+                {% for categoria, lista_vars in tarjetas_pestel.items %}
+                <div class="col-md-4 col-sm-6 mb-4">
+                    <div class="card h-100 shadow-sm" style="background: rgba(255, 255, 255, 0.95); border: none; border-top: 6px solid 
+                        {% if categoria == 'Político' %}#613bc0
+                        {% elif categoria == 'Económico' %}#49a4ff
+                        {% elif categoria == 'Social' %}#5c33be
+                        {% elif categoria == 'Tecnológico' %}#667bc6
+                        {% elif categoria == 'Ecológico' %}#42d4b9
+                        {% elif categoria == 'Legal' %}#fdbb63
+                        {% else %}#333{% endif %}; padding: 0;">
+                        
+                        <div class="card-body p-4">
+                            <h4 class="fw-bold text-dark text-center border-bottom pb-2 mb-3">{{ categoria }}</h4>
+                            
+                            {% if lista_vars %}
+                                <ul class="list-group list-group-flush mb-3">
+                                {% for var in lista_vars %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-1 border-bottom-0">
+                                        <span class="text-dark fw-semibold text-truncate" style="max-width: 75%;" title="{{ var.nombre }}">
+                                            {{ var.nombre_corto|default:var.nombre }}
+                                        </span>
+                                        <a href="{% url 'editar-pestel' var.pk %}" class="btn btn-sm btn-outline-primary" title="Editar Categoría">
+                                            <i class="fa-solid fa-edit"></i>
+                                        </a>
+                                    </li>
+                                {% endfor %}
+                                </ul>
+                            {% else %}
+                                <div class="text-center my-4">
+                                    <p class="text-muted small mb-0">No hay variables asignadas.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 
     <script>
@@ -200,37 +272,21 @@
                 variables: ["cant_minutos", "goles_anotados", "tasa_lesiones", "nivel_comp"],
                 valores: [ [16, 13, 7, 13], [9, 17, 7, 15], [18, 18, 12, 18], [12, 13, 7, 17] ]
             };
-
             let hcData = [];
             for (let i = 0; i < mData.variables.length; i++) {
                 for (let j = 0; j < mData.variables.length; j++) {
                     hcData.push([j, i, mData.valores[i][j]]);
                 }
             }
-
             Highcharts.chart('heatmapMatrixChartContainer', {
                 chart: { type: 'heatmap', marginTop: 40, marginBottom: 80, plotBorderWidth: 1 },
                 title: { text: 'Matriz MIC-MAC del Proyecto', style: { fontWeight: 'bold' } },
                 xAxis: { categories: mData.variables, labels: { style: { color: '#333' } } },
                 yAxis: { categories: mData.variables, title: null, reversed: true, labels: { style: { color: '#333' } } },
-                colorAxis: {
-                    min: 0,
-                    minColor: '#ffffff',
-                    maxColor: '#689bcc'  
-                },
+                colorAxis: { min: 0, minColor: '#ffffff', maxColor: '#689bcc' },
                 legend: { align: 'right', layout: 'vertical', verticalAlign: 'top', y: 25, symbolHeight: 280 },
-                tooltip: {
-                    formatter: function () {
-                        return `La variable: <b>${this.series.yAxis.categories[this.point.y]}</b><br>influye en <b>${this.point.value}</b> en<br>la variable: <b>${this.series.xAxis.categories[this.point.x]}</b>`;
-                    }
-                },
-                series: [{
-                    name: 'Matriz',
-                    borderWidth: 1,
-                    borderColor: '#dddddd',
-                    data: hcData,
-                    dataLabels: { enabled: true, color: '#000000', style: { textOutline: 'none', fontWeight: 'bold' } }
-                }],
+                tooltip: { formatter: function () { return `La variable: <b>${this.series.yAxis.categories[this.point.y]}</b><br>influye en <b>${this.point.value}</b> en<br>la variable: <b>${this.series.xAxis.categories[this.point.x]}</b>`; } },
+                series: [{ name: 'Matriz', borderWidth: 1, borderColor: '#dddddd', data: hcData, dataLabels: { enabled: true, color: '#000000', style: { textOutline: 'none', fontWeight: 'bold' } } }],
                 credits: { enabled: false }
             });
         } catch (e) { console.error("Error en Heatmap:", e); }
@@ -274,22 +330,14 @@
 
     <script>
         try {
-            let pestel = Object.keys(datosPestel).length > 0 ? datosPestel : {
-                "Legal": ["Protección de datos", "Regulaciones IT"],
-                "Ecológico": ["Consumo energético", "Sustentabilidad"],
-                "Tecnológico": ["Innovación en software", "Ciberseguridad"],
-                "Social": ["Adopción tecnológica", "Capacitación de usuarios"],
-                "Económico": ["Inflación", "Costo de infraestructura", "Financiamiento"],
-                "Político": ["Políticas públicas tecnológicas", "Estabilidad gubernamental"]
-            };
-
+            let pestel = datosPestel; // Leemos DIRECTAMENTE la base de datos
+            
             const coloresPestel = {
                 "Legal": "#fdbb63", "Ecológico": "#42d4b9", "Tecnológico": "#667bc6",  
                 "Social": "#5c33be", "Económico": "#49a4ff", "Político": "#613bc0"      
             };
 
             const nombreProyecto = '{{ tema.nombre|escapejs }}' || 'Proyecto';
-            
             const highchartsData = [{ id: 'root', name: nombreProyecto, color: '#333333' }];
 
             Object.keys(pestel).forEach((categoria, index) => {
@@ -309,7 +357,8 @@
                 chart: { 
                     type: 'treegraph',
                     spacingLeft: 20,
-                    spacingRight: 200 
+                    spacingRight: 150,
+                    height: 750
                 },
                 title: { text: '' },
                 series: [{
@@ -317,29 +366,15 @@
                     data: highchartsData,
                     tooltip: { pointFormat: '{point.name}' },
                     marker: { symbol: 'circle', radius: 7 }, 
+                    collapseButton: { enabled: false }, // Escondemos los botones de +/-
                     dataLabels: {
                         pointFormat: '{point.name}',
-                        style: { 
-                            whiteSpace: 'nowrap', 
-                            textOutline: '3px #ffffff', 
-                            color: '#333333', 
-                            fontSize: '12px', 
-                            fontWeight: '500' 
-                        }
+                        style: { whiteSpace: 'nowrap', textOutline: '3px #ffffff', color: '#333333', fontSize: '13px', fontWeight: '500' }
                     },
                     levels: [
-                        {
-                            level: 1, 
-                            dataLabels: { align: 'right', x: -10, style: { fontWeight: 'bold', fontSize: '14px' } }
-                        },
-                        {
-                            level: 2, 
-                            dataLabels: { align: 'center', y: -18, x: 0, style: { fontWeight: 'bold', fontSize: '13px' } }
-                        },
-                        {
-                            level: 3, 
-                            dataLabels: { align: 'left', x: 10 }
-                        }
+                        { level: 1, dataLabels: { align: 'right', x: -10, style: { fontWeight: 'bold', fontSize: '15px' } } },
+                        { level: 2, dataLabels: { align: 'center', y: -20, x: 0, style: { fontWeight: 'bold', fontSize: '14px' } } },
+                        { level: 3, dataLabels: { align: 'left', x: 10 } }
                     ]
                 }],
                 credits: { enabled: false }

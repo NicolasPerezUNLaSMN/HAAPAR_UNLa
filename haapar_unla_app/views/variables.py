@@ -1,12 +1,16 @@
 from django.contrib.auth.decorators import login_required
+from django.core.cache import (  # 🔑 Módulo de caché para resolver la desincronización
+    cache,
+)
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.views.decorators.http import require_POST
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from haapar_unla_app.models import Variable
-from haapar_unla_app.serializers import VariableSerializer
+
 from haapar_unla_app.models import Historial, Subsistema, Variable
+from haapar_unla_app.serializers import VariableSerializer
 
 
 # ---------------------------
@@ -30,7 +34,7 @@ def variable_detalle(request, subsistema_id):
         "haapar_unla_app/variable-detalle.html",
         {
             "subsistema": subsistema,
-            "page_obj": page_obj,  # Pasamos page_obj
+            "page_obj": page_obj,
             "tema": tema,
         },
     )
@@ -53,9 +57,16 @@ def crear_variable(request, subsistema_id):
             variable=variable, usuario=request.user, accion="AGREGADO"
         )
 
+        # 🧹 Limpiamos la caché para que la nueva variable aparezca al instante
+        cache.delete(f"foda_micmac_pestel_v2_{subsistema_id}")
+
         next_post = request.POST.get("next", "")
         if next_post == "matriz":
             return redirect("editar-matriz", subsistema_id=subsistema_id)
+        elif next_post == "pestel" or next_view == "pestel":
+            url = reverse("foda-graficos", kwargs={"subsistema_id": subsistema_id})
+            return redirect(f"{url}#gestion-pestel")
+
         return redirect("variable-detalle", subsistema_id=subsistema_id)
 
     return render(
@@ -100,9 +111,16 @@ def editar_variable(request, pk):
             detalles=texto_detalle,
         )
 
+        # 🧹 Limpiamos la caché para actualizar modificaciones en los paneles y gráficos
+        cache.delete(f"foda_micmac_pestel_v2_{subsistema_id}")
+
         next_post = request.POST.get("next", "")
         if next_post == "matriz":
             return redirect("editar-matriz", subsistema_id=subsistema_id)
+        elif next_post == "pestel" or next_view == "pestel":
+            url = reverse("foda-graficos", kwargs={"subsistema_id": subsistema_id})
+            return redirect(f"{url}#gestion-pestel")
+
         return redirect("variable-detalle", subsistema_id=subsistema_id)
 
     return render(
@@ -126,8 +144,15 @@ def eliminar_variable(request, pk):
         variable=variable, usuario=request.user, accion="ELIMINADO"
     )
 
+    # 🧹 Limpiamos la caché de raíz para que la variable desaparezca del listado de forma inmediata
+    cache.delete(f"foda_micmac_pestel_v2_{subsistema_id}")
+
     if next_view == "matriz":
         return redirect("editar-matriz", subsistema_id=subsistema_id)
+    elif next_view == "pestel":
+        url = reverse("foda-graficos", kwargs={"subsistema_id": subsistema_id})
+        return redirect(f"{url}#gestion-pestel")
+
     return redirect("variable-detalle", subsistema_id=subsistema_id)
 
 
@@ -155,6 +180,8 @@ def historial_variables(request, subsistema_id):
             "from_view": from_view,
         },
     )
+
+
 class VariableViewSet(viewsets.ModelViewSet):
     queryset = Variable.objects.filter(activo=True)
     serializer_class = VariableSerializer
