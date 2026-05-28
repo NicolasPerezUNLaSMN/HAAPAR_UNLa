@@ -43,7 +43,7 @@ def foda_graficos(request, subsistema_id):
         )
 
         nombres_vars = [
-            v.nombre_corto if v.nombre_corto else v.nombre[:15] for v in variables_obj
+            v.nombre_corto if v.nombre_corto else v.nombre for v in variables_obj
         ]
 
         importancias = [int(v.promedio_importancia()) for v in variables_obj]
