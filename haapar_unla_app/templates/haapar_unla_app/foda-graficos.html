@@ -150,7 +150,35 @@
             <h2>Gráfico de Dispersión MIC-MAC</h2> 
             <canvas id="micmacDispersionChart"></canvas> 
         </div>
-        
+        <div class="card">
+    <h2>Clasificación de Variables MICMAC</h2>
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Variable</th>
+                <th>Clasificación</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for nombre, categoria in clasificacion_variables.items %}
+            <tr>
+                <td>{{ nombre }}</td>
+                <td>
+                    {% if categoria == "Clave" %}
+                        <span class="badge bg-danger">{{ categoria }}</span>
+                    {% elif categoria == "Motora" %}
+                        <span class="badge bg-primary">{{ categoria }}</span>
+                    {% elif categoria == "Dependiente" %}
+                        <span class="badge bg-success">{{ categoria }}</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ categoria }}</span>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
         <div class="card"> 
             <h2>Árbol PESTEL del Proyecto</h2> 
             <div id="pestelChartContainer" class="hc-container" style="height: 750px;"></div> 

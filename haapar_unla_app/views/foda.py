@@ -59,7 +59,6 @@ def foda_graficos(request, subsistema_id):
         matriz_valores = [[0] * n for _ in range(n)]
         var_index = {v.pk: i for i, v in enumerate(variables_obj)}
 
-        # 🔎 Optimización: select_related en Influencias
         influencias = Influencia.objects.filter(
             variable_origen__in=variables_obj, variable_destino__in=variables_obj
         ).select_related("variable_origen", "variable_destino")
@@ -82,25 +81,30 @@ def foda_graficos(request, subsistema_id):
             "dependencia": dependencia_totales,
         }
 
-        # --- LÓGICA PESTEL (NUEVA INTERFAZ Y GRÁFICO) ---
-        variables_sin_pestel = []
+        # --- CLASIFICACIÓN MICMAC ---
+        umbral_influencia = sum(influencia_totales) / len(influencia_totales)
+        umbral_dependencia = sum(dependencia_totales) / len(dependencia_totales)
 
-        datos_pestel_nombres = {
-            "Político": [],
-            "Económico": [],
-            "Social": [],
-            "Tecnológico": [],
-            "Ecológico": [],
-            "Legal": [],
-        }
-        tarjetas_pestel = {
-            "Político": [],
-            "Económico": [],
-            "Social": [],
-            "Tecnológico": [],
-            "Ecológico": [],
-            "Legal": [],
-        }
+        clasificacion = {}
+        for idx, nombre in enumerate(nombres_vars):
+            inf = influencia_totales[idx]
+            dep = dependencia_totales[idx]
+
+            if inf >= umbral_influencia and dep >= umbral_dependencia:
+                categoria = "Clave"
+            elif inf >= umbral_influencia and dep < umbral_dependencia:
+                categoria = "Motora"
+            elif inf < umbral_influencia and dep >= umbral_dependencia:
+                categoria = "Dependiente"
+            else:
+                categoria = "Autónoma"
+
+            clasificacion[nombre] = categoria
+
+        # --- LÓGICA PESTEL ---
+        variables_sin_pestel = []
+        datos_pestel_nombres = {k: [] for k in ["Político","Económico","Social","Tecnológico","Ecológico","Legal"]}
+        tarjetas_pestel = {k: [] for k in ["Político","Económico","Social","Tecnológico","Ecológico","Legal"]}
 
         for var in variables_obj:
             mis_pestels = var.pestels.all()
@@ -110,11 +114,10 @@ def foda_graficos(request, subsistema_id):
                 for pestel in mis_pestels:
                     categoria = pestel.get_tipo_display()
                     if categoria in datos_pestel_nombres:
-                        datos_pestel_nombres[categoria].append(
-                            var.nombre_corto or var.nombre[:15]
-                        )
+                        datos_pestel_nombres[categoria].append(var.nombre_corto or var.nombre[:15])
                         tarjetas_pestel[categoria].append(var)
 
+        # --- CONTEXTO FINAL ---
         contexto = {
             "tema": tema,
             "subsistema": subsistema,
@@ -126,12 +129,15 @@ def foda_graficos(request, subsistema_id):
             "datos_pestel": json.dumps(datos_pestel_nombres),
             "variables_sin_pestel": variables_sin_pestel,
             "tarjetas_pestel": tarjetas_pestel,
+            "nombres_vars": nombres_vars,
+            "influencia_totales": influencia_totales,
+            "dependencia_totales": dependencia_totales,
+            "clasificacion_variables": clasificacion,
         }
 
         cache.set(cache_key, contexto, timeout=3600)
 
     return render(request, "haapar_unla_app/foda-graficos.html", contexto)
-
 
 # ---------------------------------------------------------
 # ABM MANUAL DE LA MATRIZ MATEMÁTICA
@@ -330,3 +336,5 @@ def editar_pestel(request, pk):
             "tema": tema,
         },
     )
+    
+   
