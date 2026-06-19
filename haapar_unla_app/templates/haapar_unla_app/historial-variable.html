@@ -3,9 +3,16 @@
 {% block content %}
 
 <div class="container mt-4 position-relative">
-  <a href="{% url 'variable_detalle' subsistema_id %}" class="btn-back">
-     <i class="fa-solid fa-arrow-left"></i>
-  </a>
+  {% if from_view == 'matriz' %}
+    <a href="{% url 'editar-matriz' subsistema_id %}" class="btn-back">
+       <i class="fa-solid fa-arrow-left"></i>
+    </a>
+  {% else %}
+    <a href="{% url 'variable-detalle' subsistema_id %}" class="btn-back">
+       <i class="fa-solid fa-arrow-left"></i>
+    </a>
+  {% endif %}
+
   <h2 class="text-center heading-section">Historial de Variables</h2>
   
   <table class="table proyectos-table">
@@ -13,12 +20,12 @@
       <tr>
         <th>Variable</th>
         <th>Acción</th>
-        <th>Fecha</th>
+        <th>Detalles</th> <th>Fecha</th>
         <th>Usuario</th>
       </tr>
     </thead>
     <tbody>
-      {% for ev in historial %}
+      {% for ev in page_obj %}
       <tr>
         <td>
           {% if ev.variable %}
@@ -28,16 +35,38 @@
           {% endif %}
         </td>
         <td>{{ ev.get_accion_display }}</td>
+        <td class="text-muted" style="font-size: 0.9rem;">{{ ev.detalles|default:"-" }}</td>
         <td>{{ ev.fecha|date:"d/m/Y H:i" }}</td>
         <td>{{ ev.usuario.username }}</td>
       </tr>
       {% empty %}
       <tr>
-        <td colspan="6" class="text-center">No hay registros históricos aún.</td>
+        <td colspan="5" class="text-center">No hay registros históricos aún.</td>
       </tr>
       {% endfor %}
     </tbody>
   </table>
 
+  {% if page_obj.paginator.num_pages > 1 %}
+  <div class="pagination-container d-flex justify-content-center mt-4 mb-4">
+      <span class="step-links">
+          {% if page_obj.has_previous %}
+              <a href="?page=1" class="btn btn-sm btn-outline-secondary">&laquo; Primera</a>
+              <a href="?page={{ page_obj.previous_page_number }}" class="btn btn-sm btn-outline-primary">Anterior</a>
+          {% endif %}
+
+          <span class="current fw-bold mx-3" style="font-size: 1.1rem; color: #555;">
+              Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+          </span>
+
+          {% if page_obj.has_next %}
+              <a href="?page={{ page_obj.next_page_number }}" class="btn btn-sm btn-outline-primary">Siguiente</a>
+              <a href="?page={{ page_obj.paginator.num_pages }}" class="btn btn-sm btn-outline-secondary">Última &raquo;</a>
+          {% endif %}
+      </span>
+  </div>
+  {% endif %}
+  
+</div>
 
 {% endblock %}

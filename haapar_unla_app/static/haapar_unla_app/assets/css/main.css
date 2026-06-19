@@ -465,6 +465,13 @@ body.dark-mode .proyectos-table tbody tr:hover {
   padding: 24px;
 }
 
+.titulo-tendencia {
+  max-width: 70%;        /* ajustá según tu diseño */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  vertical-align: middle;
+  margin-right: 2rem;    /* más espacio entre título y botones */
+}
 /* ====================================================
    PROYECTO DETALLE
 ==================================================== */

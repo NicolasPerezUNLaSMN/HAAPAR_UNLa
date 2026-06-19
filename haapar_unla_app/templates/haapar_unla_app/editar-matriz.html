@@ -1,0 +1,102 @@
+{% extends 'haapar_unla_app/base.html' %}
+
+{% block title %}Editar Matriz - {{ tema.nombre }}{% endblock %}
+
+{% block content %}
+<main class="main">
+    <div class="container mt-4">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap">
+            <a href="{% url 'foda-graficos' subsistema.id_subsistema %}" class="btn btn-outline-secondary mb-2">
+                <i class="fa-solid fa-arrow-left"></i> Volver a los Gráficos
+            </a>
+            
+            <div class="mb-2">
+                <a href="{% url 'crear-variable' subsistema.id_subsistema %}?next=matriz" class="btn btn-success fw-bold me-2 shadow-sm">
+                    <i class="fa-solid fa-plus"></i> Nueva Variable
+                </a>
+                
+                <a href="{% url 'historial-variables-subsistema' subsistema.id_subsistema %}?from=matriz" class="btn btn-outline-info text-dark fw-bold shadow-sm">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Ver Historial de Cambios
+                </a>
+            </div>
+        </div>
+        
+        <h2 class="mb-4 text-center">Edición Manual de Datos</h2>
+        <p class="text-center text-muted mb-4">
+            Ajustá la Importancia/Incertidumbre (1-10) y las Influencias (0-3) para recalcular los gráficos.
+        </p>
+
+        <form method="POST" action="{% url 'editar-matriz' subsistema.id_subsistema %}">
+            {% csrf_token %}
+            
+            <div class="table-responsive shadow-sm rounded mb-4" style="background-color: white;">
+                <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 1200px;">
+                    <thead class="table-dark text-center">
+                        <tr>
+                            <th rowspan="2" style="width: 300px; vertical-align: middle;">Variable Origen</th>
+                            <th colspan="2" class="bg-primary">Evaluación (1-10)</th>
+                            <th colspan="{{ variables|length }}" class="bg-success">Influencia sobre otras variables (0-3)</th>
+                        </tr>
+                        <tr>
+                            <th class="bg-primary text-white" style="width: 100px;">Imp.</th>
+                            <th class="bg-primary text-white" style="width: 100px;">Inc.</th>
+                            {% for var in variables %}
+                                <th class="bg-success text-white" style="width: 80px;" title="{{ var.nombre }}">
+                                    {{ var.nombre_corto }}
+                                </th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fila in filas_tabla %}
+                        <tr>
+                            <td class="fw-bold" title="{{ fila.origen.nombre }}">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>{{ fila.origen.nombre_corto }}</span>
+                                    <div class="text-nowrap ms-2">
+                                        <a href="{% url 'editar-variable' fila.origen.pk %}?next=matriz" class="btn btn-sm btn-outline-primary py-0 px-1" title="Editar Variable">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </a>
+                                        
+                                        <button type="submit" 
+                                                formaction="{% url 'eliminar-variable' fila.origen.pk %}?next=matriz" 
+                                                class="btn btn-sm btn-outline-danger py-0 px-1" 
+                                                onclick="return confirm('¿Estás seguro de eliminar la variable {{ fila.origen.nombre_corto }}? (Se perderán los cambios no guardados en la matriz)');">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <td>
+                                <input type="number" name="imp_{{ fila.origen.pk }}" class="form-control fw-bold text-primary" value="{{ fila.imp|floatformat:'0' }}" min="1" max="10" required>
+                            </td>
+                            <td>
+                                <input type="number" name="inc_{{ fila.origen.pk }}" class="form-control fw-bold text-primary" value="{{ fila.inc|floatformat:'0' }}" min="1" max="10" required>
+                            </td>
+                            
+                            {% for celda in fila.celdas %}
+                                <td>
+                                    {% if celda.is_self %}
+                                        <input type="text" class="form-control text-center bg-light text-muted" value="-" disabled>
+                                    {% else %}
+                                        <input type="number" name="inf_{{ fila.origen.pk }}_{{ celda.destino_id }}" class="form-control fw-bold text-success" value="{{ celda.valor|floatformat:'0' }}" min="0" max="3" required>
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="text-center mb-5">
+                <button type="submit" class="btn btn-success btn-lg px-5 fw-bold shadow">
+                    <i class="fa-solid fa-floppy-disk"></i> Guardar y Recalcular
+                </button>
+            </div>
+        </form>
+    </div>
+</main>
+{% endblock %}

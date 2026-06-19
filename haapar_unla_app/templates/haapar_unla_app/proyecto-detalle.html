@@ -11,6 +11,7 @@ Detalle del Proyecto - HAAPAR
       <a href="{% url 'subsistemas' tema.id_tema %}"  class="btn-back">
         <i class="fa-solid fa-arrow-left"></i>
       </a>
+    </div>
     <div class="container position-relative">
       <h1 class="text-center heading-section">Detalle del proyecto</h1>
       <p class="text-center text-muted">{{ tema.nombre }}</p>
@@ -24,7 +25,6 @@ Detalle del Proyecto - HAAPAR
     <div class="container">
       <div class="row gy-4">
         
-        <!-- Variables -->
         <div class="col-lg-3 col-md-6">
           <div class="card proyecto-base h-100">
             <div class="card-body text-center">
@@ -33,7 +33,7 @@ Detalle del Proyecto - HAAPAR
               </div>
               <h3 class="card-title text-info">
                 {% if subsistema %}
-                  <a href="{% url 'variable_detalle' subsistema.id_subsistema %}" class="stretched-link text-decoration-none">Variables</a>
+                  <a href="{% url 'variable-detalle' subsistema.id_subsistema %}" class="stretched-link text-decoration-none">Variables</a>
                 {% else %}
                   <a href="#">Variables</a>
                 {% endif %}
@@ -45,7 +45,6 @@ Detalle del Proyecto - HAAPAR
           </div>
         </div>
 
-        <!-- Tendencias -->
         <div class="col-lg-3 col-md-6">
           <div class="card proyecto-base h-100">
             <div class="card-body text-center">
@@ -54,7 +53,7 @@ Detalle del Proyecto - HAAPAR
               </div>
               <h3 class="card-title text-info">
                 {% if subsistema %}
-                  <a href="{% url 'tendencia_detalle' subsistema.id_subsistema %}" class="stretched-link text-decoration-none">Tendencias</a>
+                  <a href="{% url 'tendencia-detalle' subsistema.id_subsistema %}" class="stretched-link text-decoration-none">Tendencias</a>
                 {% else %}
                   <a href="#">Tendencias</a>
                 {% endif %}
@@ -67,7 +66,6 @@ Detalle del Proyecto - HAAPAR
         </div>
 
 
-        <!-- Actores -->
         <div class="col-lg-3 col-md-6">
           <div class="card proyecto-base h-100">
             <div class="card-body text-center">
@@ -76,7 +74,7 @@ Detalle del Proyecto - HAAPAR
               </div>
               <h3 class="card-title text-info">
                 {% if subsistema %}
-                  <a href="{% url 'actor_detalle' subsistema.id_subsistema %}" class="stretched-link text-decoration-none">Actores</a>
+                  <a href="{% url 'actor-detalle' subsistema.id_subsistema %}" class="stretched-link text-decoration-none">Actores</a>
                 {% else %}
                   <a href="#" class="stretched-link text-decoration-none">Actores</a>
                 {% endif %}
@@ -87,7 +85,7 @@ Detalle del Proyecto - HAAPAR
             </div>
           </div>
         </div>
-        <!-- FODA -->
+        
         <div class="col-lg-3 col-md-6">
           <div class="card proyecto-base h-100">
             <div class="card-body text-center">
@@ -95,9 +93,11 @@ Detalle del Proyecto - HAAPAR
                 <i class="fa-solid fa-chart-simple"></i>
               </div>
               <h3 class="card-title text-info">
-
-                <a href="{% url 'foda_graficos' tema.id_tema %}"  class="stretched-link text-decoration-none">Análisis FODA</a>
-
+                {% if subsistema %}
+                    <a href="{% url 'foda-graficos' subsistema.id_subsistema %}" class="stretched-link text-decoration-none">Análisis FODA</a>
+                {% else %}
+                    <a href="#">Análisis FODA</a>
+                {% endif %}
               </h3>
               <p class="card-text">
                 El análisis FODA es una herramienta estratégica que permite realizar un diagnóstico interno y externo de un proyecto.
@@ -107,7 +107,6 @@ Detalle del Proyecto - HAAPAR
         </div>
 
       </div> 
-
     </div>
   </section>
 </main>

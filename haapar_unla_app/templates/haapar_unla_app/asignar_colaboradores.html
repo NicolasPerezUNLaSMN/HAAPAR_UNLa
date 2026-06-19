@@ -1,0 +1,45 @@
+{% extends 'haapar_unla_app/base.html' %}
+{% block title %}Asignar Colaboradores{% endblock %}
+{% block content %}
+<main class="main">
+  <div class="container mt-4">
+    <h2>Colaboradores del proyecto: {{ tema.nombre }}</h2>
+
+    <!-- Lista de colaboradores actuales -->
+    <div class="mb-4">
+      <h5>Colaboradores actuales:</h5>
+      {% if tema.colaboradores.all %}
+        <ul class="list-group">
+          {% for colaborador in tema.colaboradores.all %}
+            <li class="list-group-item">{{ colaborador.username }}</li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-muted">Este proyecto aún no tiene colaboradores.</p>
+      {% endif %}
+    </div>
+
+    {% if es_creador %}
+      <!-- Solo el creador puede ver el formulario -->
+      <form method="post">
+        {% csrf_token %}
+        <h5>Agregar o quitar colaboradores:</h5>
+        {% for usuario in usuarios %}
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="colaboradores" value="{{ usuario.id }}"
+                   {% if usuario in tema.colaboradores.all %}checked{% endif %}>
+            <label class="form-check-label">
+              {{ usuario.username }}
+            </label>
+          </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary mt-3">Guardar</button>
+      </form>
+    {% else %}
+      <!-- Mensaje para colaboradores -->
+      <p class="text-muted mt-3">Sos colaborador de este proyecto. Solo el creador puede gestionar colaboradores.</p>
+    {% endif %}
+  </div>
+</main>
+{% endblock %}
+

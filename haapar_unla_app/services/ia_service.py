@@ -1,31 +1,26 @@
 import json
-from dotenv import load_dotenv 
-import os
-from openai import OpenAI 
+import logging
+import re
 
-
-load_dotenv(override=True)
-
-from ..models import Historial, Sistema, Subsistema, Variable, ActorClave, TendenciaExterna,EvaluacionVariable, Influencia, PESTEL, IndicadorVariable, VariableTendencia   
-
-
-# 2. Obtenemos la clave específicamente
-api_key = os.getenv("API_KEY_OPENROUTER")
-
-# 3. Verificación de seguridad (esto saldrá en tu terminal de VS Code)
-#if api_key and api_key.startswith("sk-proj"):
-    #print("⚠️ ERROR: Sigues cargando una clave de OpenAI en lugar de OpenRouter")
-#elif api_key:
-    #print("✅ Clave de OpenRouter cargada correctamente")
-#else:
-    #print("❌ No se encontró ninguna clave")
-
-client = OpenAI(
-    api_key=api_key,
-    base_url="https://openrouter.ai/api/v1"
+from ..models import (
+    PESTEL,
+    ActorClave,
+    EvaluacionVariable,
+    Historial,
+    IAInteraction,
+    IndicadorVariable,
+    Influencia,
+    Sistema,
+    Subsistema,
+    TendenciaExterna,
+    Variable,
+    VariableTendencia,
 )
+from .ai_client import generar_respuesta_llm
 
-print(api_key)
+logger = logging.getLogger(__name__)
+
+
 def generar_estructura_prospectiva(tema):
 
     prompt = f"""
@@ -43,10 +38,28 @@ def generar_estructura_prospectiva(tema):
     - 3 actores por subsistema
     - 3 tendencias por subsistema
     
-    IMPORTANTE:
+    IMPORTANTE PARA LAS VARIABLES:
     Las variables deben ser CUANTIFICABLES, es decir, deben poder medirse numéricamente.
+    El nombre de cada variable debe incluir una métrica clara o unidad (Porcentaje (%), Tasa, Cantidad, Índice, Nivel).
+    NO usar nombres abstractos como "Economía", "Tecnología".
+
+    Clasificación del Entorno:
+    tipo: "I" (Interna) o "E" (Externa).
+
+    Clasificación PESTEL (OBLIGATORIO Y DIVERSO):
+    Asigná cada variable a uno de los siguientes códigos PESTEL según su naturaleza:
+    - "P" (Político)
+    - "EC" (Económico)
+    - "S" (Social)
+    - "T" (Tecnológico)
+    - "EO" (Ecológico)
+    - "L" (Legal)
+    
+    🚨 REGLA CRÍTICA: ¡NO repitas la misma categoría PESTEL para todas las variables de un subsistema! 
+    Tiene que haber una ALTA VARIEDAD de categorías (P, EC, S, T, EO, L) distribuidas de forma heterogénea. 🚨
 
     Las tendencias deben ser de dos tipos:
+    - CUANTITATIVA o CUALITATIVA
 
     - Cuantitativas: expresadas con métricas (%, tasas, índices, cantidades)
     - Cualitativas: cambios o fenómenos no medibles directamente
@@ -103,6 +116,8 @@ def generar_estructura_prospectiva(tema):
     Las tendencias_relacionadas deben referenciar tendencias que existan en el mismo subsistema.
 
     Respondé SOLO en JSON válido.
+    Respondé SOLO en JSON válido sin texto extra de la siguiente forma:
+
 
     {{
         "subsistemas":[
@@ -114,7 +129,6 @@ def generar_estructura_prospectiva(tema):
                 "nombre":"",
                 "descripcion":"",
                 "tipo":"I o E",
-
                 "pestel": ["P", "EC", "S", "T", "EO", "L"],
 
                 "indicadores":[
@@ -151,52 +165,51 @@ def generar_estructura_prospectiva(tema):
         ]
         }}
     """
-    
-    response = client.chat.completions.create(
-        model="meta-llama/llama-3.1-8b-instruct",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.7
+
+    logger.info("Enviando solicitud de estructura a la IA...")
+    resultado = generar_respuesta_llm(prompt, temperature=0.7)
+
+    IAInteraction.objects.create(
+        tema=tema,
+        usuario=None,
+        prompt=prompt,
+        respuesta=resultado.get("text"),
+        success=resultado.get("success", False),
+        error=resultado.get("error"),
     )
 
-    content = response.choices[0].message.content
+    if not resultado.get("success"):
+        logger.error(f"La IA falló al estructurar: {resultado.get('error')}")
+        return
 
-    print("RESPUESTA IA:")
-    print(content)
-
-    # limpiar markdown
+    content = resultado.get("text")
     content = content.replace("```json", "").replace("```", "").strip()
 
-    # extraer JSON si viene texto extra
     start = content.find("{")
     end = content.rfind("}") + 1
     content = content[start:end]
 
     if not content:
-        print("La IA devolvió contenido vacío")
+        logger.error("La IA devolvió contenido vacío")
         return
 
     try:
         data = json.loads(content)
     except json.JSONDecodeError:
-        print("JSON inválido recibido:")
-        print(content)
+        logger.error("JSON inválido recibido:")
         return
 
     sistema = Sistema.objects.create(
-        tema=tema,
-        nombre=f"Sistema de {tema.nombre}",
-        descripcion=tema.descripcion
+        tema=tema, nombre=f"Sistema de {tema.nombre}", descripcion=tema.descripcion
     )
 
     for s in data.get("subsistemas", []):
-
         subsistema = Subsistema.objects.create(
             sistema=sistema,
             nombre=s.get("nombre", ""),
             descripcion=s.get("descripcion", ""),
-            activo=True
+            activo=True,
         )
-
 
         for a in s.get("actores", []):
 
@@ -205,7 +218,7 @@ def generar_estructura_prospectiva(tema):
                 nombre=a.get("nombre", ""),
                 descripcion=a.get("descripcion", ""),
                 puesto=a.get("puesto", ""),
-                activo=True
+                activo=True,
             )
 
             tendencias_creadas = {}
@@ -223,21 +236,17 @@ def generar_estructura_prospectiva(tema):
                     nombre_corto=t.get("nombre", "")[:40],
                     tipo_dato=tipo,
                     descripcion=t.get("descripcion", ""),
-                    activo=True
+                    activo=True,
                 )
 
                 tendencias_creadas[t.get("nombre")] = tendencia
 
                 Historial.objects.create(
-                    tendencia=tendencia,
-                    accion='CREADO',
-                    usuario=None
+                    tendencia=tendencia, accion="CREADO", usuario=None
                 )
-            
+
         for v in s.get("variables", []):
-
             tipo = v.get("tipo", "I")
-
             if tipo not in ["I", "E"]:
                 tipo = "I"
 
@@ -247,32 +256,25 @@ def generar_estructura_prospectiva(tema):
                 nombre_corto=v.get("nombre", "")[:40],
                 descripcion=v.get("descripcion", ""),
                 tipo=tipo,
-                activo=True
+                activo=True,
             )
-
-            # 🔵 PESTEL
             MAP_PESTEL = {
                 "POLITICO": "P",
                 "POLÍTICO": "P",
                 "P": "P",
-
                 "ECONOMICO": "EC",
                 "ECONÓMICO": "EC",
                 "EC": "EC",
-
                 "SOCIAL": "S",
                 "S": "S",
-
                 "TECNOLOGICO": "T",
                 "TECNOLÓGICO": "T",
                 "T": "T",
-
                 "ECOLOGICO": "EO",
                 "ECOLÓGICO": "EO",
                 "EO": "EO",
-
                 "LEGAL": "L",
-                "L": "L"
+                "L": "L",
             }
 
             for p in v.get("pestel", []):
@@ -283,14 +285,13 @@ def generar_estructura_prospectiva(tema):
                     if pestel_obj:
                         variable.pestels.add(pestel_obj)
 
-
             # 🟣 INDICADORES
             for ind in v.get("indicadores", []):
                 IndicadorVariable.objects.create(
                     variable=variable,
                     nombre_corto=ind.get("nombre_corto", ""),
                     descripcion=ind.get("descripcion", ""),
-                    formula=ind.get("formula", "")
+                    formula=ind.get("formula", ""),
                 )
 
             # 🟠 TENDENCIAS RELACIONADAS
@@ -301,134 +302,133 @@ def generar_estructura_prospectiva(tema):
                     VariableTendencia.objects.create(
                         variable=variable,
                         tendencia=tendencia,
-                        impacto=tr.get("impacto", 0)
+                        impacto=tr.get("impacto", 0),
                     )
 
             # 🟢 HISTORIAL
-            Historial.objects.create(
-                variable=variable,
-                accion='CREADO',
-                usuario=None
+            Historial.objects.create(variable=variable, accion="CREADO", usuario=None)
+
+            # Sincronización Automática PESTEL generada por IA
+            ai_pestel_codes = v.get("pestel", [])
+            if isinstance(ai_pestel_codes, str):
+                ai_pestel_codes = [ai_pestel_codes]
+
+            for code in ai_pestel_codes:
+                clean_code = str(code).upper().strip()
+                if clean_code in ["P", "EC", "S", "T", "EO", "L"]:
+                    pestel_obj, _ = PESTEL.objects.get_or_create(tipo=clean_code)
+                    variable.pestels.add(pestel_obj)
+
+            Historial.objects.create(variable=variable, accion="CREADO", usuario=None)
+
+        for a in s.get("actores", []):
+            ActorClave.objects.create(
+                subsistema=subsistema,
+                nombre=a.get("nombre", ""),
+                descripcion=a.get("descripcion", ""),
+                puesto=a.get("puesto", ""),
+                activo=True,
             )
 
+        for t in s.get("tendencias", []):
+            tipo = t.get("tipo", "CUALITATIVA")
+            if tipo not in ["CUALITATIVA", "CUANTITATIVA"]:
+                tipo = "CUALITATIVA"
+
+            tendencia = TendenciaExterna.objects.create(
+                subsistema=subsistema,
+                nombre=t.get("nombre", ""),
+                nombre_corto=t.get("nombre", "")[:40],
+                tipo_dato=tipo,
+                descripcion=t.get("descripcion", ""),
+                activo=True,
+            )
+
+            Historial.objects.create(tendencia=tendencia, accion="CREADO", usuario=None)
+
+
 def generar_evaluaciones_e_influencias(tema, usuario):
-    """
-    Paso 2: Genera la matriz matemática (FODA / MIC-MAC) usando análisis lógico de la IA
-    """
-    # 1. Traemos las variables ordenadas por ID para asegurar la consistencia de la matriz
-    variables = list(Variable.objects.filter(subsistema__sistema__tema=tema).order_by('pk'))
-    
+    variables = list(
+        Variable.objects.filter(subsistema__sistema__tema=tema).order_by("pk")
+    )
     if not variables:
         return
 
-    # Armamos una lista de texto para pasarle a la IA
-    lista_vars_texto = "\n".join([f"[{i}] {v.nombre}" for i, v in enumerate(variables)])
-    cantidad = len(variables)
+    lista_vars_texto = "\n".join([f"- {v.nombre}" for v in variables])
+    amount = len(variables)
 
     prompt = f"""
     Sos un experto en prospectiva estratégica y análisis MIC-MAC.
-    Acabo de identificar {cantidad} variables clave para el proyecto académico: "{tema.nombre}".
+    Acabo de identificar exactamente {amount} variables clave para el proyecto: "{tema.nombre}".
     
     Las variables, en su orden exacto, son:
     {lista_vars_texto}
 
-    Necesito que actúes como un panel de expertos y evalúes las relaciones matemáticas entre ellas.
-    Respondé SOLO con un JSON válido, sin formato markdown ni texto explicativo adicional.
-    Estructura requerida:
+    Necesito que actúes como un panel de expertos y evalúes matemáticamente estas {amount} variables.
+    
+    REGLAS ESTRICTAS:
+    1. "evaluaciones": DEBE ser una lista con exactamente {amount} objetos con "importancia" e "incertidumbre" (1 al 10).
+    2. "matriz_influencia": DEBE ser una matriz cuadrada exacta de {amount} x {amount} (es decir, {amount} listas, cada una con {amount} valores).
+    3. VALORES DE INFLUENCIA: Los únicos números permitidos son 0, 1, 2 o 3. 
+    🚨 REGLA DE CONEXIÓN: En un sistema real, casi todas las variables interactúan. EVITÁ RELLENAR CON CEROS (0). Pensá críticamente y usá 1, 2 o 3 para reflejar influencias directas cruzadas. 🚨
+    4. La diagonal siempre debe ser 0.
 
-    {{
-      "evaluaciones": [
-        // Array exacto de {cantidad} objetos, en el mismo orden que las variables.
-        // "importancia" (1 al 10): Qué tan vital es para el futuro del proyecto.
-        // "incertidumbre" (1 al 10): Qué tan impredecible es su evolución.
-        {{"importancia": 8, "incertidumbre": 5}}
-      ],
-      "matriz_influencia": [
-        // Una matriz 2D exacta de {cantidad} filas por {cantidad} columnas.
-        // El valor en la fila 'i' y columna 'j' es cuánto influye directamente la variable 'i' sobre la 'j'.
-        // Valores permitidos: 0 (nula), 1 (débil), 2 (moderada), 3 (fuerte).
-        // La diagonal principal (influencia de una variable sobre sí misma) DEBE ser siempre 0.
-        [0, 2, 1, 3],
-        [1, 0, 2, 0]
-      ]
-    }}
+    Respondé ÚNICAMENTE con un JSON válido.
     """
 
-    print(f"Enviando solicitud matemática a la IA para {cantidad} variables...")
+    logger.info(f"Enviando solicitud matemática a la IA para {amount} variables...")
+    # Subimos un poco la temperatura para que la IA sea más analítica cruzando datos y no tan repetitiva
+    resultado = generar_respuesta_llm(prompt, temperature=0.3, max_tokens=4000)
 
-    response = client.chat.completions.create(
-        model="meta-llama/llama-3.1-8b-instruct",
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.2, 
-        max_tokens=4000
-    )
+    if not resultado.get("success"):
+        logger.error(
+            f"ERROR: La IA falló al generar la matriz: {resultado.get('error')}"
+        )
+        return
 
-    content = response.choices[0].message.content.strip()
-    
-    print("RESPUESTA IA (MATEMÁTICA):")
-    print(content)
-
-    # Limpieza del JSON
-    content = content.replace("```json", "").replace("```", "").strip()
-    start = content.find("{")
-    end = content.rfind("}") + 1
-    if start != -1 and end != -1:
-        content = content[start:end]
+    content = resultado.get("text").strip()
+    match = re.search(r"\{.*\}", content, re.DOTALL)
+    if match:
+        content = match.group(0)
+    else:
+        return
 
     try:
         data = json.loads(content)
     except json.JSONDecodeError:
-        print("ERROR: La IA falló al generar la matriz matemática JSON. Las variables quedarán en 0 para carga manual.")
-        return 
+        return
 
     evaluaciones = data.get("evaluaciones", [])
     matriz = data.get("matriz_influencia", [])
 
-    # 2. Guardamos las Evaluaciones en la BD
     for i, var in enumerate(variables):
-        imp = 0
-        inc = 0
-        # Validamos que la IA nos haya devuelto el array completo
+        imp, inc = 5, 5
         if i < len(evaluaciones):
-            imp = evaluaciones[i].get("importancia", 0)
-            inc = evaluaciones[i].get("incertidumbre", 0)
-            
+            try:
+                imp = max(1, min(10, int(evaluaciones[i].get("importancia", 5))))
+                inc = max(1, min(10, int(evaluaciones[i].get("incertidumbre", 5))))
+            except (ValueError, TypeError):
+                pass
+
         EvaluacionVariable.objects.create(
-            variable=var,
-            usuario=usuario,
-            importancia=imp,
-            incertidumbre=inc
-        )
-        Historial.objects.create(
-            variable=var,
-            usuario=usuario,
-            accion='EVALUACION'
+            variable=var, usuario=usuario, importancia=imp, incertidumbre=inc
         )
 
-    # 3. Guardamos la Matriz de Influencia en la BD
+        Historial.objects.create(variable=var, usuario=usuario, accion="EVALUACION")
+
     for i, var_origen in enumerate(variables):
         for j, var_destino in enumerate(variables):
-            if i != j: # Evitamos guardar la diagonal principal en la tabla de relaciones
+            if i != j:
                 valor_ia = 0
-                # Validamos que la matriz generada no esté rota o sea más chica de lo esperado
                 if i < len(matriz) and j < len(matriz[i]):
-                    valor_ia = matriz[i][j]
-                
+                    try:
+                        val = int(matriz[i][j])
+                        valor_ia = max(0, min(3, val))
+                    except (ValueError, TypeError):
+                        valor_ia = 0
+
                 Influencia.objects.create(
                     variable_origen=var_origen,
                     variable_destino=var_destino,
-                    valor=valor_ia
+                    valor=valor_ia,
                 )
-
-""""
-Al crear el reporte en views.py, primero se ejecuta el prompt original de tu código que inventa los subsistemas y variables.
-Inmediatamente después, se dispara este segundo prompt, que lee las variables que la IA recién inventó, las cruza lógicamente, y 
-devuelve las influencias reales (por ejemplo, detectando que "Inflación" influye un 3 sobre "Costo de infraestructura").
-Todo se guarda en PostgreSQL. Cuando el usuario entra a foda_graficos, ve una matriz armada inteligentemente, 
-pero que él puede editar si considera que la IA se equivocó.
-"""
-
-
-
-
-

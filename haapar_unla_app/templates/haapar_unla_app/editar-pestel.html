@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Editar PESTEL</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <style>
+        body {
+            background: linear-gradient(135deg, #296d1b, rgb(35, 139, 43));
+            font-family: 'Segoe UI', sans-serif;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card-pestel {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+            max-width: 600px;
+            width: 100%;
+            border-top: 6px solid #ffc107; /* Línea de acento arriba */
+        }
+        /* Estilos personalizados para la lista de checkboxes */
+        .checkbox-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .checkbox-list li {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 12px 20px;
+            margin-bottom: 12px;
+            transition: all 0.2s ease-in-out;
+        }
+        .checkbox-list li:hover {
+            background: #e9ecef;
+            border-color: #ced4da;
+            transform: translateX(5px);
+        }
+        .checkbox-list label {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 500;
+            font-size: 1.1rem;
+            margin: 0;
+            color: #495057;
+        }
+        .checkbox-list input[type="checkbox"] {
+            width: 1.3rem;
+            height: 1.3rem;
+            margin-right: 15px;
+            accent-color: #296d1b; /* Color verde al tildar */
+            cursor: pointer;
+        }
+        .btn-back-arrow {
+            color: #005c3d; 
+            font-size: 1.5rem;
+            transition: transform 0.2s;
+        }
+        .btn-back-arrow:hover {
+            color: #003d29;
+            transform: scale(1.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="card card-pestel mx-auto">
+            <div class="card-body p-sm-5 p-4">
+                
+                <div class="d-flex align-items-center mb-4 position-relative">
+                    <a href="{% url 'foda-graficos' subsistema.id_subsistema %}#gestion-pestel" class="position-absolute start-0 text-decoration-none btn-back-arrow" title="Volver al Gráfico">
+                        <i class="fa-solid fa-arrow-left"></i>
+                    </a>
+                    <div class="w-100 text-center">
+                        <h2 class="fw-bold mb-0" style="color: #004d40; letter-spacing: 0.5px;">Clasificación PESTEL</h2>
+                    </div>
+                </div>
+
+                <div class="text-center mb-4">
+                    <p class="text-muted small mb-1 text-uppercase fw-bold">Variable Seleccionada</p>
+                    <h4 class="fw-bold text-dark">{{ variable.nombre }}</h4>
+                    <span class="badge bg-secondary mb-2"><i class="fa-solid fa-tag me-1"></i>{{ variable.get_tipo_display }}</span>
+                </div>
+                
+                <div class="alert alert-info border-0 bg-light shadow-sm text-center mb-4" role="alert" style="border-left: 4px solid #0dcaf0 !important;">
+                    <i class="fa-solid fa-circle-info text-info fs-5 mb-2"></i><br>
+                    <strong>Tildá las categorías</strong> a las que corresponde esta variable.<br>
+                    <span class="text-muted small">Podés desmarcar todas las opciones para devolver la variable a "Pendientes".</span>
+                </div>
+
+                <form method="post" action="">
+                    {% csrf_token %}
+                    
+                    <ul class="checkbox-list mb-4">
+                        {% for widget in form.pestels %}
+                            <li>
+                                <label for="{{ widget.id_for_label }}">
+                                    {{ widget.tag }}
+                                    <span class="ms-2">{{ widget.choice_label }}</span>
+                                </label>
+                            </li>
+                        {% endfor %}
+                    </ul>
+
+                    <div class="d-grid gap-3 mt-4">
+                        <button type="submit" class="btn btn-success btn-lg fw-bold shadow-sm">
+                            <i class="fa-solid fa-floppy-disk me-2"></i> Guardar Cambios
+                        </button>
+                        <a href="{% url 'foda-graficos' subsistema.id_subsistema %}#gestion-pestel" class="btn btn-outline-secondary fw-bold">
+                            <i class="fa-solid fa-xmark me-2"></i> Cancelar
+                        </a>
+                    </div>
+                </form>
+                
+            </div>
+        </div>
+    </div>
+</body>
+</html>
