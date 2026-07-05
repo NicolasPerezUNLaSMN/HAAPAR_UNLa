@@ -57,9 +57,10 @@ urlpatterns = [
         name="historial-variables-subsistema",
     ),
     path(
-        "variables/<int:pk>/editar-pestel/",
-        views.editar_pestel,
-        name="editar-pestel",
+        "variable/<int:variable_id>/", views.variable_completa, name="variable_completa"
+    ),
+    path(
+        "variables/<int:pk>/editar-pestel/", views.editar_pestel, name="editar-pestel"
     ),
     path("__debug__/", include(debug_toolbar.urls)),
     path("api/", include(router.urls)),

@@ -1,7 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.core.cache import (  # 🔑 Módulo de caché para resolver la desincronización
-    cache,
-)
+from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -9,7 +7,15 @@ from django.views.decorators.http import require_POST
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
-from haapar_unla_app.models import Historial, Subsistema, Variable
+from haapar_unla_app.models import (
+    PESTEL,
+    Historial,
+    IndicadorVariable,
+    Subsistema,
+    TendenciaExterna,
+    Variable,
+    VariableTendencia,
+)
 from haapar_unla_app.serializers import VariableSerializer
 
 
@@ -43,6 +49,10 @@ def variable_detalle(request, subsistema_id):
 @login_required
 def crear_variable(request, subsistema_id):
     subsistema = get_object_or_404(Subsistema, pk=subsistema_id, activo=True)
+
+    pestels = PESTEL.objects.all()
+    tendencias = TendenciaExterna.objects.filter(subsistema=subsistema, activo=True)
+
     next_view = request.GET.get("next", "")
 
     if request.method == "POST":
@@ -53,11 +63,45 @@ def crear_variable(request, subsistema_id):
             tipo=request.POST.get("tipo"),
             subsistema=subsistema,
         )
+
+        # PESTEL
+        pestel_ids = request.POST.getlist("pestel")
+        for p in pestel_ids:
+            pestel_obj = PESTEL.objects.filter(tipo=p).first()
+            if pestel_obj:
+                variable.pestels.add(pestel_obj)
+
+        # INDICADOR
+        nombre_ind = request.POST.get("indicador_nombre")
+        desc_ind = request.POST.get("indicador_desc")
+        formula_ind = request.POST.get("indicador_formula")
+
+        if nombre_ind:
+            IndicadorVariable.objects.create(
+                variable=variable,
+                nombre_corto=nombre_ind,
+                descripcion=desc_ind,
+                formula=formula_ind,
+            )
+
+        # RELACIÓN CON TENDENCIAS
+        tendencias_ids = request.POST.getlist("tendencias")
+        for tid in tendencias_ids:
+            tendencia = TendenciaExterna.objects.filter(
+                id_tendencia_externa=tid
+            ).first()
+            if tendencia:
+                VariableTendencia.objects.create(
+                    variable=variable,
+                    tendencia=tendencia,
+                    impacto=0,  # después lo podés editar
+                )
+
         Historial.objects.create(
             variable=variable, usuario=request.user, accion="AGREGADO"
         )
 
-        # 🧹 Limpiamos la caché para que la nueva variable aparezca al instante
+        # Limpiar cache para que la nueva variable aparezca al instante
         cache.delete(f"foda_micmac_pestel_v2_{subsistema_id}")
 
         next_post = request.POST.get("next", "")
@@ -72,7 +116,12 @@ def crear_variable(request, subsistema_id):
     return render(
         request,
         "haapar_unla_app/crear-variable.html",
-        {"subsistema": subsistema, "next": next_view},
+        {
+            "subsistema": subsistema,
+            "pestels": pestels,
+            "tendencias": tendencias,
+            "next": next_view,
+        },
     )
 
 
@@ -111,7 +160,7 @@ def editar_variable(request, pk):
             detalles=texto_detalle,
         )
 
-        # 🧹 Limpiamos la caché para actualizar modificaciones en los paneles y gráficos
+        # Limpiar caché para actualizar modificaciones en los paneles y gráficos
         cache.delete(f"foda_micmac_pestel_v2_{subsistema_id}")
 
         next_post = request.POST.get("next", "")
@@ -144,7 +193,7 @@ def eliminar_variable(request, pk):
         variable=variable, usuario=request.user, accion="ELIMINADO"
     )
 
-    # 🧹 Limpiamos la caché de raíz para que la variable desaparezca del listado de forma inmediata
+    # Limpiar caché de raíz para que la variable desaparezca del listado de forma inmediata
     cache.delete(f"foda_micmac_pestel_v2_{subsistema_id}")
 
     if next_view == "matriz":
@@ -154,6 +203,27 @@ def eliminar_variable(request, pk):
         return redirect(f"{url}#gestion-pestel")
 
     return redirect("variable-detalle", subsistema_id=subsistema_id)
+
+
+@login_required
+def variable_completa(request, variable_id):
+    variable = get_object_or_404(Variable, pk=variable_id, activo=True)
+    indicadores = IndicadorVariable.objects.filter(variable=variable)
+    relaciones = VariableTendencia.objects.select_related("tendencia").filter(
+        variable=variable
+    )
+    pestels = variable.pestels.all()
+
+    return render(
+        request,
+        "haapar_unla_app/variable-completa.html",
+        {
+            "variable": variable,
+            "indicadores": indicadores,
+            "relaciones": relaciones,
+            "pestels": pestels,
+        },
+    )
 
 
 @login_required
