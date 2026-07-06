@@ -62,8 +62,25 @@ urlpatterns = [
     path(
         "variables/<int:pk>/editar-pestel/", views.editar_pestel, name="editar-pestel"
     ),
+    path(
+        "variables/<int:pk>/tendencias/",
+        views.editar_tendencias_variable,
+        name="editar-tendencias-variable",
+    ),
     path("__debug__/", include(debug_toolbar.urls)),
     path("api/", include(router.urls)),
+    # indicadores
+    path(
+        "indicador/eliminar/<int:pk>/",
+        views.eliminar_indicador,
+        name="eliminar-indicador",
+    ),
+    path("indicador/editar/<int:pk>/", views.editar_indicador, name="editar-indicador"),
+    path(
+        "indicador/crear/<int:variable_id>/",
+        views.crear_indicador,
+        name="crear-indicador",
+    ),
     # Perfil
     path("perfil/", views.perfil, name="perfil"),
     # Subsistemas

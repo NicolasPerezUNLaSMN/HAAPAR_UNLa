@@ -7,7 +7,6 @@ from ..models import (
     ActorClave,
     EvaluacionVariable,
     Historial,
-    IAInteraction,
     IndicadorVariable,
     Influencia,
     Sistema,
@@ -165,45 +164,27 @@ def generar_estructura_prospectiva(tema):
         ]
         }}
     """
-
-    logger.info("Enviando solicitud de estructura a la IA...")
     resultado = generar_respuesta_llm(prompt, temperature=0.7)
 
-    IAInteraction.objects.create(
-        tema=tema,
-        usuario=None,
-        prompt=prompt,
-        respuesta=resultado.get("text"),
-        success=resultado.get("success", False),
-        error=resultado.get("error"),
-    )
-
     if not resultado.get("success"):
-        logger.error(f"La IA falló al estructurar: {resultado.get('error')}")
         return
 
-    content = resultado.get("text")
+    content = resultado.get("text", "")
     content = content.replace("```json", "").replace("```", "").strip()
 
     start = content.find("{")
     end = content.rfind("}") + 1
     content = content[start:end]
 
-    if not content:
-        logger.error("La IA devolvió contenido vacío")
-        return
-
-    try:
-        data = json.loads(content)
-    except json.JSONDecodeError:
-        logger.error("JSON inválido recibido:")
-        return
+    data = json.loads(content)
 
     sistema = Sistema.objects.create(
         tema=tema, nombre=f"Sistema de {tema.nombre}", descripcion=tema.descripcion
     )
 
+    # 🔴 LOOP PRINCIPAL
     for s in data.get("subsistemas", []):
+
         subsistema = Subsistema.objects.create(
             sistema=sistema,
             nombre=s.get("nombre", ""),
@@ -211,8 +192,8 @@ def generar_estructura_prospectiva(tema):
             activo=True,
         )
 
+        # 🔵 1. ACTORES (UNA SOLA VEZ)
         for a in s.get("actores", []):
-
             ActorClave.objects.create(
                 subsistema=subsistema,
                 nombre=a.get("nombre", ""),
@@ -221,130 +202,124 @@ def generar_estructura_prospectiva(tema):
                 activo=True,
             )
 
-            tendencias_creadas = {}
+        # 🟡 2. TENDENCIAS (UNA SOLA VEZ + MAPEO)
+        tendencias_creadas = {}
 
-            for t in s.get("tendencias", []):
+        for t in s.get("tendencias", []):
+            tendencia = TendenciaExterna.objects.create(
+                subsistema=subsistema,
+                nombre=t.get("nombre", ""),
+                nombre_corto=t.get("nombre", "")[:40],
+                tipo_dato=t.get("tipo", "CUALITATIVA"),
+                descripcion=t.get("descripcion", ""),
+                activo=True,
+            )
 
-                tipo = t.get("tipo", "CUALITATIVA")
+            tendencias_creadas[t.get("nombre")] = tendencia
 
-                if tipo not in ["CUALITATIVA", "CUANTITATIVA"]:
-                    tipo = "CUALITATIVA"
+            Historial.objects.create(tendencia=tendencia, accion="CREADO", usuario=None)
 
-                tendencia = TendenciaExterna.objects.create(
-                    subsistema=subsistema,
-                    nombre=t.get("nombre", ""),
-                    nombre_corto=t.get("nombre", "")[:40],
-                    tipo_dato=tipo,
-                    descripcion=t.get("descripcion", ""),
-                    activo=True,
-                )
-
-                tendencias_creadas[t.get("nombre")] = tendencia
-
-                Historial.objects.create(
-                    tendencia=tendencia, accion="CREADO", usuario=None
-                )
-
+        # 🟣 3. VARIABLES (TODO DENTRO DEL LOOP)
         for v in s.get("variables", []):
-            tipo = v.get("tipo", "I")
-            if tipo not in ["I", "E"]:
-                tipo = "I"
 
             variable = Variable.objects.create(
                 subsistema=subsistema,
                 nombre=v.get("nombre", ""),
                 nombre_corto=v.get("nombre", "")[:40],
                 descripcion=v.get("descripcion", ""),
-                tipo=tipo,
+                tipo=v.get("tipo", "I"),
                 activo=True,
             )
+
+            # 🟠 PESTEL
             MAP_PESTEL = {
-                "POLITICO": "P",
-                "POLÍTICO": "P",
                 "P": "P",
-                "ECONOMICO": "EC",
-                "ECONÓMICO": "EC",
                 "EC": "EC",
-                "SOCIAL": "S",
                 "S": "S",
-                "TECNOLOGICO": "T",
-                "TECNOLÓGICO": "T",
                 "T": "T",
-                "ECOLOGICO": "EO",
-                "ECOLÓGICO": "EO",
                 "EO": "EO",
-                "LEGAL": "L",
                 "L": "L",
             }
 
             for p in v.get("pestel", []):
-                key = MAP_PESTEL.get(p.upper())
-
+                key = MAP_PESTEL.get(str(p).upper())
                 if key:
                     pestel_obj = PESTEL.objects.filter(tipo=key).first()
                     if pestel_obj:
                         variable.pestels.add(pestel_obj)
 
-            # 🟣 INDICADORES
-            for ind in v.get("indicadores", []):
+            # 🔵 INDICADORES (OBLIGATORIO)
+            indicadores = v.get("indicadores", [])
+            if not indicadores:
                 IndicadorVariable.objects.create(
                     variable=variable,
-                    nombre_corto=ind.get("nombre_corto", ""),
-                    descripcion=ind.get("descripcion", ""),
-                    formula=ind.get("formula", ""),
+                    nombre_corto="default",
+                    descripcion="Auto generado",
+                    formula="1",
                 )
+            else:
+                for ind in indicadores:
+                    IndicadorVariable.objects.create(
+                        variable=variable,
+                        nombre_corto=ind.get("nombre_corto", ""),
+                        descripcion=ind.get("descripcion", ""),
+                        formula=ind.get("formula", ""),
+                    )
 
             # 🟠 TENDENCIAS RELACIONADAS
-            for tr in v.get("tendencias_relacionadas", []):
-                tendencia = tendencias_creadas.get(tr.get("nombre"))
+            relaciones = v.get("tendencias_relacionadas", [])
+            if not relaciones:
+                continue
 
-                if tendencia:
+            for tr in relaciones:
+                nombre = tr.get("nombre")
+                if nombre in tendencias_creadas:
                     VariableTendencia.objects.create(
                         variable=variable,
-                        tendencia=tendencia,
+                        tendencia=tendencias_creadas[nombre],
                         impacto=tr.get("impacto", 0),
                     )
 
-            # 🟢 HISTORIAL
             Historial.objects.create(variable=variable, accion="CREADO", usuario=None)
 
-            # Sincronización Automática PESTEL generada por IA
-            ai_pestel_codes = v.get("pestel", [])
-            if isinstance(ai_pestel_codes, str):
-                ai_pestel_codes = [ai_pestel_codes]
 
-            for code in ai_pestel_codes:
-                clean_code = str(code).upper().strip()
-                if clean_code in ["P", "EC", "S", "T", "EO", "L"]:
-                    pestel_obj, _ = PESTEL.objects.get_or_create(tipo=clean_code)
-                    variable.pestels.add(pestel_obj)
+def calcular_impacto_variable_tendencia(variable, tendencia):
 
-            Historial.objects.create(variable=variable, accion="CREADO", usuario=None)
+    prompt = f"""
+    Sos un experto en prospectiva estratégica.
 
-        for a in s.get("actores", []):
-            ActorClave.objects.create(
-                subsistema=subsistema,
-                nombre=a.get("nombre", ""),
-                descripcion=a.get("descripcion", ""),
-                puesto=a.get("puesto", ""),
-                activo=True,
-            )
+    Variable:
+    {variable.nombre}
 
-        for t in s.get("tendencias", []):
-            tipo = t.get("tipo", "CUALITATIVA")
-            if tipo not in ["CUALITATIVA", "CUANTITATIVA"]:
-                tipo = "CUALITATIVA"
+    Descripción de la variable:
+    {variable.descripcion}
 
-            tendencia = TendenciaExterna.objects.create(
-                subsistema=subsistema,
-                nombre=t.get("nombre", ""),
-                nombre_corto=t.get("nombre", "")[:40],
-                tipo_dato=tipo,
-                descripcion=t.get("descripcion", ""),
-                activo=True,
-            )
+    Tendencia:
+    {tendencia.nombre}
 
-            Historial.objects.create(tendencia=tendencia, accion="CREADO", usuario=None)
+    Descripción de la tendencia:
+    {tendencia.descripcion}
+
+    Evaluá cuánto impacta esta tendencia sobre esta variable.
+
+    Respondé únicamente un número decimal entre 0 y 1.
+    """
+
+    resultado = generar_respuesta_llm(prompt, temperature=0.2)
+
+    try:
+        valor = float(resultado["text"].strip())
+
+        if valor < 0:
+            valor = 0
+
+        if valor > 1:
+            valor = 1
+
+        return valor
+
+    except Exception:
+        return 0.5
 
 
 def generar_evaluaciones_e_influencias(tema, usuario):
