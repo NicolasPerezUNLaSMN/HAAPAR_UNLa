@@ -220,7 +220,8 @@
                                     <span class="text-dark fw-semibold">{{ var.nombre_corto|default:var.nombre }}</span>
                                     
                                     <div class="d-flex gap-2">
-                                        <a href="{% url 'editar-pestel' var.pk %}" class="btn btn-sm btn-warning fw-bold text-dark">
+                                        <a href="{% url 'editar-pestel' var.pk %}?next={% url 'foda-graficos' subsistema.id_subsistema %}#gestion-pestel"
+                                            class="btn btn-sm btn-warning fw-bold text-dark">
                                             <i class="fa-solid fa-sitemap"></i> Asignar Categoría
                                         </a>
                                         <form action="{% url 'eliminar-variable' var.pk %}?next=pestel" method="POST" class="m-0 p-0" onsubmit="return confirm('¿Estás seguro de que querés eliminar esta variable de forma permanente?');">
@@ -261,7 +262,8 @@
                                         <span class="text-dark fw-semibold text-truncate" style="max-width: 75%;" title="{{ var.nombre }}">
                                             {{ var.nombre_corto|default:var.nombre }}
                                         </span>
-                                        <a href="{% url 'editar-pestel' var.pk %}" class="btn btn-sm btn-outline-primary" title="Editar Categoría">
+                                        <a href="{% url 'editar-pestel' var.pk %}?next={% url 'foda-graficos' subsistema.id_subsistema %}#gestion-pestel"
+                                            class="btn btn-sm btn-outline-primary" title="Editar Categoría">
                                             <i class="fa-solid fa-edit"></i>
                                         </a>
                                     </li>

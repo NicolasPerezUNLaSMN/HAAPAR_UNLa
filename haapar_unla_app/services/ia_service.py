@@ -7,12 +7,13 @@ from ..models import (
     ActorClave,
     EvaluacionVariable,
     Historial,
-    IAInteraction,
+    IndicadorVariable,
     Influencia,
     Sistema,
     Subsistema,
     TendenciaExterna,
     Variable,
+    VariableTendencia,
 )
 from .ai_client import generar_respuesta_llm
 
@@ -59,7 +60,63 @@ def generar_estructura_prospectiva(tema):
     Las tendencias deben ser de dos tipos:
     - CUANTITATIVA o CUALITATIVA
 
+    - Cuantitativas: expresadas con métricas (%, tasas, índices, cantidades)
+    - Cualitativas: cambios o fenómenos no medibles directamente
+
+    Debe haber una mezcla de ambas.
+
+    Ejemplos:
+
+    Cuantitativas:
+    - "Crecimiento del PBI (%)"
+    - "Tasa de adopción tecnológica (%)"
+
+    Cualitativas:
+    - "Cambio en hábitos de consumo digital"
+    - "Mayor conciencia ambiental en la población"
+    
+    IMPORTANTE:
+    Las variables deben ser CUANTIFICABLES, es decir, deben poder medirse numéricamente.
+
+
+    El nombre de cada variable debe incluir una métrica clara o unidad, como:
+    - Porcentaje (%)
+    - Tasa
+    - Cantidad
+    - Índice
+    - Nivel
+
+    Ejemplos:
+    - "Tasa de desempleo (%)"
+    - "Nivel de digitalización (%)"
+    - "Cantidad de empresas activas"
+    - "Índice de inflación anual"
+
+    NO usar nombres abstractos como:
+    - "Economía"
+    - "Tecnología"
+    - "Educación"
+
+    Cada variable debe tener un nombre claro, específico y medible.
+    
+    Las variables deben clasificarse como:
+
+    I = Interna (factor dentro del sistema)
+    E = Externa (factor del entorno)
+
+    Elegí correctamente si cada variable es I o E.
+    
+    - Asignar entre 1 y 3 categorías PESTEL (usar códigos: P, EC, S, T, EO, L)
+    - Generar entre 1 y 2 indicadores medibles
+    - Relacionar con tendencias del mismo subsistema
+    - El impacto debe ser un número entre 0.0 y 1.0
+
+    IMPORTANTE:
+    Las tendencias_relacionadas deben referenciar tendencias que existan en el mismo subsistema.
+
+    Respondé SOLO en JSON válido.
     Respondé SOLO en JSON válido sin texto extra de la siguiente forma:
+
 
     {{
         "subsistemas":[
@@ -71,7 +128,22 @@ def generar_estructura_prospectiva(tema):
                 "nombre":"",
                 "descripcion":"",
                 "tipo":"I o E",
-                "pestel": ["Código PESTEL aquí (ej: P o EC)"]
+                "pestel": ["P", "EC", "S", "T", "EO", "L"],
+
+                "indicadores":[
+                    {{
+                    "nombre_corto":"",
+                    "descripcion":"",
+                    "formula":""
+                    }}
+                ],
+
+                "tendencias_relacionadas":[
+                    {{
+                    "nombre":"",
+                    "impacto": 0.0
+                    }}
+                ]
                 }}
             ],
             "actores":[
@@ -90,47 +162,29 @@ def generar_estructura_prospectiva(tema):
             ]
             }}
         ]
-    }}
+        }}
     """
-
-    logger.info("Enviando solicitud de estructura a la IA...")
     resultado = generar_respuesta_llm(prompt, temperature=0.7)
 
-    IAInteraction.objects.create(
-        tema=tema,
-        usuario=None,
-        prompt=prompt,
-        respuesta=resultado.get("text"),
-        success=resultado.get("success", False),
-        error=resultado.get("error"),
-    )
-
     if not resultado.get("success"):
-        logger.error(f"La IA falló al estructurar: {resultado.get('error')}")
         return
 
-    content = resultado.get("text")
+    content = resultado.get("text", "")
     content = content.replace("```json", "").replace("```", "").strip()
 
     start = content.find("{")
     end = content.rfind("}") + 1
     content = content[start:end]
 
-    if not content:
-        logger.error("La IA devolvió contenido vacío")
-        return
-
-    try:
-        data = json.loads(content)
-    except json.JSONDecodeError:
-        logger.error("JSON inválido recibido:")
-        return
+    data = json.loads(content)
 
     sistema = Sistema.objects.create(
         tema=tema, nombre=f"Sistema de {tema.nombre}", descripcion=tema.descripcion
     )
 
+    # 🔴 LOOP PRINCIPAL
     for s in data.get("subsistemas", []):
+
         subsistema = Subsistema.objects.create(
             sistema=sistema,
             nombre=s.get("nombre", ""),
@@ -138,33 +192,7 @@ def generar_estructura_prospectiva(tema):
             activo=True,
         )
 
-        for v in s.get("variables", []):
-            tipo = v.get("tipo", "I")
-            if tipo not in ["I", "E"]:
-                tipo = "I"
-
-            variable = Variable.objects.create(
-                subsistema=subsistema,
-                nombre=v.get("nombre", ""),
-                nombre_corto=v.get("nombre", "")[:40],
-                descripcion=v.get("descripcion", ""),
-                tipo=tipo,
-                activo=True,
-            )
-
-            # Sincronización Automática PESTEL generada por IA
-            ai_pestel_codes = v.get("pestel", [])
-            if isinstance(ai_pestel_codes, str):
-                ai_pestel_codes = [ai_pestel_codes]
-
-            for code in ai_pestel_codes:
-                clean_code = str(code).upper().strip()
-                if clean_code in ["P", "EC", "S", "T", "EO", "L"]:
-                    pestel_obj, _ = PESTEL.objects.get_or_create(tipo=clean_code)
-                    variable.pestels.add(pestel_obj)
-
-            Historial.objects.create(variable=variable, accion="CREADO", usuario=None)
-
+        # 🔵 1. ACTORES (UNA SOLA VEZ)
         for a in s.get("actores", []):
             ActorClave.objects.create(
                 subsistema=subsistema,
@@ -174,21 +202,124 @@ def generar_estructura_prospectiva(tema):
                 activo=True,
             )
 
-        for t in s.get("tendencias", []):
-            tipo = t.get("tipo", "CUALITATIVA")
-            if tipo not in ["CUALITATIVA", "CUANTITATIVA"]:
-                tipo = "CUALITATIVA"
+        # 🟡 2. TENDENCIAS (UNA SOLA VEZ + MAPEO)
+        tendencias_creadas = {}
 
+        for t in s.get("tendencias", []):
             tendencia = TendenciaExterna.objects.create(
                 subsistema=subsistema,
                 nombre=t.get("nombre", ""),
                 nombre_corto=t.get("nombre", "")[:40],
-                tipo_dato=tipo,
+                tipo_dato=t.get("tipo", "CUALITATIVA"),
                 descripcion=t.get("descripcion", ""),
                 activo=True,
             )
 
+            tendencias_creadas[t.get("nombre")] = tendencia
+
             Historial.objects.create(tendencia=tendencia, accion="CREADO", usuario=None)
+
+        # 🟣 3. VARIABLES (TODO DENTRO DEL LOOP)
+        for v in s.get("variables", []):
+
+            variable = Variable.objects.create(
+                subsistema=subsistema,
+                nombre=v.get("nombre", ""),
+                nombre_corto=v.get("nombre", "")[:40],
+                descripcion=v.get("descripcion", ""),
+                tipo=v.get("tipo", "I"),
+                activo=True,
+            )
+
+            # 🟠 PESTEL
+            MAP_PESTEL = {
+                "P": "P",
+                "EC": "EC",
+                "S": "S",
+                "T": "T",
+                "EO": "EO",
+                "L": "L",
+            }
+
+            for p in v.get("pestel", []):
+                key = MAP_PESTEL.get(str(p).upper())
+                if key:
+                    pestel_obj = PESTEL.objects.filter(tipo=key).first()
+                    if pestel_obj:
+                        variable.pestels.add(pestel_obj)
+
+            # 🔵 INDICADORES (OBLIGATORIO)
+            indicadores = v.get("indicadores", [])
+            if not indicadores:
+                IndicadorVariable.objects.create(
+                    variable=variable,
+                    nombre_corto="default",
+                    descripcion="Auto generado",
+                    formula="1",
+                )
+            else:
+                for ind in indicadores:
+                    IndicadorVariable.objects.create(
+                        variable=variable,
+                        nombre_corto=ind.get("nombre_corto", ""),
+                        descripcion=ind.get("descripcion", ""),
+                        formula=ind.get("formula", ""),
+                    )
+
+            # 🟠 TENDENCIAS RELACIONADAS
+            relaciones = v.get("tendencias_relacionadas", [])
+            if not relaciones:
+                continue
+
+            for tr in relaciones:
+                nombre = tr.get("nombre")
+                if nombre in tendencias_creadas:
+                    VariableTendencia.objects.create(
+                        variable=variable,
+                        tendencia=tendencias_creadas[nombre],
+                        impacto=tr.get("impacto", 0),
+                    )
+
+            Historial.objects.create(variable=variable, accion="CREADO", usuario=None)
+
+
+def calcular_impacto_variable_tendencia(variable, tendencia):
+
+    prompt = f"""
+    Sos un experto en prospectiva estratégica.
+
+    Variable:
+    {variable.nombre}
+
+    Descripción de la variable:
+    {variable.descripcion}
+
+    Tendencia:
+    {tendencia.nombre}
+
+    Descripción de la tendencia:
+    {tendencia.descripcion}
+
+    Evaluá cuánto impacta esta tendencia sobre esta variable.
+
+    Respondé únicamente un número decimal entre 0 y 1.
+    """
+
+    resultado = generar_respuesta_llm(prompt, temperature=0.2)
+
+    try:
+        valor = float(resultado["text"].strip())
+
+        if valor < 0:
+            valor = 0
+
+        if valor > 1:
+            valor = 1
+
+        return valor
+
+    except Exception:
+        return 0.5
 
 
 def generar_evaluaciones_e_influencias(tema, usuario):
@@ -214,7 +345,7 @@ def generar_evaluaciones_e_influencias(tema, usuario):
     1. "evaluaciones": DEBE ser una lista con exactamente {amount} objetos con "importancia" e "incertidumbre" (1 al 10).
     2. "matriz_influencia": DEBE ser una matriz cuadrada exacta de {amount} x {amount} (es decir, {amount} listas, cada una con {amount} valores).
     3. VALORES DE INFLUENCIA: Los únicos números permitidos son 0, 1, 2 o 3. 
-       🚨 REGLA DE CONEXIÓN: En un sistema real, casi todas las variables interactúan. EVITÁ RELLENAR CON CEROS (0). Pensá críticamente y usá 1, 2 o 3 para reflejar influencias directas cruzadas. 🚨
+    🚨 REGLA DE CONEXIÓN: En un sistema real, casi todas las variables interactúan. EVITÁ RELLENAR CON CEROS (0). Pensá críticamente y usá 1, 2 o 3 para reflejar influencias directas cruzadas. 🚨
     4. La diagonal siempre debe ser 0.
 
     Respondé ÚNICAMENTE con un JSON válido.

@@ -103,8 +103,28 @@ def foda_graficos(request, subsistema_id):
 
         # --- LÓGICA PESTEL ---
         variables_sin_pestel = []
-        datos_pestel_nombres = {k: [] for k in ["Político","Económico","Social","Tecnológico","Ecológico","Legal"]}
-        tarjetas_pestel = {k: [] for k in ["Político","Económico","Social","Tecnológico","Ecológico","Legal"]}
+        datos_pestel_nombres = {
+            k: []
+            for k in [
+                "Político",
+                "Económico",
+                "Social",
+                "Tecnológico",
+                "Ecológico",
+                "Legal",
+            ]
+        }
+        tarjetas_pestel = {
+            k: []
+            for k in [
+                "Político",
+                "Económico",
+                "Social",
+                "Tecnológico",
+                "Ecológico",
+                "Legal",
+            ]
+        }
 
         for var in variables_obj:
             mis_pestels = var.pestels.all()
@@ -114,7 +134,9 @@ def foda_graficos(request, subsistema_id):
                 for pestel in mis_pestels:
                     categoria = pestel.get_tipo_display()
                     if categoria in datos_pestel_nombres:
-                        datos_pestel_nombres[categoria].append(var.nombre_corto or var.nombre[:15])
+                        datos_pestel_nombres[categoria].append(
+                            var.nombre_corto or var.nombre[:15]
+                        )
                         tarjetas_pestel[categoria].append(var)
 
         # --- CONTEXTO FINAL ---
@@ -138,6 +160,7 @@ def foda_graficos(request, subsistema_id):
         cache.set(cache_key, contexto, timeout=3600)
 
     return render(request, "haapar_unla_app/foda-graficos.html", contexto)
+
 
 # ---------------------------------------------------------
 # ABM MANUAL DE LA MATRIZ MATEMÁTICA
@@ -311,18 +334,22 @@ def editar_pestel(request, pk):
     if request.user != tema.user and request.user not in tema.colaboradores.all():
         return HttpResponseForbidden("No tenés permiso para editar este proyecto.")
 
+    next_url = request.POST.get("next") or request.GET.get("next")
+
     if request.method == "POST":
         form = VariablePESTELForm(request.POST, instance=variable)
+
         if form.is_valid():
             form.save()
+
             cache.delete(f"foda_micmac_pestel_v2_{subsistema.id_subsistema}")
             messages.success(request, "PESTEL actualizado correctamente.")
 
-            # 🔑 SOLUCIÓN AQUÍ: Redirigimos usando reverse y le concatenamos el ancla #gestion-pestel
-            url = reverse(
-                "foda-graficos", kwargs={"subsistema_id": subsistema.id_subsistema}
-            )
-            return redirect(f"{url}#gestion-pestel")
+            if next_url:
+                return redirect(next_url)
+
+            return redirect("variable_completa", variable_id=variable.id_variable)
+
     else:
         form = VariablePESTELForm(instance=variable)
 
@@ -334,7 +361,8 @@ def editar_pestel(request, pk):
             "variable": variable,
             "subsistema": subsistema,
             "tema": tema,
+            "variable_completa_url": reverse(
+                "variable_completa", kwargs={"variable_id": variable.id_variable}
+            ),
         },
     )
-    
-   
