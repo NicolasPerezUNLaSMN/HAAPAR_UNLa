@@ -115,7 +115,7 @@ def crear_variable(request, subsistema_id):
             url = reverse("foda-graficos", kwargs={"subsistema_id": subsistema_id})
             return redirect(f"{url}#gestion-pestel")
 
-        return redirect("variable_detalle", subsistema_id=subsistema.id_subsistema)
+        return redirect("variable-detalle", subsistema_id=subsistema.id_subsistema)
 
     return render(
         request,
