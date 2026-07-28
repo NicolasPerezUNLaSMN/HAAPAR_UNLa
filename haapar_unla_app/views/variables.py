@@ -117,6 +117,7 @@ def crear_variable(request, subsistema_id):
 
         return redirect("variable-detalle", subsistema_id=subsistema.id_subsistema)
 
+
     return render(
         request,
         "haapar_unla_app/crear-variable.html",
