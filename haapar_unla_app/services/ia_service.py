@@ -115,6 +115,7 @@ def generar_estructura_prospectiva(tema):
     Las tendencias_relacionadas deben referenciar tendencias que existan en el mismo subsistema.
 
     Respondé SOLO en JSON válido.
+    🚨 REGLA DE OPTIMIZACIÓN: Devolvé el JSON MINIFICADO (en una sola línea, sin saltos de línea ni espacios en blanco para la indentación) para evitar que se corte por límite de tokens. 🚨
     Respondé SOLO en JSON válido sin texto extra de la siguiente forma:
 
 
@@ -164,7 +165,9 @@ def generar_estructura_prospectiva(tema):
         ]
         }}
     """
-    resultado = generar_respuesta_llm(prompt, temperature=0.7)
+
+    # Optimizamos los tokens forzando el límite máximo
+    resultado = generar_respuesta_llm(prompt, temperature=0.7, max_tokens=8192)
 
     if not resultado.get("success"):
         return
@@ -244,9 +247,9 @@ def generar_estructura_prospectiva(tema):
             for p in v.get("pestel", []):
                 key = MAP_PESTEL.get(str(p).upper())
                 if key:
-                    pestel_obj = PESTEL.objects.filter(tipo=key).first()
-                    if pestel_obj:
-                        variable.pestels.add(pestel_obj)
+                    # get_or_create crea la categoría automáticamente si la base está vacía
+                    pestel_obj, created = PESTEL.objects.get_or_create(tipo=key)
+                    variable.pestels.add(pestel_obj)
 
             # 🔵 INDICADORES (OBLIGATORIO)
             indicadores = v.get("indicadores", [])
@@ -259,9 +262,15 @@ def generar_estructura_prospectiva(tema):
                 )
             else:
                 for ind in indicadores:
+                    nombre_c = ind.get("nombre_corto", "")
+
+                    # 🛡️ PARCHE: Recortamos a un máximo de 50 caracteres para no romper la BD
+                    if nombre_c:
+                        nombre_c = nombre_c[:50]
+
                     IndicadorVariable.objects.create(
                         variable=variable,
-                        nombre_corto=ind.get("nombre_corto", ""),
+                        nombre_corto=nombre_c,
                         descripcion=ind.get("descripcion", ""),
                         formula=ind.get("formula", ""),
                     )
@@ -349,11 +358,12 @@ def generar_evaluaciones_e_influencias(tema, usuario):
     4. La diagonal siempre debe ser 0.
 
     Respondé ÚNICAMENTE con un JSON válido.
+    🚨 REGLA DE OPTIMIZACIÓN: Devolvé el JSON MINIFICADO (en una sola línea, sin saltos de línea ni espacios en blanco para la indentación) para evitar que se corte por límite de tokens. 🚨
     """
 
     logger.info(f"Enviando solicitud matemática a la IA para {amount} variables...")
-    # Subimos un poco la temperatura para que la IA sea más analítica cruzando datos y no tan repetitiva
-    resultado = generar_respuesta_llm(prompt, temperature=0.3, max_tokens=4000)
+    # Ampliamos el max_tokens a 8192 para soportar la matriz completa
+    resultado = generar_respuesta_llm(prompt, temperature=0.3, max_tokens=8192)
 
     if not resultado.get("success"):
         logger.error(
@@ -366,12 +376,15 @@ def generar_evaluaciones_e_influencias(tema, usuario):
     if match:
         content = match.group(0)
     else:
-        return
+        # Si no encuentra un JSON, forzamos un diccionario vacío
+        content = "{}"
 
     try:
         data = json.loads(content)
     except json.JSONDecodeError:
-        return
+        # Si el JSON viene roto, no cancelamos. Usamos un diccionario vacío
+        # para que se apliquen los valores neutrales (5 y 5).
+        data = {}
 
     evaluaciones = data.get("evaluaciones", [])
     matriz = data.get("matriz_influencia", [])

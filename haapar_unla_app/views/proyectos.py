@@ -1,12 +1,15 @@
+import json
+
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group, User
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404, redirect, render
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from haapar_unla_app.models import Tema
-from haapar_unla_app.serializers import TemaSerializer
+
 from haapar_unla_app.models import Subsistema, Tema, Variable
+from haapar_unla_app.serializers import TemaSerializer
 from haapar_unla_app.services.ia_service import (
     generar_estructura_prospectiva,
     generar_evaluaciones_e_influencias,
@@ -31,6 +34,7 @@ def crear_reporte(request):
         horizonte = request.POST.get("horizonte")
         territorio = request.POST.get("territorio")
 
+        # 1. Creamos el proyecto
         tema = Tema.objects.create(
             user=request.user,
             nombre=nombre,
@@ -39,9 +43,34 @@ def crear_reporte(request):
             territorio=territorio,
         )
 
-        generar_estructura_prospectiva(tema)
-        generar_evaluaciones_e_influencias(tema, request.user)
-        return redirect("subsistemas", tema_id=tema.id_tema)
+        # 2. Intentamos comunicarnos con la IA
+        try:
+            generar_estructura_prospectiva(tema)
+            generar_evaluaciones_e_influencias(tema, request.user)
+
+            messages.success(request, "¡Proyecto analizado y creado exitosamente!")
+            return redirect("subsistemas", tema_id=tema.id_tema)
+
+        except json.JSONDecodeError:
+            # Si la IA corta el JSON por la mitad, borramos el proyecto fallido
+            tema.delete()
+            messages.error(
+                request,
+                "La Inteligencia Artificial devolvió una respuesta incompleta por límite de procesamiento. Por favor, intentá crear el proyecto nuevamente.",
+            )
+            # Redirigimos a la página de inicio (crear reporte)
+            return redirect("inicio")
+
+        except Exception:
+            # Si pasa cualquier otro error inesperado
+            tema.delete()
+            messages.error(
+                request,
+                "Hubo un error inesperado al procesar los datos con la IA. Intentá nuevamente.",
+            )
+            return redirect("inicio")
+
+    return render(request, "haapar_unla_app/crear-reporte.html")
 
 
 @login_required
@@ -53,8 +82,8 @@ def listar_proyectos(request):
     temas = (
         (propios | colaborando)
         .distinct()
-        .select_related("user")                       # carga el creador en la misma query
-        .prefetch_related("colaboradores__groups")    # carga colaboradores y sus grupos
+        .select_related("user")  # carga el creador en la misma query
+        .prefetch_related("colaboradores__groups")  # carga colaboradores y sus grupos
         .order_by("-id_tema")
     )
 
@@ -84,9 +113,13 @@ def proyecto_detalle(request, tema_id, subsistema_id=None):
             pk=subsistema_id, activo=True
         )
         # 🔎 Optimización: precargar subsistema en variables
-        variables = Variable.objects.filter(subsistema=subsistema, activo=True).select_related("subsistema")
+        variables = Variable.objects.filter(
+            subsistema=subsistema, activo=True
+        ).select_related("subsistema")
     else:
-        subsistemas = Subsistema.objects.filter(sistema__tema=tema, activo=True).select_related("sistema")
+        subsistemas = Subsistema.objects.filter(
+            sistema__tema=tema, activo=True
+        ).select_related("sistema")
 
     return render(
         request,
@@ -137,6 +170,8 @@ def asignar_colaboradores(request, tema_id):
             "es_creador": es_creador,
         },
     )
+
+
 class TemaViewSet(viewsets.ModelViewSet):
     queryset = Tema.objects.filter(activo=True)
     serializer_class = TemaSerializer

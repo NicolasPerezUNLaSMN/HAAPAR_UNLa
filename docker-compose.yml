@@ -3,8 +3,12 @@ version: '3.9'
 services:
   web:
     build: .
-    command: python manage.py runserver 0.0.0.0:8000
+    # Ejecutamos las migraciones automáticamente y luego levantamos el server
+    command: >
+      sh -c "python manage.py migrate &&
+             python manage.py runserver 0.0.0.0:8000"
     volumes:
+      # Sincroniza tu código local con el contenedor en tiempo real
       - .:/app
     ports:
       - "8000:8000"
@@ -15,9 +19,16 @@ services:
 
   db:
     image: postgres:15
+    restart: always
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
+    volumes:
+      # Persistencia de datos de la base de datos
+      - pg_data:/var/lib/postgresql/data
+
+volumes:
+  pg_data:
