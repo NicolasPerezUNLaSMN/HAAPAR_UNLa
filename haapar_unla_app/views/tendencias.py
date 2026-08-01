@@ -1,9 +1,10 @@
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.db.models import Count, Q
+from django.db.models import Count, Func, Q
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
-from haapar_unla_app.models import Subsistema, TendenciaExterna
+from haapar_unla_app.models import Historial, Subsistema, TendenciaExterna
 
 
 # ---------------------------
@@ -70,13 +71,19 @@ def crear_tendencia(request, subsistema_id):
         tipo_dato = request.POST.get("tipo_dato")
         descripcion = request.POST.get("descripcion")
 
-        TendenciaExterna.objects.create(
+        tendencia = TendenciaExterna.objects.create(
             subsistema=subsistema,
             nombre=nombre,
             nombre_corto=nombre_corto,
             tipo_dato=tipo_dato,
             descripcion=descripcion,
             activo=True,
+        )
+
+        Historial.objects.create(
+            tendencia=tendencia,
+            usuario=request.user,
+            accion="CREADO",
         )
 
         return redirect("tendencia-detalle", subsistema_id=subsistema.id_subsistema)
@@ -96,13 +103,39 @@ def editar_tendencia(request, pk):
     subsistema = tendencia.subsistema
 
     if request.method == "POST":
-        tendencia.nombre = request.POST.get("nombre", tendencia.nombre)
-        tendencia.nombre_corto = request.POST.get(
-            "nombre_corto", tendencia.nombre_corto
-        )
-        tendencia.tipo_dato = request.POST.get("tipo_dato", tendencia.tipo_dato)
-        tendencia.descripcion = request.POST.get("descripcion", tendencia.descripcion)
+
+        old_nombre = tendencia.nombre
+        old_nombre_corto = tendencia.nombre_corto
+
+        new_nombre = request.POST.get("nombre")
+        new_nombre_corto = request.POST.get("nombre_corto")
+
+        tendencia.nombre = new_nombre
+        tendencia.nombre_corto = new_nombre_corto
+        tendencia.tipo_dato = request.POST.get("tipo_dato")
+        tendencia.descripcion = request.POST.get("descripcion")
         tendencia.save()
+
+        cambios = []
+
+        if old_nombre != new_nombre:
+            cambios.append(f"Nombre: '{old_nombre}' ➔ '{new_nombre}'")
+
+        if old_nombre_corto != new_nombre_corto:
+            cambios.append(f"Corto: '{old_nombre_corto}' ➔ '{new_nombre_corto}'")
+
+        texto_detalle = (
+            " | ".join(cambios)
+            if cambios
+            else "Modificación de descripción/tipo de dato"
+        )
+
+        Historial.objects.create(
+            tendencia=tendencia,
+            usuario=request.user,
+            accion="MODIFICADO",
+            detalles=texto_detalle,
+        )
 
         return redirect("tendencia-detalle", subsistema_id=subsistema.id_subsistema)
 
@@ -117,10 +150,57 @@ def editar_tendencia(request, pk):
 
 
 @login_required
+@require_POST
 def eliminar_tendencia(request, pk):
     tendencia = get_object_or_404(TendenciaExterna, pk=pk, activo=True)
+
     subsistema_id = tendencia.subsistema.id_subsistema
-    if request.method == "POST":
-        tendencia.activo = False
-        tendencia.save()
+
+    tendencia.activo = False
+    tendencia.save()
+
+    Historial.objects.create(
+        tendencia=tendencia,
+        usuario=request.user,
+        accion="ELIMINADO",
+    )
+
     return redirect("tendencia-detalle", subsistema_id=subsistema_id)
+
+
+@login_required
+def historial_tendencias(request, subsistema_id):
+
+    historial = (
+        Historial.objects.filter(tendencia__subsistema_id=subsistema_id)
+        .select_related("tendencia", "usuario")
+        .order_by("-fecha")
+    )
+
+    busqueda = request.GET.get("q", "").strip()
+
+    if busqueda:
+        historial = historial.annotate(
+            tendencia_sin_acentos=Func("tendencia__nombre", function="unaccent")
+        ).filter(tendencia_sin_acentos__icontains=busqueda)
+
+    accion = request.GET.get("accion", "").strip()
+
+    if accion:
+        historial = historial.filter(accion=accion)
+
+    paginator = Paginator(historial, 15)
+
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
+    return render(
+        request,
+        "haapar_unla_app/historial-tendencias.html",
+        {
+            "page_obj": page_obj,
+            "subsistema_id": subsistema_id,
+            "busqueda": busqueda,
+            "accion_seleccionada": accion,
+        },
+    )

@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.core.paginator import Paginator
+from django.db.models import Func
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.views.decorators.http import require_POST
@@ -116,7 +117,6 @@ def crear_variable(request, subsistema_id):
             return redirect(f"{url}#gestion-pestel")
 
         return redirect("variable-detalle", subsistema_id=subsistema.id_subsistema)
-
 
     return render(
         request,
@@ -287,17 +287,31 @@ def eliminar_indicador(request, pk):
 
 @login_required
 def historial_variables(request, subsistema_id):
-    historial_list = (
-        Historial.objects.select_related("variable", "usuario")
-        .filter(variable__subsistema_id=subsistema_id)
-        .order_by("-fecha")
-    )
 
-    paginator = Paginator(historial_list, 15)
+    historial = Historial.objects.filter(
+        variable__subsistema_id=subsistema_id
+    ).select_related("variable", "usuario")
+
+    busqueda = request.GET.get("q", "").strip()
+    accion = request.GET.get("accion", "").strip()
+
+    # 🔎 Búsqueda ignorando acentos
+    if busqueda:
+        historial = historial.annotate(
+            variable_sin_acentos=Func("variable__nombre", function="unaccent")
+        ).filter(variable_sin_acentos__icontains=busqueda)
+
+    # 🔽 Filtro por acción
+    if accion:
+        historial = historial.filter(accion=accion)
+
+    historial = historial.order_by("-fecha")
+
+    # 📄 Paginación
+    paginator = Paginator(historial, 15)
+
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
-
-    from_view = request.GET.get("from", "")
 
     return render(
         request,
@@ -305,7 +319,8 @@ def historial_variables(request, subsistema_id):
         {
             "page_obj": page_obj,
             "subsistema_id": subsistema_id,
-            "from_view": from_view,
+            "busqueda": busqueda,
+            "accion_seleccionada": accion,
         },
     )
 
