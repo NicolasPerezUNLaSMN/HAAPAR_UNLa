@@ -1,0 +1,218 @@
+{% extends 'haapar_unla_app/base.html' %}
+{% block title %}Historial de Tendencias{% endblock %}
+{% block content %}
+
+    <div class="container mt-4 position-relative">
+
+        <a href="{% url 'tendencia-detalle' subsistema_id %}" class="btn-back">
+            <i class="fa-solid fa-arrow-left"></i>
+        </a>
+
+        <h2 class="text-center heading-section mb-4">
+            Historial de Tendencias
+        </h2>
+
+        <div class="d-flex justify-content-end mb-3">
+
+            <form method="get" class="d-flex gap-2 align-items-center">
+
+                <div class="input-group input-group-sm" style="width: 260px;">
+                    <span class="input-group-text">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </span>
+
+                    <input
+                        type="text"
+                        name="q"
+                        class="form-control"
+                        placeholder="Buscar tendencia..."
+                        value="{{ busqueda }}"
+                        oninput="clearTimeout(window.buscarTimer);
+                                window.buscarTimer=setTimeout(()=>this.form.submit(),600)"
+                    >
+                </div>
+
+                <select
+                    name="accion"
+                    class="form-select form-select-sm"
+                    style="width: 190px;"
+                    onchange="this.form.submit()"
+                >
+                    <option value="">Filtrar por acción</option>
+
+                    <option value="CREADO"
+                        {% if accion_seleccionada == 'CREADO' %}selected{% endif %}>
+                        Creado
+                    </option>
+
+                    <option value="MODIFICADO"
+                        {% if accion_seleccionada == 'MODIFICADO' %}selected{% endif %}>
+                        Modificado
+                    </option>
+
+                    <option value="ELIMINADO"
+                        {% if accion_seleccionada == 'ELIMINADO' %}selected{% endif %}>
+                        Eliminado
+                    </option>
+
+                    <option value="AGREGADO"
+                        {% if accion_seleccionada == 'AGREGADO' %}selected{% endif %}>
+                        Agregado
+                    </option>
+
+                    <option value="EVALUACION"
+                        {% if accion_seleccionada == 'EVALUACION' %}selected{% endif %}>
+                        Evaluación
+                    </option>
+                </select>
+
+                {% if busqueda or accion_seleccionada %}
+                <a href="{% url 'historial-tendencias' subsistema_id %}"
+                class="btn btn-sm btn-outline-secondary">
+                    <i class="fa-solid fa-xmark"></i>
+                </a>
+                {% endif %}
+
+            </form>
+
+        </div>
+
+        <p class="text-muted small mb-3 text-end">
+            {{ page_obj.paginator.count }} registros encontrados
+        </p>
+
+        <div class="table-responsive">
+
+            <table class="table proyectos-table align-middle">
+
+                <thead>
+                    <tr>
+                        <th>Tendencia</th>
+                        <th>Acción</th>
+                        <th>Detalles</th>
+                        <th>Fecha</th>
+                        <th>Usuario</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                    {% for ev in page_obj %}
+                    <tr>
+
+                        <td>
+                            {% if ev.tendencia %}
+                                <strong>{{ ev.tendencia.nombre }}</strong>
+                            {% else %}
+                                <em class="text-muted">(Tendencia eliminada)</em>
+                            {% endif %}
+                        </td>
+
+                        <td>
+                            {% if ev.accion == 'CREADO' %}
+                                <span class="badge rounded-pill bg-success">
+                                    Creado
+                                </span>
+
+                            {% elif ev.accion == 'MODIFICADO' %}
+                                <span class="badge rounded-pill bg-warning text-dark">
+                                    Modificado
+                                </span>
+
+                            {% elif ev.accion == 'ELIMINADO' %}
+                                <span class="badge rounded-pill bg-danger">
+                                    Eliminado
+                                </span>
+
+                            {% elif ev.accion == 'AGREGADO' %}
+                                <span class="badge rounded-pill bg-info text-dark">
+                                    Agregado
+                                </span>
+
+                            {% elif ev.accion == 'EVALUACION' %}
+                                <span class="badge rounded-pill bg-primary">
+                                    Evaluación
+                                </span>
+
+                            {% else %}
+                                <span class="badge rounded-pill bg-secondary">
+                                    {{ ev.get_accion_display }}
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td class="text-muted" style="font-size: 0.9rem;">
+                            {{ ev.detalles|default:"-" }}
+                        </td>
+
+                        <td>
+                            {{ ev.fecha|date:"d/m/Y H:i" }}
+                        </td>
+
+                        <td>
+                            {% if ev.usuario %}
+                                {{ ev.usuario.username }}
+                            {% else %}
+                                <span class="text-muted">IA</span>
+                            {% endif %}
+                        </td>
+
+                    </tr>
+
+                    {% empty %}
+
+                    <tr>
+                        <td colspan="5" class="text-center py-4">
+                            No hay registros históricos de tendencias aún.
+                        </td>
+                    </tr>
+
+                    {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+        {% if page_obj.paginator.num_pages > 1 %}
+        <div class="pagination-container d-flex justify-content-center mt-4 mb-4">
+
+            <span class="step-links">
+
+                {% if page_obj.has_previous %}
+                    <a href="?page=1&q={{ busqueda }}&accion={{ accion_seleccionada }}"
+                    class="btn btn-sm btn-outline-secondary">
+                        &laquo; Primera
+                    </a>
+
+                    <a href="?page={{ page_obj.previous_page_number }}&q={{ busqueda }}&accion={{ accion_seleccionada }}"
+                    class="btn btn-sm btn-outline-primary">
+                        Anterior
+                    </a>
+                {% endif %}
+
+                <span class="current fw-bold mx-3" style="font-size: 1.05rem; color: #555;">
+                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                </span>
+
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}&q={{ busqueda }}&accion={{ accion_seleccionada }}"
+                    class="btn btn-sm btn-outline-primary">
+                        Siguiente
+                    </a>
+
+                    <a href="?page={{ page_obj.paginator.num_pages }}&q={{ busqueda }}&accion={{ accion_seleccionada }}"
+                    class="btn btn-sm btn-outline-secondary">
+                        Última &raquo;
+                    </a>
+                {% endif %}
+
+            </span>
+
+        </div>
+        {% endif %}
+
+    </div>
+
+{% endblock %}
