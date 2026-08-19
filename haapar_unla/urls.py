@@ -36,6 +36,11 @@ urlpatterns = [
     path("matriz/<int:subsistema_id>/", views.editar_matriz, name="editar-matriz"),
     # Variables
     path(
+        "variable/<int:variable_id>/eliminar-evaluacion/",
+        views.eliminar_evaluacion,
+        name="eliminar-evaluacion",
+    ),
+    path(
         "variables/<int:subsistema_id>/",
         views.variable_detalle,
         name="variable-detalle",
@@ -69,6 +74,11 @@ urlpatterns = [
     ),
     path("__debug__/", include(debug_toolbar.urls)),
     path("api/", include(router.urls)),
+    path(
+        "variable/<int:variable_id>/evaluar/",
+        views.evaluar_variable,
+        name="evaluar-variable",
+    ),
     # indicadores
     path(
         "indicador/eliminar/<int:pk>/",

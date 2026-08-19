@@ -11,6 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from haapar_unla_app.models import (
     PESTEL,
+    EvaluacionVariable,
     Historial,
     IndicadorVariable,
     Subsistema,
@@ -213,13 +214,19 @@ def variable_completa(request, variable_id):
 
     variable = get_object_or_404(Variable, pk=variable_id, activo=True)
 
+    # =========================
+    # INDICADORES
+    # =========================
+
     indicadores = IndicadorVariable.objects.filter(variable=variable)
+
+    # =========================
+    # TENDENCIAS
+    # =========================
 
     relaciones = VariableTendencia.objects.filter(variable=variable).select_related(
         "tendencia"
     )
-
-    pestels = variable.pestels.all()
 
     todas_tendencias = TendenciaExterna.objects.filter(
         subsistema=variable.subsistema, activo=True
@@ -231,6 +238,28 @@ def variable_completa(request, variable_id):
         )
     )
 
+    # =========================
+    # PESTEL
+    # =========================
+
+    pestels = variable.pestels.all()
+
+    # =========================
+    # EVALUACIONES
+    # =========================
+    # Incluye:
+    # - IA -> usuario=None
+    # - Usuarios -> usuario=User
+
+    evaluaciones = (
+        EvaluacionVariable.objects.filter(variable=variable)
+        .select_related("usuario")
+        .order_by("-fecha")
+    )
+
+    # Evaluación del usuario actualmente autenticado
+    mi_evaluacion = evaluaciones.filter(usuario=request.user).first()
+
     return render(
         request,
         "haapar_unla_app/variable-completa.html",
@@ -241,6 +270,9 @@ def variable_completa(request, variable_id):
             "pestels": pestels,
             "todas_tendencias": todas_tendencias,
             "tendencias_seleccionadas": tendencias_seleccionadas,
+            # EVALUACIONES
+            "evaluaciones": evaluaciones,
+            "mi_evaluacion": mi_evaluacion,
         },
     )
 
@@ -376,6 +408,50 @@ def editar_tendencias_variable(request, pk):
             "tendencias_actuales": tendencias_actuales,
         },
     )
+
+
+@login_required
+@require_POST
+def eliminar_evaluacion(request, variable_id):
+
+    variable = get_object_or_404(Variable, pk=variable_id, activo=True)
+
+    EvaluacionVariable.objects.filter(variable=variable, usuario=request.user).delete()
+
+    messages.success(request, "Tu evaluación fue eliminada correctamente.")
+
+    return redirect("variable_completa", variable_id=variable.id_variable)
+
+
+@login_required
+@require_POST
+def evaluar_variable(request, variable_id):
+
+    variable = get_object_or_404(Variable, pk=variable_id, activo=True)
+
+    try:
+        importancia = int(request.POST.get("importancia"))
+        incertidumbre = int(request.POST.get("incertidumbre"))
+    except (TypeError, ValueError):
+        messages.error(
+            request, "Los valores de importancia e incertidumbre no son válidos."
+        )
+        return redirect("variable_completa", variable_id=variable.id_variable)
+
+    if not 1 <= importancia <= 10 or not 1 <= incertidumbre <= 10:
+        messages.error(request, "Los valores deben estar entre 1 y 10.")
+        return redirect("variable_completa", variable_id=variable.id_variable)
+
+    EvaluacionVariable.objects.update_or_create(
+        variable=variable,
+        usuario=request.user,
+        defaults={
+            "importancia": importancia,
+            "incertidumbre": incertidumbre,
+        },
+    )
+
+    return redirect("variable_completa", variable_id=variable.id_variable)
 
 
 class VariableViewSet(viewsets.ModelViewSet):

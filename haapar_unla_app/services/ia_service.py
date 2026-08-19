@@ -331,92 +331,256 @@ def calcular_impacto_variable_tendencia(variable, tendencia):
         return 0.5
 
 
-def generar_evaluaciones_e_influencias(tema, usuario):
+def generar_evaluaciones_e_influencias(tema, usuario=None):
+
     variables = list(
         Variable.objects.filter(subsistema__sistema__tema=tema).order_by("pk")
     )
+
     if not variables:
+        logger.warning(
+            f"No hay variables para generar evaluaciones en el tema {tema.id_tema}"
+        )
         return
 
-    lista_vars_texto = "\n".join([f"- {v.nombre}" for v in variables])
     amount = len(variables)
 
-    prompt = f"""
-    Sos un experto en prospectiva estratégica y análisis MIC-MAC.
-    Acabo de identificar exactamente {amount} variables clave para el proyecto: "{tema.nombre}".
-    
-    Las variables, en su orden exacto, son:
-    {lista_vars_texto}
+    # ============================================================
+    # 1. GENERAR IMPORTANCIA E INCERTIDUMBRE
+    # ============================================================
 
-    Necesito que actúes como un panel de expertos y evalúes matemáticamente estas {amount} variables.
-    
-    REGLAS ESTRICTAS:
-    1. "evaluaciones": DEBE ser una lista con exactamente {amount} objetos con "importancia" e "incertidumbre" (1 al 10).
-    2. "matriz_influencia": DEBE ser una matriz cuadrada exacta de {amount} x {amount} (es decir, {amount} listas, cada una con {amount} valores).
-    3. VALORES DE INFLUENCIA: Los únicos números permitidos son 0, 1, 2 o 3. 
-    🚨 REGLA DE CONEXIÓN: En un sistema real, casi todas las variables interactúan. EVITÁ RELLENAR CON CEROS (0). Pensá críticamente y usá 1, 2 o 3 para reflejar influencias directas cruzadas. 🚨
-    4. La diagonal siempre debe ser 0.
+    lista_vars_texto = "\n".join(
+        [f"{i + 1}. {v.nombre}" for i, v in enumerate(variables)]
+    )
 
-    Respondé ÚNICAMENTE con un JSON válido.
-    🚨 REGLA DE OPTIMIZACIÓN: Devolvé el JSON MINIFICADO (en una sola línea, sin saltos de línea ni espacios en blanco para la indentación) para evitar que se corte por límite de tokens. 🚨
-    """
+    prompt_evaluaciones = f"""
+Sos un experto en prospectiva estratégica.
 
-    logger.info(f"Enviando solicitud matemática a la IA para {amount} variables...")
-    # Ampliamos el max_tokens a 8192 para soportar la matriz completa
-    resultado = generar_respuesta_llm(prompt, temperature=0.3, max_tokens=8192)
+Evaluá las siguientes {amount} variables del proyecto "{tema.nombre}".
 
-    if not resultado.get("success"):
+VARIABLES:
+
+{lista_vars_texto}
+
+Para cada variable asigná:
+
+- importancia: número entero entre 1 y 10
+- incertidumbre: número entero entre 1 y 10
+
+IMPORTANTE:
+
+La respuesta debe contener exactamente {amount} evaluaciones,
+una por cada variable y respetando exactamente el orden indicado.
+
+Respondé ÚNICAMENTE con JSON válido.
+
+Formato obligatorio:
+
+{{
+    "evaluaciones": [
+        {{
+            "importancia": 8,
+            "incertidumbre": 6
+        }}
+    ]
+}}
+"""
+
+    logger.info(
+        f"Generando evaluaciones de importancia/incertidumbre "
+        f"para {amount} variables..."
+    )
+
+    resultado_eval = generar_respuesta_llm(
+        prompt_evaluaciones,
+        temperature=0.2,
+        max_tokens=2000,
+    )
+
+    if not resultado_eval.get("success"):
+        logger.error(f"ERROR generando evaluaciones: " f"{resultado_eval.get('error')}")
+        return
+
+    contenido_eval = resultado_eval.get("text", "").strip()
+
+    logger.info(f"RESPUESTA EVALUACIONES IA:\n{contenido_eval}")
+
+    match = re.search(r"\{.*\}", contenido_eval, re.DOTALL)
+
+    if not match:
+        logger.error("La IA no devolvió JSON válido para las evaluaciones.")
+        return
+
+    try:
+        data_eval = json.loads(match.group(0))
+    except json.JSONDecodeError as e:
+        logger.error(f"Error interpretando JSON de evaluaciones: {e}")
+        return
+
+    evaluaciones = data_eval.get("evaluaciones", [])
+
+    if len(evaluaciones) != amount:
         logger.error(
-            f"ERROR: La IA falló al generar la matriz: {resultado.get('error')}"
+            f"La IA devolvió {len(evaluaciones)} evaluaciones "
+            f"pero se esperaban {amount}."
         )
         return
 
-    content = resultado.get("text").strip()
-    match = re.search(r"\{.*\}", content, re.DOTALL)
-    if match:
-        content = match.group(0)
-    else:
-        # Si no encuentra un JSON, forzamos un diccionario vacío
-        content = "{}"
-
-    try:
-        data = json.loads(content)
-    except json.JSONDecodeError:
-        # Si el JSON viene roto, no cancelamos. Usamos un diccionario vacío
-        # para que se apliquen los valores neutrales (5 y 5).
-        data = {}
-
-    evaluaciones = data.get("evaluaciones", [])
-    matriz = data.get("matriz_influencia", [])
+    # ============================================================
+    # 2. GUARDAR IMPORTANCIA / INCERTIDUMBRE
+    # ============================================================
 
     for i, var in enumerate(variables):
-        imp, inc = 5, 5
-        if i < len(evaluaciones):
-            try:
-                imp = max(1, min(10, int(evaluaciones[i].get("importancia", 5))))
-                inc = max(1, min(10, int(evaluaciones[i].get("incertidumbre", 5))))
-            except (ValueError, TypeError):
-                pass
 
-        EvaluacionVariable.objects.create(
-            variable=var, usuario=usuario, importancia=imp, incertidumbre=inc
+        try:
+            imp = int(evaluaciones[i].get("importancia", 5))
+
+            inc = int(evaluaciones[i].get("incertidumbre", 5))
+
+            imp = max(1, min(10, imp))
+            inc = max(1, min(10, inc))
+
+        except (ValueError, TypeError, AttributeError):
+
+            imp = 5
+            inc = 5
+
+        EvaluacionVariable.objects.update_or_create(
+            variable=var,
+            usuario=None,
+            defaults={
+                "importancia": imp,
+                "incertidumbre": inc,
+            },
         )
 
-        Historial.objects.create(variable=var, usuario=usuario, accion="EVALUACION")
+    # ============================================================
+    # 3. GENERAR MATRIZ MIC-MAC
+    # ============================================================
+
+    prompt_matriz = f"""
+Sos un experto en análisis MIC-MAC.
+
+Necesito construir una matriz de influencia directa entre
+las siguientes {amount} variables:
+
+{lista_vars_texto}
+
+Generá una matriz cuadrada de {amount} x {amount}.
+
+REGLAS:
+
+- Cada fila representa la variable de origen.
+- Cada columna representa la variable de destino.
+- Los valores permitidos son únicamente:
+  0, 1, 2 o 3.
+- La diagonal debe ser siempre 0.
+- 0 = sin influencia directa.
+- 1 = influencia débil.
+- 2 = influencia media.
+- 3 = influencia fuerte.
+- Usá 0 cuando no exista una influencia directa entre las variables.
+- No llenes artificialmente la matriz con valores distintos de 0.
+- Cada valor debe representar una relación de influencia directa
+  plausible entre la variable de origen y la variable de destino.
+
+La matriz debe tener exactamente {amount} filas
+y cada fila debe tener exactamente {amount} valores.
+
+Respondé ÚNICAMENTE con JSON válido.
+
+Formato obligatorio:
+
+{{
+    "matriz_influencia": [
+        [0,1,2],
+        [1,0,3],
+        [2,1,0]
+    ]
+}}
+"""
+
+    logger.info(f"Generando matriz MIC-MAC de {amount}x{amount}...")
+
+    resultado_matriz = generar_respuesta_llm(
+        prompt_matriz,
+        temperature=0.2,
+        max_tokens=5000,
+    )
+
+    if not resultado_matriz.get("success"):
+        logger.error(f"ERROR generando matriz: " f"{resultado_matriz.get('error')}")
+        return
+
+    contenido_matriz = resultado_matriz.get("text", "").strip()
+
+    logger.info(f"RESPUESTA MATRIZ IA:\n{contenido_matriz}")
+
+    match = re.search(r"\{.*\}", contenido_matriz, re.DOTALL)
+
+    if not match:
+        logger.error("La IA no devolvió JSON válido para la matriz.")
+        return
+
+    try:
+        data_matriz = json.loads(match.group(0))
+    except json.JSONDecodeError as e:
+        logger.error(f"Error interpretando JSON de matriz: {e}")
+        return
+
+    matriz = data_matriz.get("matriz_influencia", [])
+
+    # ============================================================
+    # 4. VALIDAR MATRIZ
+    # ============================================================
+
+    if len(matriz) != amount:
+
+        logger.error(
+            f"La matriz tiene {len(matriz)} filas " f"pero se esperaban {amount}."
+        )
+
+        return
+
+    for fila in matriz:
+
+        if not isinstance(fila, list) or len(fila) != amount:
+
+            logger.error("La IA devolvió una matriz con dimensiones incorrectas.")
+
+            return
+
+    # ============================================================
+    # 5. GUARDAR MATRIZ
+    # ============================================================
 
     for i, var_origen in enumerate(variables):
-        for j, var_destino in enumerate(variables):
-            if i != j:
-                valor_ia = 0
-                if i < len(matriz) and j < len(matriz[i]):
-                    try:
-                        val = int(matriz[i][j])
-                        valor_ia = max(0, min(3, val))
-                    except (ValueError, TypeError):
-                        valor_ia = 0
 
-                Influencia.objects.create(
-                    variable_origen=var_origen,
-                    variable_destino=var_destino,
-                    valor=valor_ia,
-                )
+        for j, var_destino in enumerate(variables):
+
+            # La diagonal siempre debe ser 0.
+            # No se guarda una influencia de una variable
+            # sobre sí misma.
+            if i == j:
+                continue
+
+            try:
+
+                valor_ia = int(matriz[i][j])
+
+                valor_ia = max(0, min(3, valor_ia))
+
+            except (ValueError, TypeError):
+
+                valor_ia = 0
+
+            Influencia.objects.update_or_create(
+                variable_origen=var_origen,
+                variable_destino=var_destino,
+                defaults={"valor": valor_ia},
+            )
+
+    logger.info(
+        f"Evaluaciones y matriz MIC-MAC generadas correctamente "
+        f"para el tema {tema.id_tema}."
+    )

@@ -42,11 +42,10 @@ def crear_reporte(request):
             horizonte=horizonte,
             territorio=territorio,
         )
-
         # 2. Intentamos comunicarnos con la IA
         try:
             generar_estructura_prospectiva(tema)
-            generar_evaluaciones_e_influencias(tema, request.user)
+            generar_evaluaciones_e_influencias(tema, None)
 
             messages.success(request, "¡Proyecto analizado y creado exitosamente!")
             return redirect("subsistemas", tema_id=tema.id_tema)
@@ -54,20 +53,26 @@ def crear_reporte(request):
         except json.JSONDecodeError:
             # Si la IA corta el JSON por la mitad, borramos el proyecto fallido
             tema.delete()
+
             messages.error(
                 request,
-                "La Inteligencia Artificial devolvió una respuesta incompleta por límite de procesamiento. Por favor, intentá crear el proyecto nuevamente.",
+                "La Inteligencia Artificial devolvió una respuesta incompleta "
+                "por límite de procesamiento. Por favor, intentá crear el "
+                "proyecto nuevamente.",
             )
-            # Redirigimos a la página de inicio (crear reporte)
+
             return redirect("inicio")
 
         except Exception:
             # Si pasa cualquier otro error inesperado
             tema.delete()
+
             messages.error(
                 request,
-                "Hubo un error inesperado al procesar los datos con la IA. Intentá nuevamente.",
+                "Hubo un error inesperado al procesar los datos con la IA. "
+                "Intentá nuevamente.",
             )
+
             return redirect("inicio")
 
     return render(request, "haapar_unla_app/crear-reporte.html")

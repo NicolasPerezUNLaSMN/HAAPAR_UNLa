@@ -159,14 +159,16 @@
 
       <!-- ================= TENDENCIAS ================= -->
       <div class="col-md-4 mb-4">
+
         <div class="card proyecto-base h-100">
 
           <div class="card-header d-flex justify-content-between align-items-center">
             <h6 class="mb-0">Tendencias</h6>
 
-            <button class="btn btn-sm btn-success"
-                    data-bs-toggle="modal"
-                    data-bs-target="#modalTendencias">
+            <button
+              class="btn btn-sm btn-success"
+              data-bs-toggle="modal"
+              data-bs-target="#modalTendencias">
               <i class="fa-solid fa-edit"></i>
             </button>
           </div>
@@ -184,19 +186,23 @@
                 <div class="mt-2">
 
                   {% if r.impacto >= 7 %}
+
                     <span class="badge bg-danger">
                       Impacto: {{ r.impacto }}
                     </span>
 
                   {% elif r.impacto >= 4 %}
+
                     <span class="badge bg-warning text-dark">
                       Impacto: {{ r.impacto }}
                     </span>
 
                   {% else %}
+
                     <span class="badge bg-success">
                       Impacto: {{ r.impacto }}
                     </span>
+
                   {% endif %}
 
                 </div>
@@ -214,12 +220,339 @@
           </div>
 
         </div>
+
       </div>
 
-    </div>
-  </div>
+
+          <!-- ================= EVALUACIONES ================= -->
+          <div class="col-12 mb-4">
+
+            <div class="card proyecto-base">
+
+              <div class="card-header d-flex justify-content-between align-items-center">
+
+                <h6 class="mb-0">
+                  Evaluaciones
+                </h6>
+
+                <button
+                  class="btn btn-sm btn-success"
+                  data-bs-toggle="modal"
+                  data-bs-target="#modalEvaluacion">
+
+                  <i class="fa-solid fa-plus me-1"></i>
+
+                  {% if mi_evaluacion %}
+                    Modificar mi evaluación
+                  {% else %}
+                    Agregar mi evaluación
+                  {% endif %}
+
+                </button>
+
+              </div>
+
+              <div class="card-body">
+
+                {% if evaluaciones %}
+
+                  <div class="table-responsive">
+
+                    <table class="table table-bordered table-hover align-middle">
+
+                      <thead>
+                        <tr>
+                          <th>Evaluador</th>
+                          <th class="text-center">Importancia</th>
+                          <th class="text-center">Incertidumbre</th>
+                          <th>Fecha</th>
+                          <th class="text-center">Acciones</th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+
+                        {% for evaluacion in evaluaciones %}
+
+                          <tr>
+
+                            <!-- EVALUADOR -->
+                            <td>
+
+                              {% if evaluacion.usuario %}
+
+                                <i class="fa-solid fa-user me-1"></i>
+
+                                {{ evaluacion.usuario.get_full_name|default:evaluacion.usuario.username }}
+
+                              {% else %}
+
+                                <i class="fa-solid fa-robot me-1"></i>
+
+                                <strong>IA</strong>
+
+                              {% endif %}
+
+                            </td>
+
+                            <!-- IMPORTANCIA -->
+                            <td class="text-center">
+                              {{ evaluacion.importancia }}
+                            </td>
+
+                            <!-- INCERTIDUMBRE -->
+                            <td class="text-center">
+                              {{ evaluacion.incertidumbre }}
+                            </td>
+
+                            <!-- FECHA -->
+                            <td>
+                              {{ evaluacion.fecha|date:"d/m/Y H:i" }}
+                            </td>
+
+                            <!-- ACCIONES -->
+                            <td class="text-center">
+
+                              {% if evaluacion.usuario == request.user %}
+
+                                <form
+                                  method="POST"
+                                  action="{% url 'eliminar-evaluacion' variable.id_variable %}"
+                                  class="d-inline"
+                                >
+
+                                  {% csrf_token %}
+
+                                  <button
+                                    type="submit"
+                                    class="btn btn-sm btn-outline-danger"
+                                    title="Eliminar mi evaluación"
+                                    onclick="return confirm('¿Seguro que querés eliminar tu evaluación?')"
+                                  >
+                                    <i class="fa-solid fa-trash"></i>
+                                  </button>
+
+                                </form>
+
+                              {% else %}
+
+                                <span class="text-muted">—</span>
+
+                              {% endif %}
+
+                            </td>
+
+                          </tr>
+
+                        {% endfor %}
+
+                      </tbody>
+
+                    </table>
+
+                  </div>
+
+                  <!-- ================= PROMEDIOS ================= -->
+
+                  <div class="row mt-4">
+
+                    <div class="col-md-6">
+
+                      <div class="alert alert-primary text-center mb-0">
+
+                        <strong>
+                          Importancia promedio
+                        </strong>
+
+                        <div class="fs-4 fw-bold">
+                          {{ variable.promedio_importancia|floatformat:1 }}
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                    <div class="col-md-6">
+
+                      <div class="alert alert-warning text-center mb-0">
+
+                        <strong>
+                          Incertidumbre promedio
+                        </strong>
+
+                        <div class="fs-4 fw-bold">
+                          {{ variable.promedio_incertidumbre|floatformat:1 }}
+                        </div>
+
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                {% else %}
+
+                  <p class="text-muted text-center mb-0">
+                    Todavía no existen evaluaciones para esta variable.
+                  </p>
+
+                {% endif %}
+
+              </div>
+
+            </div>
+
+          </div>
 
 </main>
+<<!-- ================= MODAL EVALUACIÓN ================= -->
+
+<div class="modal fade" id="modalEvaluacion" tabindex="-1">
+
+  <div class="modal-dialog">
+
+    <div class="modal-content">
+
+      <form
+        method="POST"
+        action="{% url 'evaluar-variable' variable.id_variable %}"
+      >
+
+        {% csrf_token %}
+
+        <div class="modal-header">
+
+          <h5 class="modal-title">
+
+            {% if mi_evaluacion %}
+              Modificar mi evaluación
+            {% else %}
+              Agregar mi evaluación
+            {% endif %}
+
+          </h5>
+
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal">
+          </button>
+
+        </div>
+
+
+        <div class="modal-body">
+
+          <p class="text-muted">
+            Indicá tu valoración sobre la importancia y la
+            incertidumbre de esta variable.
+          </p>
+
+
+          <!-- IMPORTANCIA -->
+
+          <div class="mb-3">
+
+            <label class="form-label">
+              Importancia
+            </label>
+
+            <select
+              name="importancia"
+              class="form-select"
+              required
+            >
+
+              <option value="">
+                Seleccionar...
+              </option>
+
+              {% for i in "12345678910" %}
+
+                <option
+                  value="{{ i }}"
+                  {% if mi_evaluacion and mi_evaluacion.importancia|stringformat:"s" == i %}
+                    selected
+                  {% endif %}
+                >
+                  {{ i }}
+                </option>
+
+              {% endfor %}
+
+            </select>
+
+          </div>
+
+
+          <!-- INCERTIDUMBRE -->
+
+          <div class="mb-3">
+
+            <label class="form-label">
+              Incertidumbre
+            </label>
+
+            <select
+              name="incertidumbre"
+              class="form-select"
+              required
+            >
+
+              <option value="">
+                Seleccionar...
+              </option>
+
+              {% for i in "12345678910" %}
+
+                <option
+                  value="{{ i }}"
+                  {% if mi_evaluacion and mi_evaluacion.incertidumbre|stringformat:"s" == i %}
+                    selected
+                  {% endif %}
+                >
+                  {{ i }}
+                </option>
+
+              {% endfor %}
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <div class="modal-footer">
+
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal">
+            Cancelar
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-success">
+
+            {% if mi_evaluacion %}
+              Guardar cambios
+            {% else %}
+              Guardar evaluación
+            {% endif %}
+
+          </button>
+
+        </div>
+
+      </form>
+
+    </div>
+
+  </div>
+
+</div>
 
 <!-- ================= MODAL CREAR INDICADOR ================= -->
 <div class="modal fade" id="modalIndicador" tabindex="-1">
