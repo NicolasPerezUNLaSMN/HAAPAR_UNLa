@@ -143,6 +143,11 @@ urlpatterns = [
         views.eliminar_tendencia,
         name="eliminar-tendencia",
     ),
+    path(
+        "tendencias/historial/<int:subsistema_id>/",
+        views.historial_tendencias,
+        name="historial-tendencias",
+    ),
     # Agregar colaboradores
     path(
         "tema/<int:tema_id>/colaboradores/",
