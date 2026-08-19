@@ -14,6 +14,20 @@
       <label for="descripcion" class="form-label">Descripción</label>
       <textarea class="form-control" id="descripcion" name="descripcion" rows="3" required></textarea>
     </div>
+
+    <!-- NUEVO: Switch para elegir IA o Manual -->
+    <div class="mb-4 mt-4 p-3 border rounded bg-light">
+      <div class="form-check form-switch fs-5">
+        <input class="form-check-input cursor-pointer" type="checkbox" role="switch" id="generar_ia" name="generar_ia" checked>
+        <label class="form-check-label fw-bold text-primary cursor-pointer" for="generar_ia">
+          <i class="fa-solid fa-wand-magic-sparkles me-2"></i>Autocompletar con Inteligencia Artificial
+        </label>
+      </div>
+      <small class="text-muted d-block mt-2">
+        <i class="fa-solid fa-circle-info me-1"></i> Si está activado, la IA creará las variables, actores y tendencias. Si lo desactivás, el subsistema se creará vacío para que cargues todo a mano.
+      </small>
+    </div>
+
     <button type="submit" class="btn btn-primary">Crear Subsistema</button>
     <a href="{% url 'subsistemas' tema.id_tema %}" class="btn btn-secondary">Cancelar</a>
   </form>

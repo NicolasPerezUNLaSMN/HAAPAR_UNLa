@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
-from django.urls import reverse  # 🔑 Importante para armar la URL con el ancla
+from django.urls import reverse
 
 from haapar_unla_app.forms import VariablePESTELForm
 from haapar_unla_app.models import (
@@ -28,11 +28,11 @@ def foda_graficos(request, subsistema_id):
     if request.user != tema.user and request.user not in tema.colaboradores.all():
         return HttpResponseForbidden("No tenés permiso para ver este proyecto.")
 
-    cache_key = f"foda_micmac_pestel_v2_{subsistema_id}"
+    # Aumentamos la versión de la caché a v3 para forzar la actualización automática
+    cache_key = f"foda_micmac_pestel_v3_{subsistema_id}"
     contexto = cache.get(cache_key)
 
     if contexto is None:
-        # 🔎 Optimización: select_related + prefetch_related
         variables_obj = (
             Variable.objects.filter(subsistema=subsistema, activo=True)
             .select_related(
@@ -82,8 +82,16 @@ def foda_graficos(request, subsistema_id):
         }
 
         # --- CLASIFICACIÓN MICMAC ---
-        umbral_influencia = sum(influencia_totales) / len(influencia_totales)
-        umbral_dependencia = sum(dependencia_totales) / len(dependencia_totales)
+        umbral_influencia = (
+            sum(influencia_totales) / len(influencia_totales)
+            if influencia_totales
+            else 0
+        )
+        umbral_dependencia = (
+            sum(dependencia_totales) / len(dependencia_totales)
+            if dependencia_totales
+            else 0
+        )
 
         clasificacion = {}
         for idx, nombre in enumerate(nombres_vars):
@@ -155,6 +163,9 @@ def foda_graficos(request, subsistema_id):
             "influencia_totales": influencia_totales,
             "dependencia_totales": dependencia_totales,
             "clasificacion_variables": clasificacion,
+            # Se añaden los umbrales para que el frontend dibuje las cruces correctas
+            "umbral_influencia": umbral_influencia,
+            "umbral_dependencia": umbral_dependencia,
         }
 
         cache.set(cache_key, contexto, timeout=3600)
@@ -179,7 +190,6 @@ def editar_matriz(request, subsistema_id):
         .order_by("pk")
     )
 
-    # 🔎 Optimización: precargar evaluaciones e influencias
     evaluaciones = EvaluacionVariable.objects.filter(
         usuario=request.user, variable__in=variables
     ).select_related("variable")
@@ -192,7 +202,6 @@ def editar_matriz(request, subsistema_id):
 
     if request.method == "POST":
 
-        # Guardar importancia e incertidumbre
         for var in variables:
             imp_val = request.POST.get(f"imp_{var.pk}")
             inc_val = request.POST.get(f"inc_{var.pk}")
@@ -218,7 +227,6 @@ def editar_matriz(request, subsistema_id):
                         detalles=f"Imp: {old_imp} ➔ {imp_val} | Inc: {old_inc} ➔ {inc_val}",
                     )
 
-        # Guardar influencias
         for origen in variables:
             for destino in variables:
                 if origen.pk != destino.pk:
@@ -241,13 +249,13 @@ def editar_matriz(request, subsistema_id):
                                 detalles=f"Influencia sobre '{destino.nombre_corto}': {old_inf} ➔ {int(inf_val)}",
                             )
 
-        cache.delete(f"foda_micmac_pestel_v2_{subsistema_id}")
+        # Actualizado también acá
+        cache.delete(f"foda_micmac_pestel_v3_{subsistema_id}")
         messages.success(
             request, "¡Valores actualizados! Los gráficos se recalcularon."
         )
         return redirect("foda-graficos", subsistema_id=subsistema_id)
 
-    # 👉 GET: armar tabla y devolver render
     filas_tabla = []
     for origen in variables:
         eval_obj = eval_map.get(origen.pk)
@@ -342,7 +350,8 @@ def editar_pestel(request, pk):
         if form.is_valid():
             form.save()
 
-            cache.delete(f"foda_micmac_pestel_v2_{subsistema.id_subsistema}")
+            # Actualizado también acá
+            cache.delete(f"foda_micmac_pestel_v3_{subsistema.id_subsistema}")
             messages.success(request, "PESTEL actualizado correctamente.")
 
             if next_url:

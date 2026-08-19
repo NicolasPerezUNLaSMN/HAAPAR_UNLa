@@ -288,6 +288,10 @@
         const datosMicmacStr = '{{ datos_micmac|escapejs }}';
         const datosPestelStr = '{{ datos_pestel|escapejs }}';
 
+        // Capturamos los umbrales dinámicos desde Python para dibujar las líneas cruzadas correctas
+        const umbralInf = parseFloat("{{ umbral_influencia|stringformat:'f'|default:'2.5' }}");
+        const umbralDep = parseFloat("{{ umbral_dependencia|stringformat:'f'|default:'2.5' }}");
+
         const datosDispersion = datosDispersionStr ? JSON.parse(datosDispersionStr) : {};
         const matrizIndirecta = matrizIndirectaStr ? JSON.parse(matrizIndirectaStr) : {};
         const datosMicmac = datosMicmacStr ? JSON.parse(datosMicmacStr) : {};
@@ -338,8 +342,9 @@
             const ctxPeter = document.getElementById('peterSchwartzChart').getContext('2d');
             new Chart(ctxPeter, {
                 type: 'scatter',
-                data: { datasets: [{ label: 'Escenarios', data: datosP.variables.map((v, i) => ({ x: (datosP.importancia[i] - 3), y: (datosP.incertidumbre[i] - 3), label: v })), backgroundColor: '#00ffcc', pointRadius: 8 }] },
-                options: { plugins: { legend: { display: false }, tooltip: { callbacks: { label: (context) => context.raw.label } }, title: { display: true, text: 'Escenarios futuros según Peter-Schwartz', color: '#fff' }, annotation: { annotations: { ejeX: { type: 'line', xMin: 0, xMax: 0, borderColor: 'white', borderWidth: 2 }, ejeY: { type: 'line', yMin: 0, yMax: 0, borderColor: 'white', borderWidth: 2 }, cuadrante1: { type: 'label', xValue: 1.6, yValue: 1.9, content: ['Estrella Ascendente'], color: 'yellow', font: { size: 14, weight: 'bold' } }, cuadrante2: { type: 'label', xValue: -1.6, yValue: 1.9, content: ['Experto en Evolución'], color: 'yellow', font: { size: 14, weight: 'bold' } }, cuadrante3: { type: 'label', xValue: -1.6, yValue: -1.9, content: ['Retroceso Competitivo'], color: 'yellow', font: { size: 14, weight: 'bold' } }, cuadrante4: { type: 'label', xValue: 1.6, yValue: -1.9, content: ['Proyección Brillante'], color: 'yellow', font: { size: 14, weight: 'bold' } } } } }, scales: { x: { title: { display: true, text: 'Proyecciones', color: '#fff' }, min: -2, max: 2, ticks: { color: '#fff' } }, y: { title: { display: true, text: 'Habilidades', color: '#fff' }, min: -2, max: 2, ticks: { color: '#fff' } } } }
+                // FÓRMULA CORREGIDA: Comprime los valores de (1 a 10) al rango visual de (-2 a 2)
+                data: { datasets: [{ label: 'Escenarios', data: datosP.variables.map((v, i) => ({ x: parseFloat(((datosP.importancia[i] - 5.5) / 2.25).toFixed(2)), y: parseFloat(((datosP.incertidumbre[i] - 5.5) / 2.25).toFixed(2)), label: v })), backgroundColor: '#00ffcc', pointRadius: 8 }] },
+                options: { plugins: { legend: { display: false }, tooltip: { callbacks: { label: (context) => context.raw.label + ' (X: ' + context.raw.x + ', Y: ' + context.raw.y + ')' } }, title: { display: true, text: 'Escenarios futuros según Peter-Schwartz', color: '#fff' }, annotation: { annotations: { ejeX: { type: 'line', xMin: 0, xMax: 0, borderColor: 'white', borderWidth: 2 }, ejeY: { type: 'line', yMin: 0, yMax: 0, borderColor: 'white', borderWidth: 2 }, cuadrante1: { type: 'label', xValue: 1.6, yValue: 1.9, content: ['Estrella Ascendente'], color: 'yellow', font: { size: 14, weight: 'bold' } }, cuadrante2: { type: 'label', xValue: -1.6, yValue: 1.9, content: ['Experto en Evolución'], color: 'yellow', font: { size: 14, weight: 'bold' } }, cuadrante3: { type: 'label', xValue: -1.6, yValue: -1.9, content: ['Retroceso Competitivo'], color: 'yellow', font: { size: 14, weight: 'bold' } }, cuadrante4: { type: 'label', xValue: 1.6, yValue: -1.9, content: ['Proyección Brillante'], color: 'yellow', font: { size: 14, weight: 'bold' } } } } }, scales: { x: { title: { display: true, text: 'Proyecciones', color: '#fff' }, min: -2, max: 2, ticks: { color: '#fff' } }, y: { title: { display: true, text: 'Habilidades', color: '#fff' }, min: -2, max: 2, ticks: { color: '#fff' } } } }
             });
         } catch (e) { console.error("Error en Peter-Schwartz:", e); }
     </script>
@@ -358,19 +363,21 @@
 
     <script>
         try {
-            let dDisp2 = datosDispersion.influencia ? datosDispersion : { variables: ["A", "B", "C", "D"], influencia: [3, 1, 2, 4], dependencia: [1, 4, 3, 2] };
+            // FIX DEL BUG SILENCIOSO: Estaba llamando a 'datosDispersion.influencia' que no existía. 
+            // Ahora llama a 'datosMicmac' que tiene la información real.
+            let dDisp2 = datosMicmac.variables ? datosMicmac : { variables: ["A", "B", "C", "D"], influencia: [3, 1, 2, 4], dependencia: [1, 4, 3, 2] };
             const ctxDispersion = document.getElementById('micmacDispersionChart').getContext('2d');
             new Chart(ctxDispersion, {
                 type: 'scatter',
                 data: { datasets: [{ label: 'Variables', data: dDisp2.variables.map((v, i) => ({ x: dDisp2.influencia[i], y: dDisp2.dependencia[i], label: v })), backgroundColor: '#00ccff', pointRadius: 6 }] },
-                options: { plugins: { legend: { display: false }, tooltip: { callbacks: { label: (context) => dDisp2.variables[context.dataIndex] + " (Inf: " + context.raw.x + ", Dep: " + context.raw.y + ")" } }, title: { display: true, text: 'Gráfico de Dispersión MIC-MAC', color: '#fff' }, annotation: { annotations: { ejeX: { type: 'line', xMin: 2.5, xMax: 2.5, borderColor: 'white', borderWidth: 2, borderDash: [5, 5] }, ejeY: { type: 'line', yMin: 2.5, yMax: 2.5, borderColor: 'white', borderWidth: 2, borderDash: [5, 5] } } } }, scales: { x: { title: { display: true, text: 'Influencia', color: '#fff' }, ticks: { color: '#fff' } }, y: { title: { display: true, text: 'Dependencia', color: '#fff' }, ticks: { color: '#fff' } } } }
+                options: { plugins: { legend: { display: false }, tooltip: { callbacks: { label: (context) => dDisp2.variables[context.dataIndex] + " (Inf: " + context.raw.x + ", Dep: " + context.raw.y + ")" } }, title: { display: true, text: 'Gráfico de Dispersión MIC-MAC', color: '#fff' }, annotation: { annotations: { ejeX: { type: 'line', xMin: umbralInf, xMax: umbralInf, borderColor: 'white', borderWidth: 2, borderDash: [5, 5] }, ejeY: { type: 'line', yMin: umbralDep, yMax: umbralDep, borderColor: 'white', borderWidth: 2, borderDash: [5, 5] } } } }, scales: { x: { title: { display: true, text: 'Influencia', color: '#fff' }, ticks: { color: '#fff' } }, y: { title: { display: true, text: 'Dependencia', color: '#fff' }, ticks: { color: '#fff' } } } }
             });
         } catch (e) { console.error("Error en MICMAC Dispersión:", e); }
     </script>
 
     <script>
         try {
-            let pestel = datosPestel; // Leemos DIRECTAMENTE la base de datos
+            let pestel = datosPestel; 
             
             const coloresPestel = {
                 "Legal": "#fdbb63", "Ecológico": "#42d4b9", "Tecnológico": "#667bc6",  
@@ -406,7 +413,7 @@
                     data: highchartsData,
                     tooltip: { pointFormat: '{point.name}' },
                     marker: { symbol: 'circle', radius: 7 }, 
-                    collapseButton: { enabled: false }, // Escondemos los botones de +/-
+                    collapseButton: { enabled: false }, 
                     dataLabels: {
                         pointFormat: '{point.name}',
                         style: { whiteSpace: 'nowrap', textOutline: '3px #ffffff', color: '#333333', fontSize: '13px', fontWeight: '500' }

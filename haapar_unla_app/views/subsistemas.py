@@ -1,9 +1,11 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Prefetch
 from django.http import HttpResponseForbidden
 from django.shortcuts import get_object_or_404, redirect, render
 
 from haapar_unla_app.models import Sistema, Subsistema, Tema
+from haapar_unla_app.services.ia_service import generar_datos_nuevo_subsistema
 
 
 # ---------------------------
@@ -36,14 +38,41 @@ def crear_subsistema(request, tema_id):
             "descripcion": "Sistema generado automáticamente",
         },
     )
+
     if request.method == "POST":
-        Subsistema.objects.create(
+        # Leemos el valor del switch (si está tildado, devuelve 'on')
+        usar_ia = request.POST.get("generar_ia") == "on"
+
+        # 1. Guardamos el subsistema nuevo
+        nuevo_subsistema = Subsistema.objects.create(
             sistema=sistema,
             nombre=request.POST.get("nombre"),
             descripcion=request.POST.get("descripcion"),
             activo=True,
         )
+
+        # 2. Decidimos qué hacer según lo que eligió el usuario
+        if usar_ia:
+            exito = generar_datos_nuevo_subsistema(nuevo_subsistema, request.user)
+            if exito:
+                messages.success(
+                    request,
+                    "Subsistema creado y variables generadas exitosamente con IA.",
+                )
+            else:
+                messages.warning(
+                    request,
+                    "Se creó el subsistema, pero hubo un error al generar el contenido con IA.",
+                )
+        else:
+            # Si eligió manual, solo mostramos el mensaje de éxito y no llamamos a la IA
+            messages.success(
+                request,
+                "Subsistema creado de forma manual. Podés comenzar a cargar sus datos.",
+            )
+
         return redirect("subsistemas", tema_id=tema.id_tema)
+
     return render(request, "haapar_unla_app/crear-subsistema.html", {"tema": tema})
 
 
