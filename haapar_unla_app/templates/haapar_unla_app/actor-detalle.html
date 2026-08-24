@@ -4,167 +4,123 @@
 
 {% block content %}
 
-  <main class="main">
+<main class="main">
 
+  <!-- ============================= -->
+  <!-- ENCABEZADO -->
+  <!-- ============================= -->
+  <div class="page-title dark-background">
 
-    <!-- Encabezado -->
-    <div class="page-title dark-background">
+    <div class="container position-relative">
 
-      <div class="container position-relative">
+      <a href="{% url 'proyecto-detalle' tema.id_tema subsistema.id_subsistema %}"
+        class="btn-back position-absolute top-0 start-0 mt-3 ms-3"
+        title="Volver al subsistema">
 
+        <i class="fa-solid fa-arrow-left"></i>
 
-        <a href="{% url 'proyecto-detalle' tema.id_tema subsistema.id_subsistema %}"
-          class="btn-back position-absolute top-0 start-0 mt-3 ms-3">
+      </a>
 
-          <i class="fa-solid fa-arrow-left"></i>
+      <h1 class="text-center heading-section">
+        ACTORES DEL SUBSISTEMA
+      </h1>
 
-        </a>
-
-
-
-        <h1 class="text-center heading-section">
-          ACTORES DEL SUBSISTEMA
-        </h1>
-
-
-
-        <p class="text-center fw-bold mb-0">
-          Subsistema: {{ subsistema.nombre }}
-        </p>
-
-
-
-      </div>
+      <p class="text-center fw-bold mb-0">
+        Subsistema: {{ subsistema.nombre }}
+      </p>
 
     </div>
 
+  </div>
 
 
+  <!-- ============================= -->
+  <!-- BOTONERA PRINCIPAL -->
+  <!-- ============================= -->
+  <div class="container mt-4 mb-4">
 
+    <div class="d-flex justify-content-center">
 
-    <!-- Botonera principal -->
-    <div class="container mt-4 mb-4">
+      <a href="{% url 'crear-actor' subsistema.id_subsistema %}"
+        class="btn btn-primary">
 
-      <div class="d-flex justify-content-center">
+        <i class="fa-solid fa-plus me-2"></i>
+        Agregar Actor
 
-
-        <a href="{% url 'crear-actor' subsistema.id_subsistema %}"
-          class="btn btn-primary">
-
-          <i class="fa-solid fa-plus me-2"></i>
-
-          Agregar Actor
-
-        </a>
-
-
-      </div>
+      </a>
 
     </div>
 
+  </div>
 
 
+  <!-- ============================= -->
+  <!-- LISTADO DE ACTORES -->
+  <!-- ============================= -->
+  <div class="container mt-4">
 
-
-
-
-    <!-- Listado de actores -->
-    <div class="container mt-4">
-
-
-
-      {% for actor in page_obj %}
-
-
+    {% for actor in page_obj %}
 
       <div class="card mb-4 proyecto-base">
 
-
-
-        <!-- Cabecera -->
+        <!-- ============================= -->
+        <!-- CABECERA DEL ACTOR -->
+        <!-- ============================= -->
         <div class="card-header d-flex justify-content-between align-items-center">
-
-
 
           <div class="d-flex align-items-center">
 
-
             <span class="fw-bold me-2">
-              {{ forloop.counter0|add:page_obj.start_index }}.
+              {{ forloop.counter|add:page_obj.start_index|add:"-1" }}.
             </span>
-
-
 
             <span class="fw-bold text-primary titulo-actor">
-
               {{ actor.nombre }}
-
             </span>
-
 
           </div>
 
 
-
-
-
+          <!-- ============================= -->
+          <!-- ACCIONES -->
+          <!-- ============================= -->
           <div class="text-nowrap">
-
-
 
             <a href="{% url 'editar-actor' actor.id_actor_clave %}"
               class="btn btn-sm btn-outline-primary"
               title="Editar actor">
 
-
               <i class="fa-solid fa-pen"></i>
 
-
             </a>
-
-
-
 
 
             <form action="{% url 'eliminar-actor' actor.id_actor_clave %}"
                   method="POST"
                   class="d-inline">
 
-
               {% csrf_token %}
-
-
 
               <button type="submit"
                       class="btn btn-sm btn-outline-danger ms-1"
                       title="Eliminar actor"
-                      onclick="return confirm('¿Estás seguro de eliminar este actor?')">
-
+                      onclick="return confirm('¿Estás seguro de eliminar este actor?');">
 
                 <i class="fa-solid fa-trash"></i>
 
-
               </button>
-
-
 
             </form>
 
-
           </div>
-
 
         </div>
 
 
-
-
-
-
-
-        <!-- Información -->
+        <!-- ============================= -->
+        <!-- INFORMACIÓN DEL ACTOR -->
+        <!-- ============================= -->
         <div class="card-body">
-
 
           <p class="text-muted mb-2">
 
@@ -172,144 +128,46 @@
               Puesto:
             </strong>
 
-            {{ actor.puesto }}
+            {% if actor.puesto %}
+              {{ actor.puesto }}
+            {% else %}
+              No especificado
+            {% endif %}
 
           </p>
 
 
-
-
-
-          <p class="mb-3">
+          <p class="mb-0">
 
             <strong>
               Descripción:
             </strong>
 
-            {{ actor.descripcion }}
+            {% if actor.descripcion %}
+              {{ actor.descripcion }}
+            {% else %}
+              No especificada
+            {% endif %}
 
           </p>
 
-
-
-
-
-
-
-          <!-- Relaciones -->
-          <div class="mt-3 p-3 rounded relaciones-box">
-
-
-            <h6 class="border-bottom pb-2">
-
-              Relaciones e Influencia
-
-            </h6>
-
-
-
-
-            <div class="row">
-
-
-              <div class="col-md-6">
-
-
-                <p class="mb-1">
-
-                  <strong>
-                    Emite:
-                  </strong>
-
-
-                  {% if actor.actor_fuente.all|length > 0 %}
-                    ✔
-                  {% else %}
-                    ✘
-                  {% endif %}
-
-
-                </p>
-
-
-
-
-
-                <p class="mb-1">
-
-                  <strong>
-                    Recibe:
-                  </strong>
-
-
-                  {% if actor.actor_destino.all|length > 0 %}
-                    ✔
-                  {% else %}
-                    ✘
-                  {% endif %}
-
-
-                </p>
-
-
-
-              </div>
-
-
-
-
-
-              <div class="col-md-6">
-
-
-                <p class="mb-1">
-
-                  <strong>
-                    Nivel de influencia:
-                  </strong>
-
-                  Ver detalles en relaciones
-
-
-                </p>
-
-
-              </div>
-
-
-
-            </div>
-
-
-
-          </div>
-
-
-
-
-
         </div>
-
-
 
       </div>
 
 
+    {% empty %}
 
-
-
-      {% empty %}
-
-
-
+      <!-- ============================= -->
+      <!-- SIN ACTORES -->
+      <!-- ============================= -->
       <div class="alert alert-info text-center">
 
+        <i class="fa-solid fa-circle-info me-2"></i>
 
         No hay actores definidos para este subsistema.
 
-
         <br>
-
 
         <a href="{% url 'crear-actor' subsistema.id_subsistema %}"
           class="alert-link">
@@ -318,125 +176,77 @@
 
         </a>
 
-
       </div>
 
+    {% endfor %}
 
 
-      {% endfor %}
-
-
-
-
-
-
-
-
-
-      <!-- Paginación -->
-      {% if page_obj.paginator.num_pages > 1 %}
-
-
+    <!-- ============================= -->
+    <!-- PAGINACIÓN -->
+    <!-- ============================= -->
+    {% if page_obj.paginator.num_pages > 1 %}
 
       <div class="pagination-container d-flex justify-content-center mt-4 mb-5">
 
-
         <span class="step-links">
-
-
 
           {% if page_obj.has_previous %}
 
+            <a href="?page=1"
+              class="btn btn-sm btn-outline-secondary">
+
+              &laquo; Primera
+
+            </a>
 
 
-          <a href="?page=1"
-            class="btn btn-sm btn-outline-secondary">
+            <a href="?page={{ page_obj.previous_page_number }}"
+               class="btn btn-sm btn-outline-primary">
 
-            &laquo; Primera
+              Anterior
 
-          </a>
-
-
-
-
-
-          <a href="?page={{ page_obj.previous_page_number }}"
-            class="btn btn-sm btn-outline-primary">
-
-            Anterior
-
-          </a>
-
-
+            </a>
 
           {% endif %}
-
-
-
-
-
 
 
           <span class="current fw-bold mx-3">
 
-            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+            Página {{ page_obj.number }}
+            de
+            {{ page_obj.paginator.num_pages }}
 
           </span>
 
 
-
-
-
-
-
           {% if page_obj.has_next %}
 
+            <a href="?page={{ page_obj.next_page_number }}"
+              class="btn btn-sm btn-outline-primary">
+
+              Siguiente
+
+            </a>
 
 
+            <a href="?page={{ page_obj.paginator.num_pages }}"
+              class="btn btn-sm btn-outline-secondary">
 
-          <a href="?page={{ page_obj.next_page_number }}"
-            class="btn btn-sm btn-outline-primary">
+              Última &raquo;
 
-            Siguiente
-
-          </a>
-
-
-
-
-
-          <a href="?page={{ page_obj.paginator.num_pages }}"
-            class="btn btn-sm btn-outline-secondary">
-
-            Última &raquo;
-
-          </a>
-
-
+            </a>
 
           {% endif %}
 
-
-
-
         </span>
-
 
       </div>
 
+    {% endif %}
 
+  </div>
 
-      {% endif %}
-
-
-
-
-
-    </div>
-
-
-
-  </main>
-
+</main>
 
 {% endblock %}
+

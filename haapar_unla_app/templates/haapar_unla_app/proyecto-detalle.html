@@ -1,113 +1,177 @@
 {% extends 'haapar_unla_app/base.html' %}
 
 {% block title %}
-Detalle del Proyecto - HAAPAR
+Panel del Subsistema - HAAPAR
 {% endblock %}
 
 {% block content %}
+
 <main class="main">
+
+  <!-- ============================= -->
+  <!-- ENCABEZADO -->
+  <!-- ============================= -->
   <div class="page-title dark-background">
-    <div class="container mt-4 position-relative">
-      <a href="{% url 'subsistemas' tema.id_tema %}"  class="btn-back">
-        <i class="fa-solid fa-arrow-left"></i>
-      </a>
-    </div>
+
     <div class="container position-relative">
-      <h1 class="text-center heading-section">Detalle del proyecto</h1>
-      <p class="text-center text-muted">{{ tema.nombre }}</p>
+
+      <a href="{% url 'subsistemas' tema.id_tema %}"
+        class="btn-back"
+        title="Volver a los subsistemas">
+
+        <i class="fa-solid fa-arrow-left"></i>
+
+      </a>
+
+      <h1 class="text-center heading-section">
+        Panel del Subsistema
+      </h1>
+
       {% if subsistema %}
-        <p class="text-center fw-bold">Subsistema: {{ subsistema.nombre }}</p>
+        <p class="text-center mb-0">
+          {{ tema.nombre }}
+          <span class="mx-2">·</span>
+          <strong>{{ subsistema.nombre }}</strong>
+        </p>
       {% endif %}
+
     </div>
+
   </div>
 
-  <section>
+
+  <!-- ============================= -->
+  <!-- MÓDULOS DEL SUBSISTEMA -->
+  <!-- ============================= -->
+  <section class="py-4">
+
     <div class="container">
+
       <div class="row gy-4">
-        
-        <div class="col-lg-3 col-md-6">
-          <div class="card proyecto-base h-100">
-            <div class="card-body text-center">
-              <div class="icon mb-3">
-                <i class="fa-solid fa-chart-line"></i>
-              </div>
-              <h3 class="card-title text-info">
-                {% if subsistema %}
-                  <a href="{% url 'variable-detalle' subsistema.id_subsistema %}" class="stretched-link text-decoration-none">Variables</a>
-                {% else %}
-                  <a href="#">Variables</a>
-                {% endif %}
-              </h3>
-              <p class="card-text">
-                Automatización de Variables de cada Subsistema
-              </p>
-            </div>
-          </div>
-        </div>
 
+
+        <!-- VARIABLES -->
         <div class="col-lg-3 col-md-6">
-          <div class="card proyecto-base h-100">
-            <div class="card-body text-center">
-              <div class="icon mb-3">
-                <i class="fa-solid fa-arrow-trend-up"></i>
+
+          <div class="card h-100 bg-light border border-success shadow-sm rounded-3">
+
+            <div class="card-body text-center d-flex flex-column justify-content-center p-4">
+
+              <div class="mb-3">
+                <i class="fa-solid fa-chart-line fa-2x text-success"></i>
               </div>
-              <h3 class="card-title text-info">
-                {% if subsistema %}
-                  <a href="{% url 'tendencia-detalle' subsistema.id_subsistema %}" class="stretched-link text-decoration-none">Tendencias</a>
-                {% else %}
-                  <a href="#">Tendencias</a>
-                {% endif %}
+
+              <h3 class="card-title fs-5 mb-0">
+
+                <a href="{% url 'variable-detalle' subsistema.id_subsistema %}"
+                  class="stretched-link text-decoration-none text-success">
+
+                  Variables
+
+                </a>
+
               </h3>
-              <p class="card-text">
-                Nuestro sistema de Tendencias ofrece una visión prospectiva crucial para la planificación de futuros.
-              </p>
+
             </div>
+
           </div>
+
         </div>
 
 
+        <!-- TENDENCIAS -->
         <div class="col-lg-3 col-md-6">
-          <div class="card proyecto-base h-100">
-            <div class="card-body text-center">
-              <div class="icon mb-3">
-                <i class="fa-solid fa-people-roof"></i>
+
+          <div class="card h-100 bg-light border border-success shadow-sm rounded-3">
+
+            <div class="card-body text-center d-flex flex-column justify-content-center p-4">
+
+              <div class="mb-3">
+                <i class="fa-solid fa-arrow-trend-up fa-2x text-success"></i>
               </div>
-              <h3 class="card-title text-info">
-                {% if subsistema %}
-                  <a href="{% url 'actor-detalle' subsistema.id_subsistema %}" class="stretched-link text-decoration-none">Actores</a>
-                {% else %}
-                  <a href="#" class="stretched-link text-decoration-none">Actores</a>
-                {% endif %}
+
+              <h3 class="card-title fs-5 mb-0">
+
+                <a href="{% url 'tendencia-detalle' subsistema.id_subsistema %}"
+                  class="stretched-link text-decoration-none text-success">
+
+                  Tendencias
+
+                </a>
+
               </h3>
-              <p class="card-text">
-                Automatización de Actores Claves de cada Subsistema
-              </p>
+
             </div>
+
           </div>
-        </div>
-        
-        <div class="col-lg-3 col-md-6">
-          <div class="card proyecto-base h-100">
-            <div class="card-body text-center">
-              <div class="icon mb-3">
-                <i class="fa-solid fa-chart-simple"></i>
-              </div>
-              <h3 class="card-title text-info">
-                {% if subsistema %}
-                    <a href="{% url 'foda-graficos' subsistema.id_subsistema %}" class="stretched-link text-decoration-none">Análisis FODA</a>
-                {% else %}
-                    <a href="#">Análisis FODA</a>
-                {% endif %}
-              </h3>
-              <p class="card-text">
-                El análisis FODA es una herramienta estratégica que permite realizar un diagnóstico interno y externo de un proyecto.
-              </p>
-            </div>
-          </div>
+
         </div>
 
-      </div> 
+
+        <!-- ACTORES -->
+        <div class="col-lg-3 col-md-6">
+
+          <div class="card h-100 bg-light border border-success shadow-sm rounded-3">
+
+            <div class="card-body text-center d-flex flex-column justify-content-center p-4">
+
+              <div class="mb-3">
+                <i class="fa-solid fa-people-roof fa-2x text-success"></i>
+              </div>
+
+              <h3 class="card-title fs-5 mb-0">
+
+                <a href="{% url 'actor-detalle' subsistema.id_subsistema %}"
+                  class="stretched-link text-decoration-none text-success">
+
+                  Actores
+
+                </a>
+
+              </h3>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- FODA -->
+        <div class="col-lg-3 col-md-6">
+
+          <div class="card h-100 bg-light border border-success shadow-sm rounded-3">
+
+            <div class="card-body text-center d-flex flex-column justify-content-center p-4">
+
+              <div class="mb-3">
+                <i class="fa-solid fa-chart-simple fa-2x text-success"></i>
+              </div>
+
+              <h3 class="card-title fs-5 mb-0">
+
+                <a href="{% url 'foda-graficos' subsistema.id_subsistema %}"
+                  class="stretched-link text-decoration-none text-success">
+
+                  Análisis FODA
+
+                </a>
+
+              </h3>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+      </div>
+
     </div>
+
   </section>
+
 </main>
+
 {% endblock %}
