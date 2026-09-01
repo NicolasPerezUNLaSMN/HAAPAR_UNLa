@@ -106,11 +106,12 @@
 
 
 
-            <span class="fw-bold text-primary titulo-tendencia">
+        <a href="{% url 'tendencia-completa' tendencia.id_tendencia_externa %}"
+          class="fw-bold text-primary titulo-tendencia text-decoration-none">
 
-              {{ tendencia.nombre }}
+            {{ tendencia.nombre }}
 
-            </span>
+        </a>
 
 
           </div>

@@ -1,10 +1,17 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Count, Func, Q
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from haapar_unla_app.models import Historial, Subsistema, TendenciaExterna
+from haapar_unla_app.models import (
+    EvaluacionTendencia,
+    Historial,
+    IndicadorTendencia,
+    Subsistema,
+    TendenciaExterna,
+)
 
 
 # ---------------------------
@@ -166,6 +173,150 @@ def eliminar_tendencia(request, pk):
     )
 
     return redirect("tendencia-detalle", subsistema_id=subsistema_id)
+
+
+@login_required
+def tendencia_completa(request, tendencia_id):
+
+    tendencia = get_object_or_404(
+        TendenciaExterna, id_tendencia_externa=tendencia_id, activo=True
+    )
+
+    subsistema = tendencia.subsistema
+    tema = subsistema.sistema.tema
+
+    indicadores = IndicadorTendencia.objects.filter(tendencia_externa=tendencia)
+
+    evaluaciones = (
+        EvaluacionTendencia.objects.filter(tendencia=tendencia)
+        .select_related("usuario")
+        .order_by("fecha")
+    )
+
+    mi_evaluacion = evaluaciones.filter(usuario=request.user).first()
+
+    return render(
+        request,
+        "haapar_unla_app/tendencia-completa.html",
+        {
+            "tema": tema,
+            "subsistema": subsistema,
+            "tendencia": tendencia,
+            "indicadores": indicadores,
+            "evaluaciones": evaluaciones,
+            "mi_evaluacion": mi_evaluacion,
+            "rango_10": range(1, 11),
+        },
+    )
+
+
+@login_required
+@require_POST
+def evaluar_tendencia(request, tendencia_id):
+    tendencia = get_object_or_404(
+        TendenciaExterna, id_tendencia_externa=tendencia_id, activo=True
+    )
+
+    importancia = request.POST.get("importancia")
+    incertidumbre = request.POST.get("incertidumbre")
+
+    if importancia is None or incertidumbre is None:
+        messages.error(request, "Debés completar importancia e incertidumbre.")
+        return redirect(
+            "tendencia-completa", tendencia_id=tendencia.id_tendencia_externa
+        )
+
+    EvaluacionTendencia.objects.update_or_create(
+        tendencia=tendencia,
+        usuario=request.user,
+        defaults={
+            "importancia": int(importancia),
+            "incertidumbre": int(incertidumbre),
+        },
+    )
+
+    messages.success(request, "Tu evaluación fue guardada correctamente.")
+
+    return redirect("tendencia-completa", tendencia_id=tendencia.id_tendencia_externa)
+
+
+@login_required
+@require_POST
+def crear_indicador_tendencia(request, tendencia_id):
+    tendencia = get_object_or_404(
+        TendenciaExterna, id_tendencia_externa=tendencia_id, activo=True
+    )
+
+    IndicadorTendencia.objects.create(
+        tendencia_externa=tendencia,
+        nombre_corto=request.POST.get("nombre_corto"),
+        descripcion=request.POST.get("descripcion"),
+        formula=request.POST.get("formula"),
+    )
+
+    return redirect("tendencia-completa", tendencia_id=tendencia.id_tendencia_externa)
+
+
+@login_required
+@require_POST
+def eliminar_indicador_tendencia(request, pk):
+    indicador = get_object_or_404(
+        IndicadorTendencia,
+        id_indicador_tendencia=pk,
+    )
+
+    tendencia_id = indicador.tendencia_externa.id_tendencia_externa
+
+    indicador.delete()
+
+    messages.success(request, "El indicador fue eliminado correctamente.")
+
+    return redirect("tendencia-completa", tendencia_id=tendencia_id)
+
+
+@login_required
+def editar_indicador_tendencia(request, pk):
+
+    indicador = get_object_or_404(IndicadorTendencia, id_indicador_tendencia=pk)
+
+    tendencia = indicador.tendencia_externa
+
+    if request.method == "POST":
+
+        indicador.nombre_corto = request.POST.get("nombre_corto")
+        indicador.descripcion = request.POST.get("descripcion")
+        indicador.formula = request.POST.get("formula")
+
+        indicador.save()
+
+        return redirect(
+            "tendencia-completa", tendencia_id=tendencia.id_tendencia_externa
+        )
+
+    return render(
+        request,
+        "haapar_unla_app/editar-indicador-tendencia.html",
+        {
+            "indicador": indicador,
+            "tendencia": tendencia,
+        },
+    )
+
+
+@login_required
+@require_POST
+def eliminar_evaluacion_tendencia(request, tendencia_id):
+    tendencia = get_object_or_404(TendenciaExterna, pk=tendencia_id, activo=True)
+
+    evaluacion = get_object_or_404(
+        EvaluacionTendencia, tendencia=tendencia, usuario=request.user
+    )
+
+    evaluacion.delete()
+
+    messages.success(request, "Tu evaluación fue eliminada correctamente.")
+
+    return redirect("tendencia-completa", tendencia_id=tendencia.id_tendencia_externa)
 
 
 @login_required

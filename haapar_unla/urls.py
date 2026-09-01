@@ -136,9 +136,19 @@ urlpatterns = [
     # Tendencias
     path("tendencias/", views.listar_tendencias, name="listar-tendencias"),
     path(
+        "tendencia/<int:tendencia_id>/completa/",
+        views.tendencia_completa,
+        name="tendencia-completa",
+    ),
+    path(
         "tendencias-detalle/<int:subsistema_id>/",
         views.tendencia_detalle,
         name="tendencia-detalle",
+    ),
+    path(
+        "tendencia/<int:tendencia_id>/evaluar/",
+        views.evaluar_tendencia,
+        name="evaluar-tendencia",
     ),
     path(
         "tendencias/crear/<int:subsistema_id>/",
@@ -154,9 +164,29 @@ urlpatterns = [
         name="eliminar-tendencia",
     ),
     path(
+        "tendencia/<int:tendencia_id>/indicador/crear/",
+        views.crear_indicador_tendencia,
+        name="crear-indicador-tendencia",
+    ),
+    path(
+        "tendencia/indicador/<int:pk>/eliminar/",
+        views.eliminar_indicador_tendencia,
+        name="eliminar-indicador-tendencia",
+    ),
+    path(
+        "tendencia/indicador/<int:pk>/editar/",
+        views.editar_indicador_tendencia,
+        name="editar-indicador-tendencia",
+    ),
+    path(
         "tendencias/historial/<int:subsistema_id>/",
         views.historial_tendencias,
         name="historial-tendencias",
+    ),
+    path(
+        "tendencia/<int:tendencia_id>/eliminar-evaluacion/",
+        views.eliminar_evaluacion_tendencia,
+        name="eliminar-evaluacion-tendencia",
     ),
     # Agregar colaboradores
     path(
