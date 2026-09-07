@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.db.models import Count, Func, Q
 from django.shortcuts import get_object_or_404, redirect, render
@@ -48,7 +49,6 @@ def tendencia_detalle(request, subsistema_id):
     subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id, activo=True)
     tema = subsistema.sistema.tema
 
-    # Ordenamos y paginamos las tendencias de este subsistema específico
     tendencias_list = TendenciaExterna.objects.filter(
         subsistema=subsistema, activo=True
     ).order_by("-id_tendencia_externa")
@@ -63,7 +63,7 @@ def tendencia_detalle(request, subsistema_id):
         {
             "tema": tema,
             "subsistema": subsistema,
-            "page_obj": page_obj,  # Pasamos page_obj en lugar de la lista completa
+            "page_obj": page_obj,
         },
     )
 
@@ -71,6 +71,7 @@ def tendencia_detalle(request, subsistema_id):
 @login_required
 def crear_tendencia(request, subsistema_id):
     subsistema = get_object_or_404(Subsistema, id_subsistema=subsistema_id)
+    next_url = request.GET.get("next") or request.POST.get("next")
 
     if request.method == "POST":
         nombre = request.POST.get("nombre")
@@ -93,6 +94,12 @@ def crear_tendencia(request, subsistema_id):
             accion="CREADO",
         )
 
+        # Caché V10
+        cache.delete(f"foda_micmac_pestel_v10_{subsistema.id_subsistema}")
+
+        if next_url == "matriz":
+            return redirect("editar-matriz", subsistema_id=subsistema.id_subsistema)
+
         return redirect("tendencia-detalle", subsistema_id=subsistema.id_subsistema)
 
     return render(
@@ -100,6 +107,7 @@ def crear_tendencia(request, subsistema_id):
         "haapar_unla_app/crear-tendencia.html",
         {
             "subsistema": subsistema,
+            "next_url": next_url,
         },
     )
 
@@ -108,9 +116,9 @@ def crear_tendencia(request, subsistema_id):
 def editar_tendencia(request, pk):
     tendencia = get_object_or_404(TendenciaExterna, pk=pk, activo=True)
     subsistema = tendencia.subsistema
+    next_url = request.GET.get("next") or request.POST.get("next")
 
     if request.method == "POST":
-
         old_nombre = tendencia.nombre
         old_nombre_corto = tendencia.nombre_corto
 
@@ -124,10 +132,8 @@ def editar_tendencia(request, pk):
         tendencia.save()
 
         cambios = []
-
         if old_nombre != new_nombre:
             cambios.append(f"Nombre: '{old_nombre}' ➔ '{new_nombre}'")
-
         if old_nombre_corto != new_nombre_corto:
             cambios.append(f"Corto: '{old_nombre_corto}' ➔ '{new_nombre_corto}'")
 
@@ -144,6 +150,12 @@ def editar_tendencia(request, pk):
             detalles=texto_detalle,
         )
 
+        # Caché V10
+        cache.delete(f"foda_micmac_pestel_v10_{subsistema.id_subsistema}")
+
+        if next_url == "matriz":
+            return redirect("editar-matriz", subsistema_id=subsistema.id_subsistema)
+
         return redirect("tendencia-detalle", subsistema_id=subsistema.id_subsistema)
 
     return render(
@@ -152,6 +164,7 @@ def editar_tendencia(request, pk):
         {
             "tendencia": tendencia,
             "subsistema": subsistema,
+            "next_url": next_url,
         },
     )
 
@@ -160,8 +173,8 @@ def editar_tendencia(request, pk):
 @require_POST
 def eliminar_tendencia(request, pk):
     tendencia = get_object_or_404(TendenciaExterna, pk=pk, activo=True)
-
     subsistema_id = tendencia.subsistema.id_subsistema
+    next_url = request.GET.get("next") or request.POST.get("next")
 
     tendencia.activo = False
     tendencia.save()
@@ -171,6 +184,12 @@ def eliminar_tendencia(request, pk):
         usuario=request.user,
         accion="ELIMINADO",
     )
+
+    # Caché V10
+    cache.delete(f"foda_micmac_pestel_v10_{subsistema_id}")
+
+    if next_url == "matriz":
+        return redirect("editar-matriz", subsistema_id=subsistema_id)
 
     return redirect("tendencia-detalle", subsistema_id=subsistema_id)
 
@@ -234,6 +253,9 @@ def evaluar_tendencia(request, tendencia_id):
             "incertidumbre": int(incertidumbre),
         },
     )
+
+    # Caché V10
+    cache.delete(f"foda_micmac_pestel_v10_{tendencia.subsistema.id_subsistema}")
 
     messages.success(request, "Tu evaluación fue guardada correctamente.")
 
@@ -313,6 +335,9 @@ def eliminar_evaluacion_tendencia(request, tendencia_id):
     )
 
     evaluacion.delete()
+
+    # Caché V10
+    cache.delete(f"foda_micmac_pestel_v10_{tendencia.subsistema.id_subsistema}")
 
     messages.success(request, "Tu evaluación fue eliminada correctamente.")
 

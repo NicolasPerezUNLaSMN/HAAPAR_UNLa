@@ -38,3 +38,16 @@ class Subsistema(models.Model):
 
     def __str__(self):
         return self.nombre
+
+
+# --- NUEVO MODELO PARA PETER SCHWARTZ ---
+class EscenarioSchwartz(models.Model):
+    subsistema = models.ForeignKey(
+        Subsistema, on_delete=models.CASCADE, related_name="escenarios"
+    )
+    cuadrante = models.CharField(max_length=50)  # Ejemplo: "Estrella Ascendente"
+    nombre_marketinero = models.CharField(max_length=255)
+    descripcion = models.TextField()
+
+    def __str__(self):
+        return f"{self.cuadrante}: {self.nombre_marketinero}"

@@ -11,26 +11,33 @@
                 <i class="fa-solid fa-arrow-left"></i> Volver a los Gráficos
             </a>
             
-            <div class="mb-2">
-                <a href="{% url 'crear-variable' subsistema.id_subsistema %}?next=matriz" class="btn btn-success fw-bold me-2 shadow-sm">
+            <div class="mb-2 d-flex gap-2 flex-wrap">
+                <a href="{% url 'crear-variable' subsistema.id_subsistema %}?next=matriz" class="btn btn-success fw-bold shadow-sm">
                     <i class="fa-solid fa-plus"></i> Nueva Variable
+                </a>
+                <a href="{% url 'crear-tendencia' subsistema.id_subsistema %}?next=matriz" class="btn btn-primary fw-bold shadow-sm">
+                    <i class="fa-solid fa-plus"></i> Nueva Tendencia
                 </a>
                 
                 <a href="{% url 'historial-variables-subsistema' subsistema.id_subsistema %}?from=matriz" class="btn btn-outline-info text-dark fw-bold shadow-sm">
-                    <i class="fa-solid fa-clock-rotate-left"></i> Ver Historial de Cambios
+                    <i class="fa-solid fa-clock-rotate-left"></i> Historial Variables
+                </a>
+                <a href="{% url 'historial-tendencias' subsistema.id_subsistema %}?from=matriz" class="btn btn-outline-warning text-dark fw-bold shadow-sm">
+                    <i class="fa-solid fa-clock-rotate-left"></i> Historial Tendencias
                 </a>
             </div>
         </div>
         
         <h2 class="mb-4 text-center">Edición Manual de Datos</h2>
         <p class="text-center text-muted mb-4">
-            Ajustá la Importancia/Incertidumbre (1-10) y las Influencias (0-3) para recalcular los gráficos.
+            Ajustá la Importancia/Incertidumbre (1-10) y las Influencias para recalcular los gráficos en tiempo real.
         </p>
 
         <form method="POST" action="{% url 'editar-matriz' subsistema.id_subsistema %}">
             {% csrf_token %}
             
-            <div class="table-responsive shadow-sm rounded mb-4" style="background-color: white;">
+            <!-- TABLA 1: VARIABLES Y MATRIZ MIC-MAC -->
+            <div class="table-responsive shadow-sm rounded mb-5" style="background-color: white;">
                 <table class="table table-bordered table-hover align-middle mb-0" style="min-width: 1200px;">
                     <thead class="table-dark text-center">
                         <tr>
@@ -70,10 +77,10 @@
                             </td>
                             
                             <td>
-                                <input type="number" name="imp_{{ fila.origen.pk }}" class="form-control fw-bold text-primary" value="{{ fila.imp|floatformat:'0' }}" min="1" max="10" required>
+                                <input type="number" name="imp_{{ fila.origen.pk }}" class="form-control fw-bold text-primary text-center" value="{{ fila.imp|floatformat:'0' }}" min="1" max="10" required>
                             </td>
                             <td>
-                                <input type="number" name="inc_{{ fila.origen.pk }}" class="form-control fw-bold text-primary" value="{{ fila.inc|floatformat:'0' }}" min="1" max="10" required>
+                                <input type="number" name="inc_{{ fila.origen.pk }}" class="form-control fw-bold text-primary text-center" value="{{ fila.inc|floatformat:'0' }}" min="1" max="10" required>
                             </td>
                             
                             {% for celda in fila.celdas %}
@@ -81,7 +88,7 @@
                                     {% if celda.is_self %}
                                         <input type="text" class="form-control text-center bg-light text-muted" value="-" disabled>
                                     {% else %}
-                                        <input type="number" name="inf_{{ fila.origen.pk }}_{{ celda.destino_id }}" class="form-control fw-bold text-success" value="{{ celda.valor|floatformat:'0' }}" min="0" max="3" required>
+                                        <input type="number" name="inf_{{ fila.origen.pk }}_{{ celda.destino_id }}" class="form-control fw-bold text-success text-center" value="{{ celda.valor|floatformat:'0' }}" min="0" max="3" required>
                                     {% endif %}
                                 </td>
                             {% endfor %}
@@ -91,7 +98,58 @@
                 </table>
             </div>
 
-            <div class="text-center mb-5">
+            <!-- TABLA 2: TENDENCIAS (SOLO EVALUACIÓN, SIN INFLUENCIA CRUZADA) -->
+            <h3 class="mb-3 text-center fw-bold" style="color: #004d40;"><i class="fa-solid fa-chart-line"></i> Tendencias Externas</h3>
+            <div class="table-responsive shadow-sm rounded mb-4" style="background-color: white;">
+                <table class="table table-bordered table-hover align-middle mb-0" style="max-width: 800px; margin: 0 auto;">
+                    <thead class="table-dark text-center">
+                        <tr>
+                            <th rowspan="2" style="width: 400px; vertical-align: middle;">Tendencia</th>
+                            <th colspan="2" class="bg-primary">Evaluación (1-10)</th>
+                        </tr>
+                        <tr>
+                            <th class="bg-primary text-white" style="width: 100px;">Imp.</th>
+                            <th class="bg-primary text-white" style="width: 100px;">Inc.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for fila in filas_tendencias %}
+                        <tr>
+                            <td class="fw-bold" title="{{ fila.tendencia.nombre }}">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span>{{ fila.tendencia.nombre_corto }}</span>
+                                    <div class="text-nowrap ms-2">
+                                        <a href="{% url 'editar-tendencia' fila.tendencia.pk %}?next=matriz" class="btn btn-sm btn-outline-primary py-0 px-1" title="Editar Tendencia">
+                                            <i class="fa-solid fa-pen"></i>
+                                        </a>
+                                        
+                                        <button type="submit" 
+                                                formaction="{% url 'eliminar-tendencia' fila.tendencia.pk %}?next=matriz" 
+                                                class="btn btn-sm btn-outline-danger py-0 px-1" 
+                                                onclick="return confirm('¿Estás seguro de eliminar la tendencia {{ fila.tendencia.nombre_corto }}?');">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                            
+                            <td>
+                                <input type="number" name="tend_imp_{{ fila.tendencia.pk }}" class="form-control fw-bold text-primary text-center" value="{{ fila.imp|floatformat:'0' }}" min="1" max="10" required>
+                            </td>
+                            <td>
+                                <input type="number" name="tend_inc_{{ fila.tendencia.pk }}" class="form-control fw-bold text-primary text-center" value="{{ fila.inc|floatformat:'0' }}" min="1" max="10" required>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center text-muted py-4">No hay tendencias creadas en este subsistema.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="text-center mb-5 mt-4">
                 <button type="submit" class="btn btn-success btn-lg px-5 fw-bold shadow">
                     <i class="fa-solid fa-floppy-disk"></i> Guardar y Recalcular
                 </button>

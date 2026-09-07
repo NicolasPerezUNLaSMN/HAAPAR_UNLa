@@ -1,6 +1,6 @@
 # ruff: noqa
-from .actores import ActorClave, RelacionActor
-from .proyectos import Sistema, Subsistema, Tema
+from .actores import ActorClave, InfluenciaActor, RelacionActor
+from .proyectos import EscenarioSchwartz, Sistema, Subsistema, Tema
 from .tendencias import (
     EvaluacionTendencia,
     IndicadorTendencia,

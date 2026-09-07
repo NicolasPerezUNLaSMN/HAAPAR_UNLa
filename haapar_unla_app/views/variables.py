@@ -56,7 +56,7 @@ def crear_variable(request, subsistema_id):
     pestels = PESTEL.objects.all()
     tendencias = TendenciaExterna.objects.filter(subsistema=subsistema, activo=True)
 
-    next_view = request.GET.get("next", "")
+    next_view = request.GET.get("next") or request.POST.get("next")
 
     if request.method == "POST":
         variable = Variable.objects.create(
@@ -67,14 +67,12 @@ def crear_variable(request, subsistema_id):
             subsistema=subsistema,
         )
 
-        # PESTEL
         pestel_ids = request.POST.getlist("pestel")
         for p in pestel_ids:
             pestel_obj = PESTEL.objects.filter(tipo=p).first()
             if pestel_obj:
                 variable.pestels.add(pestel_obj)
 
-        # INDICADOR
         nombre_ind = request.POST.get("indicador_nombre")
         desc_ind = request.POST.get("indicador_desc")
         formula_ind = request.POST.get("indicador_formula")
@@ -86,8 +84,6 @@ def crear_variable(request, subsistema_id):
                 descripcion=desc_ind,
                 formula=formula_ind,
             )
-
-        # RELACIÓN CON TENDENCIAS
 
         tendencias_ids = request.POST.getlist("tendencias")
         for tid in tendencias_ids:
@@ -107,13 +103,13 @@ def crear_variable(request, subsistema_id):
             usuario=request.user,
             accion="AGREGADO",
         )
-        cache.delete(f"foda_micmac_pestel_v2_{subsistema_id}")
-        next_post = request.POST.get("next", "")
 
-        if next_post == "matriz":
+        # Caché V10
+        cache.delete(f"foda_micmac_pestel_v10_{subsistema_id}")
+
+        if next_view == "matriz":
             return redirect("editar-matriz", subsistema_id=subsistema_id)
-
-        elif next_post == "pestel" or next_view == "pestel":
+        elif next_view == "pestel":
             url = reverse("foda-graficos", kwargs={"subsistema_id": subsistema_id})
             return redirect(f"{url}#gestion-pestel")
 
@@ -135,7 +131,7 @@ def crear_variable(request, subsistema_id):
 def editar_variable(request, pk):
     variable = get_object_or_404(Variable, pk=pk, activo=True)
     subsistema_id = variable.subsistema.id_subsistema
-    next_view = request.GET.get("next", "")
+    next_view = request.GET.get("next") or request.POST.get("next")
 
     if request.method == "POST":
         old_nombre = variable.nombre
@@ -166,12 +162,12 @@ def editar_variable(request, pk):
             detalles=texto_detalle,
         )
 
-        cache.delete(f"foda_micmac_pestel_v2_{subsistema_id}")
+        # Caché V10
+        cache.delete(f"foda_micmac_pestel_v10_{subsistema_id}")
 
-        next_post = request.POST.get("next", "")
-        if next_post == "matriz":
+        if next_view == "matriz":
             return redirect("editar-matriz", subsistema_id=subsistema_id)
-        elif next_post == "pestel" or next_view == "pestel":
+        elif next_view == "pestel":
             url = reverse("foda-graficos", kwargs={"subsistema_id": subsistema_id})
             return redirect(f"{url}#gestion-pestel")
 
@@ -189,7 +185,7 @@ def editar_variable(request, pk):
 def eliminar_variable(request, pk):
     variable = get_object_or_404(Variable, pk=pk, activo=True)
     subsistema_id = variable.subsistema.id_subsistema
-    next_view = request.GET.get("next", "")
+    next_view = request.GET.get("next") or request.POST.get("next")
 
     variable.activo = False
     variable.save()
@@ -198,7 +194,8 @@ def eliminar_variable(request, pk):
         variable=variable, usuario=request.user, accion="ELIMINADO"
     )
 
-    cache.delete(f"foda_micmac_pestel_v2_{subsistema_id}")
+    # Caché V10
+    cache.delete(f"foda_micmac_pestel_v10_{subsistema_id}")
 
     if next_view == "matriz":
         return redirect("editar-matriz", subsistema_id=subsistema_id)
@@ -211,53 +208,25 @@ def eliminar_variable(request, pk):
 
 @login_required
 def variable_completa(request, variable_id):
-
     variable = get_object_or_404(Variable, pk=variable_id, activo=True)
-
-    # =========================
-    # INDICADORES
-    # =========================
-
     indicadores = IndicadorVariable.objects.filter(variable=variable)
-
-    # =========================
-    # TENDENCIAS
-    # =========================
-
     relaciones = VariableTendencia.objects.filter(variable=variable).select_related(
         "tendencia"
     )
-
     todas_tendencias = TendenciaExterna.objects.filter(
         subsistema=variable.subsistema, activo=True
     )
-
     tendencias_seleccionadas = list(
         VariableTendencia.objects.filter(variable=variable).values_list(
             "tendencia_id", flat=True
         )
     )
-
-    # =========================
-    # PESTEL
-    # =========================
-
     pestels = variable.pestels.all()
-
-    # =========================
-    # EVALUACIONES
-    # =========================
-    # Incluye:
-    # - IA -> usuario=None
-    # - Usuarios -> usuario=User
-
     evaluaciones = (
         EvaluacionVariable.objects.filter(variable=variable)
         .select_related("usuario")
         .order_by("-fecha")
     )
-
-    # Evaluación del usuario actualmente autenticado
     mi_evaluacion = evaluaciones.filter(usuario=request.user).first()
 
     return render(
@@ -270,7 +239,6 @@ def variable_completa(request, variable_id):
             "pestels": pestels,
             "todas_tendencias": todas_tendencias,
             "tendencias_seleccionadas": tendencias_seleccionadas,
-            # EVALUACIONES
             "evaluaciones": evaluaciones,
             "mi_evaluacion": mi_evaluacion,
         },
@@ -327,21 +295,17 @@ def historial_variables(request, subsistema_id):
     busqueda = request.GET.get("q", "").strip()
     accion = request.GET.get("accion", "").strip()
 
-    # 🔎 Búsqueda ignorando acentos
     if busqueda:
         historial = historial.annotate(
             variable_sin_acentos=Func("variable__nombre", function="unaccent")
         ).filter(variable_sin_acentos__icontains=busqueda)
 
-    # 🔽 Filtro por acción
     if accion:
         historial = historial.filter(accion=accion)
 
     historial = historial.order_by("-fecha")
 
-    # 📄 Paginación
     paginator = Paginator(historial, 15)
-
     page_number = request.GET.get("page")
     page_obj = paginator.get_page(page_number)
 
@@ -365,36 +329,28 @@ def editar_tendencias_variable(request, pk):
     if request.method == "POST":
 
         ids_seleccionados = set(map(int, request.POST.getlist("tendencias")))
-
         relaciones_actuales = VariableTendencia.objects.filter(variable=variable)
-
         ids_actuales = set(relaciones_actuales.values_list("tendencia_id", flat=True))
 
-        # eliminar quitadas
         VariableTendencia.objects.filter(
             variable=variable, tendencia_id__in=(ids_actuales - ids_seleccionados)
         ).delete()
 
-        # agregar nuevas
         nuevas = ids_seleccionados - ids_actuales
 
         for tendencia_id in nuevas:
             tendencia = TendenciaExterna.objects.get(pk=tendencia_id)
-
             impacto = calcular_impacto_variable_tendencia(variable, tendencia)
-
             VariableTendencia.objects.create(
                 variable=variable, tendencia=tendencia, impacto=impacto
             )
 
         messages.success(request, "Tendencias actualizadas correctamente.")
-
         return redirect("variable_completa", variable_id=variable.id_variable)
 
     tendencias = TendenciaExterna.objects.filter(
         subsistema=variable.subsistema, activo=True
     )
-
     tendencias_actuales = VariableTendencia.objects.filter(
         variable=variable
     ).values_list("tendencia_id", flat=True)
@@ -417,6 +373,9 @@ def eliminar_evaluacion(request, variable_id):
     variable = get_object_or_404(Variable, pk=variable_id, activo=True)
 
     EvaluacionVariable.objects.filter(variable=variable, usuario=request.user).delete()
+
+    # Caché V10
+    cache.delete(f"foda_micmac_pestel_v10_{variable.subsistema.id_subsistema}")
 
     messages.success(request, "Tu evaluación fue eliminada correctamente.")
 
@@ -450,6 +409,9 @@ def evaluar_variable(request, variable_id):
             "incertidumbre": incertidumbre,
         },
     )
+
+    # Caché V10
+    cache.delete(f"foda_micmac_pestel_v10_{variable.subsistema.id_subsistema}")
 
     return redirect("variable_completa", variable_id=variable.id_variable)
 
