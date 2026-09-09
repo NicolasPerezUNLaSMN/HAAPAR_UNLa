@@ -1,6 +1,8 @@
 {% extends 'haapar_unla_app/base.html' %}
 
-{% block title %}Actores del Subsistema - HAAPAR{% endblock %}
+{% block title %}
+Actores del Subsistema - HAAPAR
+{% endblock %}
 
 {% block content %}
 
@@ -14,7 +16,7 @@
     <div class="container position-relative">
 
       <a href="{% url 'proyecto-detalle' tema.id_tema subsistema.id_subsistema %}"
-        class="btn-back position-absolute top-0 start-0 mt-3 ms-3"
+        class="btn-back"
         title="Volver al subsistema">
 
         <i class="fa-solid fa-arrow-left"></i>
@@ -22,11 +24,13 @@
       </a>
 
       <h1 class="text-center heading-section">
-        ACTORES DEL SUBSISTEMA
+        Actores del Subsistema
       </h1>
 
-      <p class="text-center fw-bold mb-0">
-        Subsistema: {{ subsistema.nombre }}
+      <p class="text-center mb-0">
+        {{ tema.nombre }}
+        <span class="mx-2">·</span>
+        <strong>{{ subsistema.nombre }}</strong>
       </p>
 
     </div>
@@ -35,216 +39,247 @@
 
 
   <!-- ============================= -->
-  <!-- BOTONERA PRINCIPAL -->
+  <!-- BOTONERA -->
   <!-- ============================= -->
-  <div class="container mt-4 mb-4">
+  <section class="py-4">
 
-    <div class="d-flex justify-content-center">
+    <div class="container">
 
-      <a href="{% url 'crear-actor' subsistema.id_subsistema %}"
-        class="btn btn-primary">
-
-        <i class="fa-solid fa-plus me-2"></i>
-        Agregar Actor
-
-      </a>
-
-    </div>
-
-  </div>
-
-
-  <!-- ============================= -->
-  <!-- LISTADO DE ACTORES -->
-  <!-- ============================= -->
-  <div class="container mt-4">
-
-    {% for actor in page_obj %}
-
-      <div class="card mb-4 proyecto-base">
-
-        <!-- ============================= -->
-        <!-- CABECERA DEL ACTOR -->
-        <!-- ============================= -->
-        <div class="card-header d-flex justify-content-between align-items-center">
-
-          <div class="d-flex align-items-center">
-
-            <span class="fw-bold me-2">
-              {{ forloop.counter|add:page_obj.start_index|add:"-1" }}.
-            </span>
-
-            <span class="fw-bold text-primary titulo-actor">
-              {{ actor.nombre }}
-            </span>
-
-          </div>
-
-
-          <!-- ============================= -->
-          <!-- ACCIONES -->
-          <!-- ============================= -->
-          <div class="text-nowrap">
-
-            <a href="{% url 'editar-actor' actor.id_actor_clave %}"
-              class="btn btn-sm btn-outline-primary"
-              title="Editar actor">
-
-              <i class="fa-solid fa-pen"></i>
-
-            </a>
-
-
-            <form action="{% url 'eliminar-actor' actor.id_actor_clave %}"
-                  method="POST"
-                  class="d-inline">
-
-              {% csrf_token %}
-
-              <button type="submit"
-                      class="btn btn-sm btn-outline-danger ms-1"
-                      title="Eliminar actor"
-                      onclick="return confirm('¿Estás seguro de eliminar este actor?');">
-
-                <i class="fa-solid fa-trash"></i>
-
-              </button>
-
-            </form>
-
-          </div>
-
-        </div>
-
-
-        <!-- ============================= -->
-        <!-- INFORMACIÓN DEL ACTOR -->
-        <!-- ============================= -->
-        <div class="card-body">
-
-          <p class="text-muted mb-2">
-
-            <strong>
-              Puesto:
-            </strong>
-
-            {% if actor.puesto %}
-              {{ actor.puesto }}
-            {% else %}
-              No especificado
-            {% endif %}
-
-          </p>
-
-
-          <p class="mb-0">
-
-            <strong>
-              Descripción:
-            </strong>
-
-            {% if actor.descripcion %}
-              {{ actor.descripcion }}
-            {% else %}
-              No especificada
-            {% endif %}
-
-          </p>
-
-        </div>
-
-      </div>
-
-
-    {% empty %}
-
-      <!-- ============================= -->
-      <!-- SIN ACTORES -->
-      <!-- ============================= -->
-      <div class="alert alert-info text-center">
-
-        <i class="fa-solid fa-circle-info me-2"></i>
-
-        No hay actores definidos para este subsistema.
-
-        <br>
+      <div class="d-flex justify-content-center gap-3 flex-wrap text-center">
 
         <a href="{% url 'crear-actor' subsistema.id_subsistema %}"
-          class="alert-link">
+          class="btn btn-success">
 
-          Agregar primer actor
+          <i class="fa-solid fa-plus me-2"></i>
+
+          Agregar Actor
 
         </a>
 
       </div>
 
-    {% endfor %}
+    </div>
+
+  </section>
 
 
-    <!-- ============================= -->
-    <!-- PAGINACIÓN -->
-    <!-- ============================= -->
-    {% if page_obj.paginator.num_pages > 1 %}
+  <!-- ============================= -->
+  <!-- LISTADO DE ACTORES -->
+  <!-- ============================= -->
+  <section class="pb-5">
 
-      <div class="pagination-container d-flex justify-content-center mt-4 mb-5">
+    <div class="container">
 
-        <span class="step-links">
+      {% for actor in page_obj %}
 
-          {% if page_obj.has_previous %}
+        <!-- ============================= -->
+        <!-- TARJETA DE ACTOR -->
+        <!-- ============================= -->
+        <div class="card bg-light border border-success shadow-sm rounded-3 mb-4">
 
-            <a href="?page=1"
-              class="btn btn-sm btn-outline-secondary">
+          <!-- CABECERA -->
+          <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
 
-              &laquo; Primera
+            <div class="d-flex align-items-center">
+
+              <span class="fw-bold text-success me-2">
+                {{ forloop.counter0|add:page_obj.start_index }}.
+              </span>
+
+
+              <span class="fw-bold text-success">
+                {{ actor.nombre }}
+              </span>
+
+            </div>
+
+
+            <!-- ACCIONES -->
+            <div class="text-nowrap">
+
+              <a href="{% url 'editar-actor' actor.id_actor_clave %}"
+                class="btn btn-sm btn-outline-primary"
+                title="Editar actor">
+
+                <i class="fa-solid fa-pen"></i>
+
+              </a>
+
+
+              <form action="{% url 'eliminar-actor' actor.id_actor_clave %}"
+                method="POST"
+                class="d-inline">
+
+                {% csrf_token %}
+
+                <button type="submit"
+                  class="btn btn-sm btn-outline-danger ms-1"
+                  title="Eliminar actor"
+                  onclick="return confirm('¿Estás seguro de eliminar este actor?');">
+
+                  <i class="fa-solid fa-trash"></i>
+
+                </button>
+
+              </form>
+
+            </div>
+
+          </div>
+
+
+          <!-- INFORMACIÓN -->
+          <div class="card-body p-4">
+
+            <p class="text-muted mb-2">
+
+              <strong class="text-dark">
+                Puesto:
+              </strong>
+
+              {% if actor.puesto %}
+                {{ actor.puesto }}
+              {% else %}
+                No especificado
+              {% endif %}
+
+            </p>
+
+
+            <p class="mb-0 text-muted">
+
+              <strong class="text-dark">
+                Descripción:
+              </strong>
+
+              {% if actor.descripcion %}
+                {{ actor.descripcion }}
+              {% else %}
+                No especificada
+              {% endif %}
+
+            </p>
+
+          </div>
+
+        </div>
+
+
+      {% empty %}
+
+
+        <!-- ============================= -->
+        <!-- SIN ACTORES -->
+        <!-- ============================= -->
+        <div class="card bg-light border border-success shadow-sm rounded-3">
+
+          <div class="card-body text-center p-5">
+
+            <div class="mb-3">
+
+              <i class="fa-solid fa-people-roof fa-2x text-success"></i>
+
+            </div>
+
+
+            <h5 class="fw-bold text-dark">
+              No hay actores definidos
+            </h5>
+
+
+            <p class="text-muted mb-3">
+              Este subsistema todavía no tiene actores registrados.
+            </p>
+
+
+            <a href="{% url 'crear-actor' subsistema.id_subsistema %}"
+              class="btn btn-success">
+
+              <i class="fa-solid fa-plus me-2"></i>
+
+              Agregar primer actor
 
             </a>
 
+          </div>
 
-            <a href="?page={{ page_obj.previous_page_number }}"
-               class="btn btn-sm btn-outline-primary">
-
-              Anterior
-
-            </a>
-
-          {% endif %}
+        </div>
 
 
-          <span class="current fw-bold mx-3">
-
-            Página {{ page_obj.number }}
-            de
-            {{ page_obj.paginator.num_pages }}
-
-          </span>
+      {% endfor %}
 
 
-          {% if page_obj.has_next %}
+      <!-- ============================= -->
+      <!-- PAGINACIÓN -->
+      <!-- ============================= -->
+      {% if page_obj.paginator.num_pages > 1 %}
 
-            <a href="?page={{ page_obj.next_page_number }}"
-              class="btn btn-sm btn-outline-primary">
+        <div class="d-flex justify-content-center mt-4 mb-5">
 
-              Siguiente
+          <nav aria-label="Paginación de actores">
 
-            </a>
+            <div class="d-flex align-items-center gap-2 flex-wrap justify-content-center">
 
 
-            <a href="?page={{ page_obj.paginator.num_pages }}"
-              class="btn btn-sm btn-outline-secondary">
+              {% if page_obj.has_previous %}
 
-              Última &raquo;
+                <a href="?page=1"
+                  class="btn btn-sm btn-outline-secondary">
 
-            </a>
+                  &laquo; Primera
 
-          {% endif %}
+                </a>
 
-        </span>
 
-      </div>
+                <a href="?page={{ page_obj.previous_page_number }}"
+                  class="btn btn-sm btn-outline-success">
 
-    {% endif %}
+                  Anterior
 
-  </div>
+                </a>
+
+              {% endif %}
+
+
+              <span class="fw-bold text-muted mx-2">
+
+                Página {{ page_obj.number }}
+                de {{ page_obj.paginator.num_pages }}
+
+              </span>
+
+
+              {% if page_obj.has_next %}
+
+                <a href="?page={{ page_obj.next_page_number }}"
+                  class="btn btn-sm btn-outline-success">
+
+                  Siguiente
+
+                </a>
+
+
+                <a href="?page={{ page_obj.paginator.num_pages }}"
+                  class="btn btn-sm btn-outline-secondary">
+
+                  Última &raquo;
+
+                </a>
+
+              {% endif %}
+
+
+            </div>
+
+          </nav>
+
+        </div>
+
+      {% endif %}
+
+    </div>
+
+  </section>
 
 </main>
 

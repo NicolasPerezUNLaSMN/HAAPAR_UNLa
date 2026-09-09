@@ -3,53 +3,139 @@
 {% block title %}Crear Variable - HAAPAR{% endblock %}
 
 {% block content %}
+
 <main class="main">
+
+  <!-- Encabezado -->
   <div class="page-title dark-background">
     <div class="container position-relative">
-      <h1 class="text-center heading-section">Crear nueva variable</h1>
-      <p class="text-center text-muted">{{ subsistema.nombre }}</p>
+
+      <a
+        href="{% url 'variable-detalle' subsistema.id_subsistema %}"
+        class="btn-back"
+        title="Volver a las variables">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
+
+      <h1 class="text-center heading-section mb-2">
+        Crear Nueva Variable
+      </h1>
+
+      <p class="text-center mb-0">
+        {{ subsistema.nombre }}
+      </p>
+
     </div>
   </div>
 
-  <section>
-    <form method="POST" class="styled-form">
-      {% csrf_token %}
-      
-      <input type="hidden" name="next" value="{{ next }}">
-      
-      <div class="mb-3">
-        <label for="nombre" class="form-label">Nombre</label>
-        <input type="text" class="form-control" id="nombre" name="nombre" required>
+  <!-- Formulario -->
+  <section class="py-4">
+    <div class="container">
+
+      <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+
+          <div class="card bg-light border border-success shadow-sm rounded-3">
+            <div class="card-body p-4">
+
+              <form method="POST">
+
+                {% csrf_token %}
+
+                <input type="hidden" name="next" value="{{ next }}">
+
+                <div class="mb-3">
+                  <label for="nombre" class="form-label">
+                    Nombre
+                  </label>
+
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="nombre"
+                    name="nombre"
+                    required>
+                </div>
+
+                <div class="mb-3">
+                  <label for="nombre_corto" class="form-label">
+                    Nombre Corto
+                  </label>
+
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="nombre_corto"
+                    name="nombre_corto"
+                    required>
+                </div>
+
+                <div class="mb-3">
+                  <label for="descripcion" class="form-label">
+                    Descripción
+                  </label>
+
+                  <textarea
+                    class="form-control"
+                    id="descripcion"
+                    name="descripcion"
+                    rows="4"
+                    required></textarea>
+                </div>
+
+                <div class="mb-4">
+                  <label for="tipo" class="form-label">
+                    Tipo
+                  </label>
+
+                  <select
+                    class="form-select"
+                    id="tipo"
+                    name="tipo"
+                    required>
+                    <option value="I">Interna</option>
+                    <option value="E">Externa</option>
+                  </select>
+                </div>
+
+                <div class="d-flex justify-content-center gap-2 flex-wrap">
+
+                  {% if next == 'matriz' %}
+                    <a
+                      href="{% url 'editar-matriz' subsistema.id_subsistema %}"
+                      class="btn btn-outline-secondary">
+                      <i class="fa-solid fa-xmark me-1"></i>
+                      Cancelar
+                    </a>
+                  {% else %}
+                    <a
+                      href="{% url 'variable-detalle' subsistema.id_subsistema %}"
+                      class="btn btn-outline-secondary">
+                      <i class="fa-solid fa-xmark me-1"></i>
+                      Cancelar
+                    </a>
+                  {% endif %}
+
+                  <button
+                    type="submit"
+                    class="btn btn-success">
+                    <i class="fa-solid fa-floppy-disk me-1"></i>
+                    Guardar
+                  </button>
+
+                </div>
+
+              </form>
+
+            </div>
+          </div>
+
+        </div>
       </div>
 
-      <div class="mb-3">
-        <label for="nombre_corto" class="form-label">Nombre Corto</label>
-        <input type="text" class="form-control" id="nombre_corto" name="nombre_corto" required>
-      </div>
-
-      <div class="mb-3">
-        <label for="descripcion" class="form-label">Descripción</label>
-        <textarea class="form-control" id="descripcion" name="descripcion" rows="4" required></textarea>
-      </div>
-
-      <div class="mb-3">
-        <label for="tipo" class="form-label">Tipo</label>
-        <select class="form-select" id="tipo" name="tipo" required>
-          <option value="I">Interna</option>
-          <option value="E">Externa</option>
-        </select>
-      </div>
-
-      <div class="d-flex justify-content-center">
-        <button type="submit" class="btn btn-primary me-2">Guardar</button>
-        
-        {% if next == 'matriz' %}
-            <a href="{% url 'editar-matriz' subsistema.id_subsistema %}" class="btn btn-secondary">Cancelar</a>
-        {% else %}
-            <a href="{% url 'variable-detalle' subsistema.id_subsistema %}" class="btn btn-secondary">Cancelar</a>
-        {% endif %}
-      </div>
-    </form>
+    </div>
   </section>
+
 </main>
+
 {% endblock %}

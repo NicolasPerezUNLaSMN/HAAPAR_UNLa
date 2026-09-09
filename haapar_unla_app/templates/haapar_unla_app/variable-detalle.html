@@ -1,52 +1,60 @@
 {% extends 'haapar_unla_app/base.html' %}
 
-{% block title %}Variables del Subsistema - HAAPAR{% endblock %}
+{% block title %}
+Variables del Subsistema - HAAPAR
+{% endblock %}
 
 {% block content %}
 
-  <main class="main">
+<main class="main">
 
-    <!-- Encabezado -->
-    <div class="page-title dark-background">
+  <!-- ============================= -->
+  <!-- ENCABEZADO -->
+  <!-- ============================= -->
+  <div class="page-title dark-background">
 
-      <div class="container position-relative">
+    <div class="container position-relative">
 
-        <a href="{% url 'proyecto-detalle' tema.id_tema subsistema.id_subsistema %}"
-          class="btn-back position-absolute top-0 start-0 mt-3 ms-3">
-          <i class="fa-solid fa-arrow-left"></i>
-        </a>
+      <a href="{% url 'proyecto-detalle' tema.id_tema subsistema.id_subsistema %}"
+        class="btn-back"
+        title="Volver al subsistema">
 
+        <i class="fa-solid fa-arrow-left"></i>
 
-        <h1 class="text-center heading-section">
-          VARIABLES DEL SUBSISTEMA
-        </h1>
+      </a>
 
+      <h1 class="text-center heading-section">
+        Variables del Subsistema
+      </h1>
 
-        <p class="text-center fw-bold mb-0">
-          Subsistema: {{ subsistema.nombre }}
-        </p>
-
-      </div>
+      <p class="text-center mb-0">
+        {{ tema.nombre }}
+        <span class="mx-2">·</span>
+        <strong>{{ subsistema.nombre }}</strong>
+      </p>
 
     </div>
 
+  </div>
 
 
-    <!-- Botonera principal -->
-    <div class="container mt-4 mb-4">
+  <!-- ============================= -->
+  <!-- BOTONERA -->
+  <!-- ============================= -->
+  <section class="py-4">
+
+    <div class="container">
 
       <div class="d-flex justify-content-center gap-3 flex-wrap">
 
-
         <a href="{% url 'crear-variable' subsistema.id_subsistema %}"
-          class="btn btn-primary">
+          class="btn btn-success">
 
           <i class="fa-solid fa-plus me-2"></i>
 
           Agregar Variable
 
         </a>
-
 
 
         <a href="{% url 'historial-variables-subsistema' subsistema.id_subsistema %}"
@@ -58,262 +66,237 @@
 
         </a>
 
-
       </div>
 
     </div>
 
+  </section>
 
 
+  <!-- ============================= -->
+  <!-- LISTADO DE VARIABLES -->
+  <!-- ============================= -->
+  <section class="pb-5">
 
-    <!-- Listado de variables -->
-    <div class="container mt-4">
-
+    <div class="container">
 
       {% for variable in page_obj %}
 
+        <!-- ============================= -->
+        <!-- TARJETA DE VARIABLE -->
+        <!-- ============================= -->
+        <div class="card bg-light border border-success shadow-sm rounded-3 mb-4">
 
-      <div class="card mb-4 proyecto-base">
+          <!-- CABECERA -->
+          <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
 
+            <div class="d-flex align-items-center">
 
-        <!-- Cabecera tarjeta -->
-        <div class="card-header d-flex justify-content-between align-items-center">
-
-
-          <div class="d-flex align-items-center">
-
-
-            <span class="fw-bold me-2">
-              {{ forloop.counter0|add:page_obj.start_index }}.
-            </span>
-
+              <span class="fw-bold text-success me-2">
+                {{ forloop.counter0|add:page_obj.start_index }}.
+              </span>
 
 
-            <a href="{% url 'variable_completa' variable.id_variable %}"
-              class="fw-bold text-primary titulo-variable">
+              <a href="{% url 'variable_completa' variable.id_variable %}"
+                class="fw-bold text-success text-decoration-none">
 
-              {{ variable.nombre }}
+                {{ variable.nombre }}
 
-            </a>
+              </a>
 
-
-          </div>
-
+            </div>
 
 
-          <div class="text-nowrap">
+            <!-- ACCIONES -->
+            <div class="text-nowrap">
+
+              <a href="{% url 'editar-variable' variable.id_variable %}"
+                class="btn btn-sm btn-outline-primary"
+                title="Editar variable">
+
+                <i class="fa-solid fa-pen"></i>
+
+              </a>
 
 
-            <a href="{% url 'editar-variable' variable.id_variable %}"
-              class="btn btn-sm btn-outline-primary"
-              title="Editar variable">
+              <form action="{% url 'eliminar-variable' variable.id_variable %}"
+                method="POST"
+                class="d-inline">
 
-              <i class="fa-solid fa-pen"></i>
+                {% csrf_token %}
 
-            </a>
+                <button type="submit"
+                  class="btn btn-sm btn-outline-danger ms-1"
+                  title="Eliminar variable"
+                  onclick="return confirm('¿Estás seguro de eliminar esta variable?')">
 
+                  <i class="fa-solid fa-trash"></i>
 
+                </button>
 
+              </form>
 
-            <form action="{% url 'eliminar-variable' variable.id_variable %}"
-                  method="POST"
-                  class="d-inline">
-
-              {% csrf_token %}
-
-
-              <button type="submit"
-                      class="btn btn-sm btn-outline-danger ms-1"
-                      title="Eliminar variable"
-                      onclick="return confirm('¿Estás seguro de eliminar esta variable?')">
-
-                <i class="fa-solid fa-trash"></i>
-
-              </button>
-
-
-            </form>
-
+            </div>
 
           </div>
 
 
-        </div>
+          <!-- INFORMACIÓN -->
+          <div class="card-body p-4">
+
+            <p class="text-muted mb-2">
+
+              <strong class="text-dark">
+                Nombre corto:
+              </strong>
+
+              {{ variable.nombre_corto }}
+
+            </p>
 
 
+            <p class="text-muted mb-2">
+
+              <strong class="text-dark">
+                Tipo:
+              </strong>
+
+              {{ variable.get_tipo_display }}
+
+            </p>
 
 
+            <p class="mb-0 text-muted">
 
-        <!-- Información -->
-        <div class="card-body">
+              <strong class="text-dark">
+                Descripción:
+              </strong>
 
+              {{ variable.descripcion }}
 
-          <p class="text-muted mb-2">
+            </p>
 
-            <strong>
-              Nombre corto:
-            </strong>
-
-            {{ variable.nombre_corto }}
-
-          </p>
-
-
-
-
-          <p class="text-muted mb-2">
-
-            <strong>
-              Tipo:
-            </strong>
-
-            {{ variable.get_tipo_display }}
-
-          </p>
-
-
-
-
-          <p class="mb-0">
-
-            <strong>
-              Descripción:
-            </strong>
-
-            {{ variable.descripcion }}
-
-          </p>
-
-
+          </div>
 
         </div>
-
-
-      </div>
-
 
 
       {% empty %}
 
 
+        <!-- ============================= -->
+        <!-- SIN VARIABLES -->
+        <!-- ============================= -->
+        <div class="card bg-light border border-success shadow-sm rounded-3">
 
-      <div class="alert alert-info text-center">
+          <div class="card-body text-center p-5">
 
-        No hay variables definidas para este subsistema.
+            <div class="mb-3">
 
-        <br>
+              <i class="fa-solid fa-chart-line fa-2x text-success"></i>
 
-        <a href="{% url 'crear-variable' subsistema.id_subsistema %}"
-          class="alert-link">
-
-          Agregar primera variable
-
-        </a>
+            </div>
 
 
-      </div>
+            <h5 class="fw-bold text-dark">
+              No hay variables definidas
+            </h5>
 
+
+            <p class="text-muted mb-3">
+              Este subsistema todavía no tiene variables registradas.
+            </p>
+
+
+            <a href="{% url 'crear-variable' subsistema.id_subsistema %}"
+              class="btn btn-success">
+
+              <i class="fa-solid fa-plus me-2"></i>
+
+              Agregar primera variable
+
+            </a>
+
+          </div>
+
+        </div>
 
 
       {% endfor %}
 
 
-
-
-
-
-      <!-- Paginación -->
+      <!-- ============================= -->
+      <!-- PAGINACIÓN -->
+      <!-- ============================= -->
       {% if page_obj.paginator.num_pages > 1 %}
 
+        <div class="d-flex justify-content-center mt-4 mb-5">
 
-      <div class="pagination-container d-flex justify-content-center mt-4 mb-5">
+          <nav aria-label="Paginación de variables">
 
-
-        <span class="step-links">
-
-
-
-          {% if page_obj.has_previous %}
+            <div class="d-flex align-items-center gap-2 flex-wrap justify-content-center">
 
 
-          <a href="?page=1"
-            class="btn btn-sm btn-outline-secondary">
+              {% if page_obj.has_previous %}
 
-            &laquo; Primera
+                <a href="?page=1"
+                  class="btn btn-sm btn-outline-secondary">
 
-          </a>
+                  &laquo; Primera
 
-
-
-          <a href="?page={{ page_obj.previous_page_number }}"
-            class="btn btn-sm btn-outline-primary">
-
-            Anterior
-
-          </a>
+                </a>
 
 
-          {% endif %}
+                <a href="?page={{ page_obj.previous_page_number }}"
+                  class="btn btn-sm btn-outline-success">
+
+                  Anterior
+
+                </a>
+
+              {% endif %}
 
 
+              <span class="fw-bold text-muted mx-2">
+
+                Página {{ page_obj.number }}
+                de {{ page_obj.paginator.num_pages }}
+
+              </span>
 
 
+              {% if page_obj.has_next %}
+
+                <a href="?page={{ page_obj.next_page_number }}"
+                  class="btn btn-sm btn-outline-success">
+
+                  Siguiente
+
+                </a>
 
 
-          <span class="current fw-bold mx-3">
+                <a href="?page={{ page_obj.paginator.num_pages }}"
+                  class="btn btn-sm btn-outline-secondary">
 
-            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                  Última &raquo;
 
-          </span>
+                </a>
 
-
-
-
-
-
-          {% if page_obj.has_next %}
+              {% endif %}
 
 
+            </div>
 
-          <a href="?page={{ page_obj.next_page_number }}"
-            class="btn btn-sm btn-outline-primary">
+          </nav>
 
-            Siguiente
-
-          </a>
-
-
-
-
-
-          <a href="?page={{ page_obj.paginator.num_pages }}"
-            class="btn btn-sm btn-outline-secondary">
-
-            Última &raquo;
-
-          </a>
-
-
-
-          {% endif %}
-
-
-
-        </span>
-
-
-      </div>
-
-
+        </div>
 
       {% endif %}
 
-
-
     </div>
 
+  </section>
 
-  </main>
-
+</main>
 
 {% endblock %}

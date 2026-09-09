@@ -1,75 +1,155 @@
-{% extends 'haapar_unla_app/base.html' %} 
-{% block title %} Editar Tendencia - HAAPAR {% endblock %} 
+{% extends 'haapar_unla_app/base.html' %}
+
+{% block title %}Editar Tendencia - HAAPAR{% endblock %}
+
 {% block content %}
 
 <main class="main">
+
+  <!-- Encabezado -->
   <div class="page-title dark-background">
     <div class="container position-relative">
-      <h1 class="text-center heading-section">Editar Tendencia</h1>
-      <p class="text-center text-muted">{{ tendencia.subsistema.nombre }}</p>
+
+      <a
+        href="{% url 'tendencia-detalle' subsistema.id_subsistema %}"
+        class="btn-back"
+        title="Volver a las tendencias">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
+
+      <h1 class="text-center heading-section mb-2">
+        Editar Tendencia
+      </h1>
+
+      <p class="text-center mb-0">
+        {{ tendencia.subsistema.nombre }}
+      </p>
+
     </div>
   </div>
 
-  <div class="container mt-4 mb-5">
-    <div class="row justify-content-center">
-      <div class="col-md-8">
-        <div class="card shadow-sm">
-          <div class="card-body p-4">
+  <!-- Formulario -->
+  <section class="py-4">
+    <div class="container">
 
-            <form method="post" class="styled-form">
-              {% csrf_token %}
-              
-              <!-- Pasamos el flag por si viene de matriz -->
-              <input type="hidden" name="next" value="{{ next_url }}">
+      <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
 
-              <div class="mb-3">
-                <label for="nombre" class="form-label fw-bold">Nombre de la Tendencia</label>
-                <input type="text" class="form-control" id="nombre" name="nombre" 
-                        value="{{ tendencia.nombre }}" required>
-              </div>
-              
-              <div class="mb-3">
-                <label for="nombre_corto" class="form-label fw-bold">Nombre Corto</label>
-                <input type="text" class="form-control" id="nombre_corto" name="nombre_corto" 
-                        value="{{ tendencia.nombre_corto }}" required>
-              </div>
+          <div class="card bg-light border border-success shadow-sm rounded-3">
+            <div class="card-body p-4">
 
-              <div class="mb-3">
-                <label for="tipo_dato" class="form-label fw-bold">Tipo de Dato</label>
-                <select class="form-select" id="tipo_dato" name="tipo_dato" required>
-                  <option value="Cuantitativa" {% if tendencia.tipo_dato == 'Cuantitativa' %}selected{% endif %}>Cuantitativa</option>
-                  <option value="Cualitativa" {% if tendencia.tipo_dato == 'Cualitativa' %}selected{% endif %}>Cualitativa</option>
-                </select>
-              </div>
+              <form method="post">
 
-              <div class="mb-3">
-                <label for="descripcion" class="form-label fw-bold">Descripción</label>
-                <textarea class="form-control" id="descripcion" name="descripcion" 
-                          rows="4" required>{{ tendencia.descripcion }}</textarea>
-              </div>
-              
-              <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
-                {% if next_url == 'matriz' %}
-                    <a href="{% url 'editar-matriz' subsistema.id_subsistema %}" class="btn btn-outline-secondary me-md-2">
-                        <i class="fa-solid fa-xmark"></i> Cancelar
+                {% csrf_token %}
+
+                <!-- Pasamos el flag por si viene de matriz -->
+                <input type="hidden" name="next" value="{{ next_url }}">
+
+                <div class="mb-3">
+                  <label for="nombre" class="form-label">
+                    Nombre de la Tendencia
+                  </label>
+
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="nombre"
+                    name="nombre"
+                    value="{{ tendencia.nombre }}"
+                    required>
+                </div>
+
+                <div class="mb-3">
+                  <label for="nombre_corto" class="form-label">
+                    Nombre Corto
+                  </label>
+
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="nombre_corto"
+                    name="nombre_corto"
+                    value="{{ tendencia.nombre_corto }}"
+                    required>
+                </div>
+
+                <div class="mb-3">
+                  <label for="tipo_dato" class="form-label">
+                    Tipo de Dato
+                  </label>
+
+                  <select
+                    class="form-select"
+                    id="tipo_dato"
+                    name="tipo_dato"
+                    required>
+
+                    <option
+                      value="Cuantitativa"
+                      {% if tendencia.tipo_dato == 'Cuantitativa' %}selected{% endif %}>
+                      Cuantitativa
+                    </option>
+
+                    <option
+                      value="Cualitativa"
+                      {% if tendencia.tipo_dato == 'Cualitativa' %}selected{% endif %}>
+                      Cualitativa
+                    </option>
+
+                  </select>
+                </div>
+
+                <div class="mb-4">
+                  <label for="descripcion" class="form-label">
+                    Descripción
+                  </label>
+
+                  <textarea
+                    class="form-control"
+                    id="descripcion"
+                    name="descripcion"
+                    rows="4"
+                    required>{{ tendencia.descripcion }}</textarea>
+                </div>
+
+                <div class="d-flex justify-content-center gap-2 flex-wrap">
+
+                  {% if next_url == 'matriz' %}
+                    <a
+                      href="{% url 'editar-matriz' subsistema.id_subsistema %}"
+                      class="btn btn-outline-secondary">
+                      <i class="fa-solid fa-xmark me-1"></i>
+                      Cancelar
                     </a>
-                {% else %}
-                    <a href="{% url 'tendencia-detalle' subsistema.id_subsistema %}" class="btn btn-outline-secondary me-md-2">
-                        <i class="fa-solid fa-xmark"></i> Cancelar
+                  {% else %}
+                    <a
+                      href="{% url 'tendencia-detalle' subsistema.id_subsistema %}"
+                      class="btn btn-outline-secondary">
+                      <i class="fa-solid fa-xmark me-1"></i>
+                      Cancelar
                     </a>
-                {% endif %}
-                
-                <button type="submit" class="btn btn-success px-4">
-                    <i class="fa-solid fa-check"></i> Guardar Cambios
-                </button>
-              </div>
-            </form>
+                  {% endif %}
 
+                  <button
+                    type="submit"
+                    class="btn btn-success">
+                    <i class="fa-solid fa-floppy-disk me-1"></i>
+                    Guardar Cambios
+                  </button>
+
+                </div>
+
+              </form>
+
+            </div>
           </div>
+
         </div>
       </div>
+
     </div>
-  </div>
+  </section>
+
 </main>
 
 {% endblock %}

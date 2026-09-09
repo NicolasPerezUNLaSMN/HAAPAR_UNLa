@@ -1,413 +1,611 @@
 {% extends 'haapar_unla_app/base.html' %}
-{% block title %} Detalle de Variable - HAAPAR {% endblock %}
+
+{% block title %}Detalle de Variable - HAAPAR{% endblock %}
 
 {% block content %}
 
 <main class="main">
 
-  <!-- HEADER -->
+  <!-- ================= HEADER ================= -->
+
   <div class="page-title dark-background">
+
     <div class="container position-relative">
+
       <a href="{% url 'variable-detalle' variable.subsistema.id_subsistema %}"
-        class="btn-back position-absolute top-0 start-0 mt-3 ms-3">
+        class="btn-back">
+
         <i class="fa-solid fa-arrow-left"></i>
+
       </a>
 
-      <h1 class="text-center heading-section">VARIABLE: {{ variable.nombre }}</h1>
+      <h1 class="text-center heading-section mb-2">
+        Detalle de Variable
+      </h1>
+
+      <p class="text-center mb-0">
+        {{ variable.subsistema.sistema.tema.nombre }}
+        <span class="mx-2">·</span>
+        {{ variable.subsistema.nombre }}
+        <span class="mx-2">·</span>
+        <strong>{{ variable.nombre }}</strong>
+      </p>
 
     </div>
+
   </div>
 
-<div class="container mt-4">
-  <div class="row">
 
-      <!-- ================= PESTEL ================= -->
-      <div class="col-md-4 mb-4">
-        <div class="card proyecto-base h-100">
+  <!-- ================= CONTENIDO ================= -->
 
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h6 class="mb-0">PESTEL</h6>
+  <section class="py-4">
 
-            <a href="{% url 'editar-pestel' variable.id_variable %}"
-              class="btn btn-sm btn-outline-primary">
-              <i class="fa-solid fa-edit"></i>
-            </a>
-          </div>
+    <div class="container">
 
-          <div class="card-body text-center">
+      <div class="row gy-4">
 
-            {% for p in pestels %}
-              <span class="badge bg-dark m-1 p-2">
-                {{ p.get_tipo_display }}
-              </span>
-            {% empty %}
-              <p class="text-muted">Sin clasificación</p>
-            {% endfor %}
 
-          </div>
+        <!-- ================= PESTEL ================= -->
 
-        </div>
-      </div>
+        <div class="col-lg-4 col-md-6">
 
-      <!-- ================= INDICADORES ================= -->
-      <div class="col-md-4 mb-4">
-        <div class="card proyecto-base h-100">
+          <div class="card h-100 bg-light border border-success shadow-sm rounded-3">
 
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h6 class="mb-0">Indicadores</h6>
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
 
-            <button class="btn btn-sm btn-success"
-                    data-bs-toggle="modal"
-                    data-bs-target="#modalIndicador">
-              <i class="fa-solid fa-plus"></i>
-            </button>
-          </div>
+              <h6 class="mb-0">
+                Clasificación PESTEL
+              </h6>
 
-          <div class="card-body">
+              <a href="{% url 'editar-pestel' variable.id_variable %}"
+                class="btn btn-sm btn-outline-primary">
 
-            {% for i in indicadores %}
+                <i class="fa-solid fa-edit"></i>
 
-              <div class="border rounded p-2 mb-3">
+              </a>
 
-                <div class="d-flex justify-content-between align-items-start">
+            </div>
 
-                  <strong>{{ i.nombre_corto }}</strong>
 
-                  <div>
+            <div class="card-body text-center">
 
-                    <button class="btn btn-sm btn-outline-primary"
-                            data-bs-toggle="modal"
-                            data-bs-target="#modalEditarIndicador{{ i.id_indicador  }}">
-                      <i class="fa-solid fa-edit"></i>
-                    </button>
+              {% for p in pestels %}
 
-                    <form method="POST"
-                          action="{% url 'eliminar-indicador' i.id_indicador  %}?next={{ request.path }}"
-                          class="d-inline">
+                <span class="badge bg-dark m-1 p-2">
+                  {{ p.get_tipo_display }}
+                </span>
 
-                      {% csrf_token %}
+              {% empty %}
 
-                      <button type="submit"
-                              class="btn btn-sm btn-outline-danger"
-                              onclick="return confirm('¿Eliminar indicador?')">
-                        <i class="fa-solid fa-trash"></i>
-                      </button>
+                <p class="text-muted mb-0">
+                  Sin clasificación
+                </p>
 
-                    </form>
-
-                  </div>
-
-                </div>
-
-                <p class="small text-muted mt-2 mb-1">{{ i.descripcion }}</p>
-                <small><strong>Fórmula:</strong> {{ i.formula }}</small>
-
-              </div>
-
-              <!-- MODAL EDITAR INDICADOR -->
-              <div class="modal fade" id="modalEditarIndicador{{ i.id_indicador  }}" tabindex="-1">
-                <div class="modal-dialog modal-lg">
-                  <div class="modal-content">
-
-                    <form method="POST"
-                          action="{% url 'editar-indicador' i.id_indicador  %}">
-                      {% csrf_token %}
-                      <input type="hidden" name="next" value="{{ request.path }}">
-
-                      <div class="modal-header">
-                        <h5 class="modal-title">Editar Indicador</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                      </div>
-
-                      <div class="modal-body">
-
-                        <input name="nombre_corto"
-                              value="{{ i.nombre_corto }}"
-                              class="form-control mb-2">
-
-                        <textarea name="descripcion"
-                                  class="form-control mb-2">{{ i.descripcion }}</textarea>
-
-                        <input name="formula"
-                              value="{{ i.formula }}"
-                              class="form-control">
-
-                      </div>
-
-                      <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                          Cancelar
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                          Guardar
-                        </button>
-                      </div>
-
-                    </form>
-
-                  </div>
-                </div>
-              </div>
-
-            {% empty %}
-              <p class="text-muted text-center">No hay indicadores</p>
-            {% endfor %}
-
-          </div>
-        </div>
-      </div>
-
-      <!-- ================= TENDENCIAS ================= -->
-      <div class="col-md-4 mb-4">
-
-        <div class="card proyecto-base h-100">
-
-          <div class="card-header d-flex justify-content-between align-items-center">
-            <h6 class="mb-0">Tendencias</h6>
-
-            <button
-              class="btn btn-sm btn-success"
-              data-bs-toggle="modal"
-              data-bs-target="#modalTendencias">
-              <i class="fa-solid fa-edit"></i>
-            </button>
-          </div>
-
-          <div class="card-body">
-
-            {% for r in relaciones %}
-
-              <div class="border rounded p-2 mb-3">
-
-                <strong>
-                  {{ r.tendencia.nombre }}
-                </strong>
-
-                <div class="mt-2">
-
-                  {% if r.impacto >= 7 %}
-
-                    <span class="badge bg-danger">
-                      Impacto: {{ r.impacto }}
-                    </span>
-
-                  {% elif r.impacto >= 4 %}
-
-                    <span class="badge bg-warning text-dark">
-                      Impacto: {{ r.impacto }}
-                    </span>
-
-                  {% else %}
-
-                    <span class="badge bg-success">
-                      Impacto: {{ r.impacto }}
-                    </span>
-
-                  {% endif %}
-
-                </div>
-
-              </div>
-
-            {% empty %}
-
-              <p class="text-muted text-center">
-                No hay tendencias asociadas
-              </p>
-
-            {% endfor %}
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-          <!-- ================= EVALUACIONES ================= -->
-          <div class="col-12 mb-4">
-
-            <div class="card proyecto-base">
-
-              <div class="card-header d-flex justify-content-between align-items-center">
-
-                <h6 class="mb-0">
-                  Evaluaciones
-                </h6>
-
-                <button
-                  class="btn btn-sm btn-success"
-                  data-bs-toggle="modal"
-                  data-bs-target="#modalEvaluacion">
-
-                  <i class="fa-solid fa-plus me-1"></i>
-
-                  {% if mi_evaluacion %}
-                    Modificar mi evaluación
-                  {% else %}
-                    Agregar mi evaluación
-                  {% endif %}
-
-                </button>
-
-              </div>
-
-              <div class="card-body">
-
-                {% if evaluaciones %}
-
-                  <div class="table-responsive">
-
-                    <table class="table table-bordered table-hover align-middle">
-
-                      <thead>
-                        <tr>
-                          <th>Evaluador</th>
-                          <th class="text-center">Importancia</th>
-                          <th class="text-center">Incertidumbre</th>
-                          <th>Fecha</th>
-                          <th class="text-center">Acciones</th>
-                        </tr>
-                      </thead>
-
-                      <tbody>
-
-                        {% for evaluacion in evaluaciones %}
-
-                          <tr>
-
-                            <!-- EVALUADOR -->
-                            <td>
-
-                              {% if evaluacion.usuario %}
-
-                                <i class="fa-solid fa-user me-1"></i>
-
-                                {{ evaluacion.usuario.get_full_name|default:evaluacion.usuario.username }}
-
-                              {% else %}
-
-                                <i class="fa-solid fa-robot me-1"></i>
-
-                                <strong>IA</strong>
-
-                              {% endif %}
-
-                            </td>
-
-                            <!-- IMPORTANCIA -->
-                            <td class="text-center">
-                              {{ evaluacion.importancia }}
-                            </td>
-
-                            <!-- INCERTIDUMBRE -->
-                            <td class="text-center">
-                              {{ evaluacion.incertidumbre }}
-                            </td>
-
-                            <!-- FECHA -->
-                            <td>
-                              {{ evaluacion.fecha|date:"d/m/Y H:i" }}
-                            </td>
-
-                            <!-- ACCIONES -->
-                            <td class="text-center">
-
-                              {% if evaluacion.usuario == request.user %}
-
-                                <form
-                                  method="POST"
-                                  action="{% url 'eliminar-evaluacion' variable.id_variable %}"
-                                  class="d-inline"
-                                >
-
-                                  {% csrf_token %}
-
-                                  <button
-                                    type="submit"
-                                    class="btn btn-sm btn-outline-danger"
-                                    title="Eliminar mi evaluación"
-                                    onclick="return confirm('¿Seguro que querés eliminar tu evaluación?')"
-                                  >
-                                    <i class="fa-solid fa-trash"></i>
-                                  </button>
-
-                                </form>
-
-                              {% else %}
-
-                                <span class="text-muted">—</span>
-
-                              {% endif %}
-
-                            </td>
-
-                          </tr>
-
-                        {% endfor %}
-
-                      </tbody>
-
-                    </table>
-
-                  </div>
-
-                  <!-- ================= PROMEDIOS ================= -->
-
-                  <div class="row mt-4">
-
-                    <div class="col-md-6">
-
-                      <div class="alert alert-primary text-center mb-0">
-
-                        <strong>
-                          Importancia promedio
-                        </strong>
-
-                        <div class="fs-4 fw-bold">
-                          {{ variable.promedio_importancia|floatformat:1 }}
-                        </div>
-
-                      </div>
-
-                    </div>
-
-                    <div class="col-md-6">
-
-                      <div class="alert alert-warning text-center mb-0">
-
-                        <strong>
-                          Incertidumbre promedio
-                        </strong>
-
-                        <div class="fs-4 fw-bold">
-                          {{ variable.promedio_incertidumbre|floatformat:1 }}
-                        </div>
-
-                      </div>
-
-                    </div>
-
-                  </div>
-
-                {% else %}
-
-                  <p class="text-muted text-center mb-0">
-                    Todavía no existen evaluaciones para esta variable.
-                  </p>
-
-                {% endif %}
-
-              </div>
+              {% endfor %}
 
             </div>
 
           </div>
 
-</main>
-<<!-- ================= MODAL EVALUACIÓN ================= -->
+        </div>
 
-<div class="modal fade" id="modalEvaluacion" tabindex="-1">
+
+        <!-- ================= INDICADORES ================= -->
+
+        <div class="col-lg-4 col-md-6">
+
+          <div class="card h-100 bg-light border border-success shadow-sm rounded-3">
+
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+
+              <h6 class="mb-0">
+                Indicadores de la Variable
+              </h6>
+
+              <button
+                class="btn btn-sm btn-success"
+                data-bs-toggle="modal"
+                data-bs-target="#modalIndicador">
+
+                <i class="fa-solid fa-plus"></i>
+
+              </button>
+
+            </div>
+
+
+            <div class="card-body">
+
+              {% for i in indicadores %}
+
+                <div class="border rounded p-3 mb-3 bg-white">
+
+                  <div class="d-flex justify-content-between align-items-start">
+
+                    <strong class="text-success">
+                      {{ i.nombre_corto }}
+                    </strong>
+
+                    <div>
+
+                      <!-- EDITAR -->
+
+                      <button
+                        class="btn btn-sm btn-outline-primary"
+                        data-bs-toggle="modal"
+                        data-bs-target="#modalEditarIndicador{{ i.id_indicador }}">
+
+                        <i class="fa-solid fa-edit"></i>
+
+                      </button>
+
+
+                      <!-- ELIMINAR -->
+
+                      <form
+                        method="POST"
+                        action="{% url 'eliminar-indicador' i.id_indicador %}?next={{ request.path }}"
+                        class="d-inline">
+
+                        {% csrf_token %}
+
+                        <button
+                          type="submit"
+                          class="btn btn-sm btn-outline-danger"
+                          onclick="return confirm('¿Eliminar indicador?')">
+
+                          <i class="fa-solid fa-trash"></i>
+
+                        </button>
+
+                      </form>
+
+                    </div>
+
+                  </div>
+
+
+                  <p class="small text-muted mt-2 mb-1">
+                    {{ i.descripcion }}
+                  </p>
+
+                  <small>
+                    <strong>Fórmula:</strong>
+                    {{ i.formula }}
+                  </small>
+
+                </div>
+
+
+                <!-- ================= MODAL EDITAR INDICADOR ================= -->
+
+                <div
+                  class="modal fade"
+                  id="modalEditarIndicador{{ i.id_indicador }}"
+                  tabindex="-1">
+
+                  <div class="modal-dialog modal-lg">
+
+                    <div class="modal-content">
+
+                      <form
+                        method="POST"
+                        action="{% url 'editar-indicador' i.id_indicador %}">
+
+                        {% csrf_token %}
+
+                        <input
+                          type="hidden"
+                          name="next"
+                          value="{{ request.path }}">
+
+
+                        <div class="modal-header">
+
+                          <h5 class="modal-title">
+                            Editar Indicador
+                          </h5>
+
+                          <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal">
+                          </button>
+
+                        </div>
+
+
+                        <div class="modal-body">
+
+                          <input
+                            name="nombre_corto"
+                            value="{{ i.nombre_corto }}"
+                            class="form-control mb-2">
+
+
+                          <textarea
+                            name="descripcion"
+                            class="form-control mb-2">{{ i.descripcion }}</textarea>
+
+
+                          <input
+                            name="formula"
+                            value="{{ i.formula }}"
+                            class="form-control">
+
+                        </div>
+
+
+                        <div class="modal-footer">
+
+                          <button
+                            type="button"
+                            class="btn btn-secondary"
+                            data-bs-dismiss="modal">
+
+                            Cancelar
+
+                          </button>
+
+                          <button
+                            type="submit"
+                            class="btn btn-success">
+
+                            Guardar
+
+                          </button>
+
+                        </div>
+
+                      </form>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              {% empty %}
+
+                <div class="text-center py-3">
+
+                  <i class="fa-solid fa-chart-line fa-2x text-success mb-2"></i>
+
+                  <p class="text-muted mb-0">
+                    No hay indicadores
+                  </p>
+
+                </div>
+
+              {% endfor %}
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- ================= TENDENCIAS ================= -->
+
+        <div class="col-lg-4 col-md-6">
+
+          <div class="card h-100 bg-light border border-success shadow-sm rounded-3">
+
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+
+              <h6 class="mb-0">
+                Tendencias Asociadas
+              </h6>
+
+              <button
+                class="btn btn-sm btn-success"
+                data-bs-toggle="modal"
+                data-bs-target="#modalTendencias">
+
+                <i class="fa-solid fa-edit"></i>
+
+              </button>
+
+            </div>
+
+
+            <div class="card-body">
+
+              {% for r in relaciones %}
+
+                <div class="border rounded p-3 mb-3 bg-white">
+
+                  <strong class="text-success">
+                    {{ r.tendencia.nombre }}
+                  </strong>
+
+                  <div class="mt-2">
+
+                    {% if r.impacto >= 7 %}
+
+                      <span class="badge bg-danger">
+                        Impacto: {{ r.impacto }}
+                      </span>
+
+                    {% elif r.impacto >= 4 %}
+
+                      <span class="badge bg-warning text-dark">
+                        Impacto: {{ r.impacto }}
+                      </span>
+
+                    {% else %}
+
+                      <span class="badge bg-success">
+                        Impacto: {{ r.impacto }}
+                      </span>
+
+                    {% endif %}
+
+                  </div>
+
+                </div>
+
+              {% empty %}
+
+                <div class="text-center py-3">
+
+                  <i class="fa-solid fa-arrow-trend-up fa-2x text-success mb-2"></i>
+
+                  <p class="text-muted mb-0">
+                    No hay tendencias asociadas
+                  </p>
+
+                </div>
+
+              {% endfor %}
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- ================= EVALUACIONES ================= -->
+
+        <div class="col-12">
+
+          <div class="card bg-light border border-success shadow-sm rounded-3">
+
+            <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+
+              <h6 class="mb-0">
+                Evaluaciones de la Variable
+              </h6>
+
+              <button
+                class="btn btn-sm btn-success"
+                data-bs-toggle="modal"
+                data-bs-target="#modalEvaluacion">
+
+                <i class="fa-solid fa-plus me-1"></i>
+
+                {% if mi_evaluacion %}
+                  Modificar mi evaluación
+                {% else %}
+                  Agregar mi evaluación
+                {% endif %}
+
+              </button>
+
+            </div>
+
+
+            <div class="card-body">
+
+              {% if evaluaciones %}
+
+                <div class="table-responsive">
+
+                  <table class="table table-bordered table-hover align-middle">
+
+                    <thead>
+
+                      <tr>
+
+                        <th>
+                          Evaluador
+                        </th>
+
+                        <th class="text-center">
+                          Importancia
+                        </th>
+
+                        <th class="text-center">
+                          Incertidumbre
+                        </th>
+
+                        <th>
+                          Fecha
+                        </th>
+
+                        <th class="text-center">
+                          Acciones
+                        </th>
+
+                      </tr>
+
+                    </thead>
+
+
+                    <tbody>
+
+                      {% for evaluacion in evaluaciones %}
+
+                        <tr>
+
+                          <!-- EVALUADOR -->
+
+                          <td>
+
+                            {% if evaluacion.usuario %}
+
+                              <i class="fa-solid fa-user me-1"></i>
+
+                              {{ evaluacion.usuario.get_full_name|default:evaluacion.usuario.username }}
+
+                            {% else %}
+
+                              <i class="fa-solid fa-robot me-1"></i>
+
+                              <strong>IA</strong>
+
+                            {% endif %}
+
+                          </td>
+
+
+                          <!-- IMPORTANCIA -->
+
+                          <td class="text-center">
+                            {{ evaluacion.importancia }}
+                          </td>
+
+
+                          <!-- INCERTIDUMBRE -->
+
+                          <td class="text-center">
+                            {{ evaluacion.incertidumbre }}
+                          </td>
+
+
+                          <!-- FECHA -->
+
+                          <td>
+                            {{ evaluacion.fecha|date:"d/m/Y H:i" }}
+                          </td>
+
+
+                          <!-- ACCIONES -->
+
+                          <td class="text-center">
+
+                            {% if evaluacion.usuario == request.user %}
+
+                              <form
+                                method="POST"
+                                action="{% url 'eliminar-evaluacion' variable.id_variable %}"
+                                class="d-inline">
+
+                                {% csrf_token %}
+
+                                <button
+                                  type="submit"
+                                  class="btn btn-sm btn-outline-danger"
+                                  title="Eliminar mi evaluación"
+                                  onclick="return confirm('¿Seguro que querés eliminar tu evaluación?')">
+
+                                  <i class="fa-solid fa-trash"></i>
+
+                                </button>
+
+                              </form>
+
+                            {% else %}
+
+                              <span class="text-muted">
+                                —
+                              </span>
+
+                            {% endif %}
+
+                          </td>
+
+                        </tr>
+
+                      {% endfor %}
+
+                    </tbody>
+
+                  </table>
+
+                </div>
+
+
+                <!-- ================= PROMEDIOS ================= -->
+
+                <div class="row mt-4">
+
+                  <div class="col-md-6 mb-3 mb-md-0">
+
+                    <div class="alert alert-primary text-center mb-0">
+
+                      <strong>
+                        Importancia promedio
+                      </strong>
+
+                      <div class="fs-4 fw-bold">
+                        {{ variable.promedio_importancia|floatformat:1 }}
+                      </div>
+
+                    </div>
+
+                  </div>
+
+
+                  <div class="col-md-6">
+
+                    <div class="alert alert-warning text-center mb-0">
+
+                      <strong>
+                        Incertidumbre promedio
+                      </strong>
+
+                      <div class="fs-4 fw-bold">
+                        {{ variable.promedio_incertidumbre|floatformat:1 }}
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+
+              {% else %}
+
+                <div class="text-center py-3">
+
+                  <i class="fa-solid fa-clipboard-check fa-2x text-success mb-2"></i>
+
+                  <p class="text-muted mb-0">
+                    Todavía no existen evaluaciones para esta variable.
+                  </p>
+
+                </div>
+
+              {% endif %}
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+      </div>
+
+    </div>
+
+  </section>
+
+</main>
+
+
+<!-- ========================================================= -->
+<!-- MODAL EVALUACIÓN -->
+<!-- ========================================================= -->
+
+<div
+  class="modal fade"
+  id="modalEvaluacion"
+  tabindex="-1">
 
   <div class="modal-dialog">
 
@@ -415,10 +613,10 @@
 
       <form
         method="POST"
-        action="{% url 'evaluar-variable' variable.id_variable %}"
-      >
+        action="{% url 'evaluar-variable' variable.id_variable %}">
 
         {% csrf_token %}
+
 
         <div class="modal-header">
 
@@ -460,8 +658,7 @@
             <select
               name="importancia"
               class="form-select"
-              required
-            >
+              required>
 
               <option value="">
                 Seleccionar...
@@ -473,9 +670,10 @@
                   value="{{ i }}"
                   {% if mi_evaluacion and mi_evaluacion.importancia|stringformat:"s" == i %}
                     selected
-                  {% endif %}
-                >
+                  {% endif %}>
+
                   {{ i }}
+
                 </option>
 
               {% endfor %}
@@ -496,8 +694,7 @@
             <select
               name="incertidumbre"
               class="form-select"
-              required
-            >
+              required>
 
               <option value="">
                 Seleccionar...
@@ -509,9 +706,10 @@
                   value="{{ i }}"
                   {% if mi_evaluacion and mi_evaluacion.incertidumbre|stringformat:"s" == i %}
                     selected
-                  {% endif %}
-                >
+                  {% endif %}>
+
                   {{ i }}
+
                 </option>
 
               {% endfor %}
@@ -529,7 +727,9 @@
             type="button"
             class="btn btn-secondary"
             data-bs-dismiss="modal">
+
             Cancelar
+
           </button>
 
           <button
@@ -554,72 +754,139 @@
 
 </div>
 
-<!-- ================= MODAL CREAR INDICADOR ================= -->
-<div class="modal fade" id="modalIndicador" tabindex="-1">
+
+<!-- ========================================================= -->
+<!-- MODAL CREAR INDICADOR -->
+<!-- ========================================================= -->
+
+<div
+  class="modal fade"
+  id="modalIndicador"
+  tabindex="-1">
+
   <div class="modal-dialog modal-lg">
+
     <div class="modal-content">
 
-      <form method="POST" action="{% url 'crear-indicador' variable.id_variable %}">
+      <form
+        method="POST"
+        action="{% url 'crear-indicador' variable.id_variable %}">
+
         {% csrf_token %}
-        <input type="hidden" name="next" value="{{ request.path }}">
+
+        <input
+          type="hidden"
+          name="next"
+          value="{{ request.path }}">
+
 
         <div class="modal-header">
-          <h5 class="modal-title">Nuevo Indicador</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+
+          <h5 class="modal-title">
+            Agregar Indicador
+          </h5>
+
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal">
+          </button>
+
         </div>
+
 
         <div class="modal-body">
 
-          <input name="nombre_corto" class="form-control mb-2" placeholder="Nombre">
-          <textarea name="descripcion" class="form-control mb-2" placeholder="Descripción"></textarea>
-          <input name="formula" class="form-control" placeholder="Fórmula">
+          <input
+            name="nombre_corto"
+            class="form-control mb-2"
+            placeholder="Nombre">
+
+          <textarea
+            name="descripcion"
+            class="form-control mb-2"
+            placeholder="Descripción"></textarea>
+
+          <input
+            name="formula"
+            class="form-control"
+            placeholder="Fórmula">
 
         </div>
 
+
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-success">Guardar</button>
+
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal">
+
+            Cancelar
+
+          </button>
+
+          <button
+            type="submit"
+            class="btn btn-success">
+
+            Guardar
+
+          </button>
+
         </div>
 
       </form>
 
     </div>
+
   </div>
+
 </div>
 
-<!-- ================= MODAL TENDENCIAS ================= -->
-<div class="modal fade"
-    id="modalTendencias"
-    tabindex="-1"
-    aria-hidden="true">
+
+<!-- ========================================================= -->
+<!-- MODAL TENDENCIAS -->
+<!-- ========================================================= -->
+
+<div
+  class="modal fade"
+  id="modalTendencias"
+  tabindex="-1"
+  aria-hidden="true">
 
   <div class="modal-dialog modal-lg">
 
     <div class="modal-content">
 
-      <form method="POST"
-            action="{% url 'editar-tendencias-variable' variable.id_variable %}">
+      <form
+        method="POST"
+        action="{% url 'editar-tendencias-variable' variable.id_variable %}">
 
         {% csrf_token %}
+
 
         <div class="modal-header">
 
           <h5 class="modal-title">
-            Seleccionar Tendencias
+            Gestionar Tendencias
           </h5>
 
-          <button type="button"
-                  class="btn-close"
-                  data-bs-dismiss="modal">
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal">
           </button>
 
         </div>
+
 
         <div class="modal-body">
 
           <p class="text-muted">
             Marcá las tendencias que impactan en esta variable.
           </p>
+
 
           {% for tendencia in todas_tendencias %}
 
@@ -636,31 +903,40 @@
                 {% endif %}
               >
 
-                <label class="form-check-label">
-                    {{ tendencia.nombre }}
-                </label>
+              <label class="form-check-label">
+                {{ tendencia.nombre }}
+              </label>
 
             </div>
 
           {% empty %}
+
             <p class="text-danger">
-                No existen tendencias cargadas para este subsistema.
+              No existen tendencias cargadas para este subsistema.
             </p>
+
           {% endfor %}
 
         </div>
 
+
         <div class="modal-footer">
 
-          <button type="button"
-                  class="btn btn-secondary"
-                  data-bs-dismiss="modal">
+          <button
+            type="button"
+            class="btn btn-secondary"
+            data-bs-dismiss="modal">
+
             Cancelar
+
           </button>
 
-          <button type="submit"
-                  class="btn btn-success">
+          <button
+            type="submit"
+            class="btn btn-success">
+
             Guardar cambios
+
           </button>
 
         </div>
@@ -672,7 +948,5 @@
   </div>
 
 </div>
-</div>
-
 
 {% endblock %}

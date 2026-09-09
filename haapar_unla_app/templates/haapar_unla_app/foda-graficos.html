@@ -3,415 +3,801 @@
 <head>
     <meta charset="UTF-8">
     <title>Gráficos FODA y Prospectiva</title>
+
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/highcharts@11.4.0/highcharts.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.4.0/modules/heatmap.js"></script> 
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.4.0/modules/heatmap.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/highcharts@11.4.0/modules/treemap.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/highcharts@11.4.0/modules/treegraph.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/highcharts@11.4.0/modules/networkgraph.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.4.0/modules/exporting.js"></script> 
+    <script src="https://cdn.jsdelivr.net/npm/highcharts@11.4.0/modules/exporting.js"></script>
 
     <style>
         body {
-            background: linear-gradient(135deg, #296d1b, rgb(35, 139, 43));
+            background: #f4f6f8;
             font-family: 'Segoe UI', sans-serif;
-            color: #f5f5f5;
+            color: #212529;
         }
+
         .card {
-            background: rgba(255, 255, 255, 0.1);
-            border: none;
+            background: #ffffff;
+            border: 1px solid #e3e7eb;
             border-radius: 12px;
             padding: 20px;
             margin-bottom: 30px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.07);
         }
+
         .header-card {
             background-color: #ffffff !important;
-            color: #333 !important;
+            color: #212529 !important;
+            border-top: 4px solid #198754;
         }
+
         .btn-back-arrow {
-            color: #005c3d; 
+            color: #198754;
             font-size: 1.5rem;
             transition: transform 0.2s;
         }
+
         .btn-back-arrow:hover {
-            color: #003d29;
-            transform: scale(1.1);
+            color: #146c43;
+            transform: translateX(-3px);
         }
+
         h2 {
             text-align: center;
-            margin-bottom: 20px;
-            font-weight: bold;
-            color: #fff;
+            margin-bottom: 10px;
+            font-weight: 700;
+            color: #343a40;
         }
+
+        .card > h2 {
+            letter-spacing: 0.3px;
+        }
+
+        .card > p.text-light {
+            color: #6c757d !important;
+        }
+
         canvas {
             display: block;
             margin: 0 auto;
             max-width: 800px;
             height: 500px;
-            background-color: transparent;
+            background-color: #ffffff;
+            border-radius: 8px;
         }
+
         table {
             margin: 0 auto;
             width: 70%;
-            background: rgba(255,255,255,0.05);
+            background: #ffffff;
             border-radius: 8px;
             overflow: hidden;
+            color: #212529;
         }
-        th { 
-            background-color: #3f861d; 
-            color: #fff; 
-            text-align: center; 
+
+        th {
+            background-color: #343a40;
+            color: #ffffff;
+            text-align: center;
+            vertical-align: middle;
         }
-        td { 
-            text-align: center; 
-            color: #fff; 
+
+        td {
+            text-align: center;
+            color: #212529;
+            vertical-align: middle;
         }
-        td[style] { 
-            color: #000; 
-            font-weight: bold; 
+
+        td[style] {
+            color: #000;
+            font-weight: bold;
         }
+
         .hc-container {
             width: 100%;
             max-width: 900px;
-            height: 600px; 
+            height: 600px;
             margin: 0 auto;
             background-color: #ffffff;
+            border: 1px solid #e5e7eb;
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+
+        /* --- ENCABEZADOS DE SECCIÓN --- */
+        .analysis-card {
+            position: relative;
+        }
+
+        .analysis-card::before {
+            content: "";
+            display: block;
+            width: 45px;
+            height: 4px;
+            background: #198754;
+            border-radius: 5px;
+            margin: 0 auto 15px;
         }
 
         /* --- ESTILOS FODA --- */
         .foda-container {
-            border: 1px solid rgba(0,0,0,0.1);
+            border: 1px solid #dee2e6;
             border-radius: 8px;
             overflow: hidden;
             margin-bottom: 20px;
         }
+
         .foda-section {
             padding: 25px 30px;
-            color: #222;
+            color: #212529;
         }
-        .foda-fortalezas { background-color: #dcebd4; } 
-        .foda-debilidades { background-color: #f7d4d4; } 
-        .foda-oportunidades { background-color: #d4e7ef; } 
-        .foda-amenazas { background-color: #fcf1ce; } 
-        
+
+        .foda-fortalezas {
+            background-color: #e5f3ea;
+        }
+
+        .foda-debilidades {
+            background-color: #fbe5e5;
+        }
+
+        .foda-oportunidades {
+            background-color: #e4f0f7;
+        }
+
+        .foda-amenazas {
+            background-color: #fff4d6;
+        }
+
         .foda-title-wrapper {
             text-align: center;
             margin-bottom: 15px;
         }
+
         .foda-title {
             display: inline-block;
             padding: 8px 30px;
-            border: 1px solid rgba(255,255,255,0.8);
-            border-radius: 4px;
-            background-color: rgba(255,255,255,0.4);
-            font-weight: 600;
-            font-size: 1.1rem;
+            border: 1px solid rgba(0,0,0,0.08);
+            border-radius: 6px;
+            background-color: rgba(255,255,255,0.65);
+            font-weight: 700;
+            font-size: 1.05rem;
             letter-spacing: 1.5px;
             text-transform: uppercase;
         }
+
         .foda-list {
             list-style-type: decimal;
             padding-left: 20px;
             margin: 0;
             font-size: 0.95rem;
         }
+
         .foda-list li {
             margin-bottom: 8px;
             line-height: 1.5;
         }
+
+        .section-subtitle {
+            color: #6c757d;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .btn-adjust {
+            border-radius: 8px;
+        }
+
+        .pestel-card {
+            background: #ffffff !important;
+        }
+
+        .pending-card {
+            border: 2px solid #ffc107 !important;
+            background: #fffdf5 !important;
+        }
+
+        .scenario-card {
+            background-color: #f8f9fa !important;
+        }
+
+        .scenario-item {
+            background-color: #ffffff !important;
+            border: 1px solid #e1e5e9 !important;
+            border-radius: 10px !important;
+            overflow: hidden;
+        }
+
+        .scenario-header {
+            background-color: #343a40;
+            color: #ffffff;
+            letter-spacing: 1px;
+        }
+
+        .scenario-title {
+            color: #a86200;
+            font-size: 1.5rem;
+        }
+
+        @media (max-width: 768px) {
+            table {
+                width: 100%;
+                font-size: 0.85rem;
+            }
+
+            .hc-container {
+                height: 500px;
+            }
+
+            canvas {
+                max-width: 100%;
+            }
+
+            .foda-section {
+                padding: 20px;
+            }
+        }
     </style>
 </head>
+
 <body>
+
     <div class="container mt-4">
-        
+
         <!-- ENCABEZADO -->
         <div class="card header-card shadow-sm py-4 px-3 mb-4">
             <div class="d-flex align-items-center position-relative">
-                <a href="{% url 'proyecto-detalle' tema.id_tema subsistema.id_subsistema %}" class="position-absolute start-0 text-decoration-none btn-back-arrow ps-3">
+                <a href="{% url 'proyecto-detalle' tema.id_tema subsistema.id_subsistema %}"
+                class="position-absolute start-0 text-decoration-none btn-back-arrow ps-3">
                     <i class="fa-solid fa-arrow-left"></i>
                 </a>
+
                 <div class="w-100 text-center">
-                    <h1 class="fw-bold" style="color: #004d40; text-transform: uppercase; font-size: 2.2rem; letter-spacing: 1px;">ANÁLISIS Y GRÁFICOS</h1>
-                    <p class="text-muted mb-2" style="font-size: 1.1rem;">{{ tema.nombre }}</p>
-                    <p class="fw-bold mb-0" style="color: #495057;">Subsistema: {{ subsistema.nombre }}</p>
+                    <h1 class="fw-bold"
+                        style="color: #343a40; text-transform: uppercase; font-size: 2.2rem; letter-spacing: 1px;">
+                        ANÁLISIS Y GRÁFICOS
+                    </h1>
+
+                    <p class="text-muted mb-2" style="font-size: 1.1rem;">
+                        {{ tema.nombre }}
+                    </p>
+
+                    <p class="fw-bold mb-0" style="color: #198754;">
+                        Subsistema: {{ subsistema.nombre }}
+                    </p>
                 </div>
             </div>
         </div>
 
         <div class="text-center mb-5 mt-2">
-            <a href="{% url 'editar-matriz' subsistema.id_subsistema %}" class="btn btn-warning btn-lg fw-bold shadow">
-                <i class="fa-solid fa-pen-to-square"></i> Ajustar Datos Manualmente
+            <a href="{% url 'editar-matriz' subsistema.id_subsistema %}"
+            class="btn btn-warning btn-lg fw-bold shadow-sm btn-adjust">
+                <i class="fa-solid fa-pen-to-square"></i>
+                Ajustar Datos Manualmente
             </a>
         </div>
 
-        <!-- PASO 1: ÁRBOL PESTEL (El Entorno) -->
-        <div class="card"> 
-            <h2>1. Árbol PESTEL del Proyecto</h2> 
-            <p class="text-center text-light mb-3">Clasificación inicial de las variables del sistema.</p>
-            <div id="pestelChartContainer" class="hc-container" style="height: 750px;"></div> 
+        <!-- PASO 1: ÁRBOL PESTEL -->
+        <div class="card analysis-card">
+            <h2>1. Árbol PESTEL del Proyecto</h2>
+            <p class="section-subtitle">
+                Clasificación inicial de las variables del sistema.
+            </p>
+
+            <div id="pestelChartContainer"
+                class="hc-container"
+                style="height: 750px;">
+            </div>
         </div>
 
         <!-- Gestión PESTEL -->
         <div id="gestion-pestel" class="mt-4 mb-5 px-2">
+
             <div class="text-center mb-4">
-                <a href="{% url 'crear-variable' subsistema.id_subsistema %}?next=pestel" class="btn btn-light text-success fw-bold shadow-sm px-4 py-2">
-                    <i class="fa-solid fa-plus"></i> Crear Nueva Variable
+                <a href="{% url 'crear-variable' subsistema.id_subsistema %}?next=pestel"
+                class="btn btn-outline-success fw-bold shadow-sm px-4 py-2">
+                    <i class="fa-solid fa-plus"></i>
+                    Crear Nueva Variable
                 </a>
             </div>
 
-            <!-- Caja de Variables Pendientes (Siempre visible) -->
+            <!-- Variables pendientes -->
             <div class="row justify-content-center mb-5">
                 <div class="col-md-8">
-                    <div class="card shadow-sm" style="background: rgba(255, 255, 255, 0.95); border: 2px solid #ffc107; padding: 0;">
+                    <div class="card shadow-sm pending-card" style="padding: 0;">
                         <div class="card-body p-4 text-center">
+
                             <h5 class="fw-bold text-dark border-bottom pb-2 mb-3">
-                                <i class="fa-solid fa-triangle-exclamation text-warning"></i> Variables Pendientes de Clasificar
+                                <i class="fa-solid fa-triangle-exclamation text-warning"></i>
+                                Variables Pendientes de Clasificar
                             </h5>
-                            <p class="text-muted small">Estas variables existen en el proyecto pero aún no se asignaron al árbol PESTEL.</p>
+
+                            <p class="text-muted small">
+                                Estas variables existen en el proyecto pero aún no se asignaron al árbol PESTEL.
+                            </p>
+
                             <ul class="list-group list-group-flush mb-0 mt-3">
-                            {% for var in variables_sin_pestel %}
+
+                                {% for var in variables_sin_pestel %}
+
                                 <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent border-bottom-0 px-1">
-                                    <span class="text-dark fw-semibold">{{ var.nombre_corto|default:var.nombre }}</span>
+
+                                    <span class="text-dark fw-semibold">
+                                        {{ var.nombre_corto|default:var.nombre }}
+                                    </span>
+
                                     <div class="d-flex gap-2">
+
                                         <a href="{% url 'editar-pestel' var.pk %}?next={% url 'foda-graficos' subsistema.id_subsistema %}#gestion-pestel"
-                                            class="btn btn-sm btn-warning fw-bold text-dark">
-                                            <i class="fa-solid fa-sitemap"></i> Asignar Categoría
+                                        class="btn btn-sm btn-warning fw-bold text-dark">
+                                            <i class="fa-solid fa-sitemap"></i>
+                                            Asignar Categoría
                                         </a>
-                                        <form action="{% url 'eliminar-variable' var.pk %}?next=pestel" method="POST" class="m-0 p-0" onsubmit="return confirm('¿Estás seguro de que querés eliminar esta variable?');">
+
+                                        <form action="{% url 'eliminar-variable' var.pk %}?next=pestel"
+                                            method="POST"
+                                            class="m-0 p-0"
+                                            onsubmit="return confirm('¿Estás seguro de que querés eliminar esta variable?');">
+
                                             {% csrf_token %}
-                                            <button type="submit" class="btn btn-sm btn-danger" title="Eliminar Variable">
+
+                                            <button type="submit"
+                                                    class="btn btn-sm btn-danger"
+                                                    title="Eliminar Variable">
                                                 <i class="fa-solid fa-trash"></i>
                                             </button>
+
                                         </form>
+
                                     </div>
+
                                 </li>
-                            {% empty %}
+
+                                {% empty %}
+
                                 <li class="list-group-item bg-transparent border-0 text-success fw-bold mt-2">
-                                    <i class="fa-solid fa-check-circle"></i> ¡Excelente! Todas las variables están clasificadas.
+                                    <i class="fa-solid fa-check-circle"></i>
+                                    ¡Excelente! Todas las variables están clasificadas.
                                 </li>
-                            {% endfor %}
+
+                                {% endfor %}
+
                             </ul>
+
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="row">
+
                 {% for categoria, lista_vars in tarjetas_pestel.items %}
+
                 <div class="col-md-4 col-sm-6 mb-4">
-                    <div class="card h-100 shadow-sm" style="background: rgba(255, 255, 255, 0.95); border: none; border-top: 6px solid 
-                        {% if categoria == 'Político' %}#613bc0
-                        {% elif categoria == 'Económico' %}#49a4ff
-                        {% elif categoria == 'Social' %}#5c33be
-                        {% elif categoria == 'Tecnológico' %}#667bc6
-                        {% elif categoria == 'Ecológico' %}#42d4b9
-                        {% elif categoria == 'Legal' %}#fdbb63
-                        {% else %}#333{% endif %}; padding: 0;">
-                        
+
+                    <div class="card h-100 shadow-sm pestel-card"
+                        style="border: none; border-top: 5px solid
+                        {% if categoria == 'Político' %}#6f42c1
+                        {% elif categoria == 'Económico' %}#0d6efd
+                        {% elif categoria == 'Social' %}#7950f2
+                        {% elif categoria == 'Tecnológico' %}#5c7cfa
+                        {% elif categoria == 'Ecológico' %}#20c997
+                        {% elif categoria == 'Legal' %}#fd7e14
+                        {% else %}#6c757d{% endif %};
+                        padding: 0;">
+
                         <div class="card-body p-4">
-                            <h4 class="fw-bold text-dark text-center border-bottom pb-2 mb-3">{{ categoria }}</h4>
-                            
+
+                            <h4 class="fw-bold text-dark text-center border-bottom pb-2 mb-3">
+                                {{ categoria }}
+                            </h4>
+
                             {% if lista_vars %}
-                                <ul class="list-group list-group-flush mb-3">
+
+                            <ul class="list-group list-group-flush mb-3">
+
                                 {% for var in lista_vars %}
-                                    <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-1 border-bottom-0">
-                                        <span class="text-dark fw-semibold text-truncate" style="max-width: 75%;" title="{{ var.nombre }}">
-                                            {{ var.nombre_corto|default:var.nombre }}
-                                        </span>
-                                        <a href="{% url 'editar-pestel' var.pk %}?next={% url 'foda-graficos' subsistema.id_subsistema %}#gestion-pestel"
-                                            class="btn btn-sm btn-outline-primary" title="Editar Categoría">
-                                            <i class="fa-solid fa-edit"></i>
-                                        </a>
-                                    </li>
+
+                                <li class="list-group-item d-flex justify-content-between align-items-center bg-transparent px-1 border-bottom-0">
+
+                                    <span class="text-dark fw-semibold text-truncate"
+                                        style="max-width: 75%;"
+                                        title="{{ var.nombre }}">
+                                        {{ var.nombre_corto|default:var.nombre }}
+                                    </span>
+
+                                    <a href="{% url 'editar-pestel' var.pk %}?next={% url 'foda-graficos' subsistema.id_subsistema %}#gestion-pestel"
+                                    class="btn btn-sm btn-outline-primary"
+                                    title="Editar Categoría">
+                                        <i class="fa-solid fa-edit"></i>
+                                    </a>
+
+                                </li>
+
                                 {% endfor %}
-                                </ul>
+
+                            </ul>
+
                             {% else %}
-                                <div class="text-center my-4">
-                                    <p class="text-muted small mb-0">No hay variables asignadas.</p>
-                                </div>
+
+                            <div class="text-center my-4">
+                                <p class="text-muted small mb-0">
+                                    No hay variables asignadas.
+                                </p>
+                            </div>
+
                             {% endif %}
+
                         </div>
                     </div>
                 </div>
+
                 {% endfor %}
+
             </div>
         </div>
 
-        <!-- PASO 2: DISPERSIÓN IMPO/INCE -->
-        <div class="card">
-            <h2>2. Grafico de Dispersión: Importancia e Incertidumbre</h2>
-            <p class="text-center text-light mb-3">Evaluación inicial de Variables Críticas (1 a 10).</p>
-            <div id="highchartsDispersionContainer" class="hc-container"></div>
+        <!-- PASO 2: DISPERSIÓN IMPORTANCIA / INCERTIDUMBRE -->
+        <div class="card analysis-card">
+
+            <h2>2. Gráfico de Dispersión: Importancia e Incertidumbre</h2>
+
+            <p class="section-subtitle">
+                Evaluación inicial de Variables Críticas (1 a 10).
+            </p>
+
+            <div id="highchartsDispersionContainer"
+                class="hc-container">
+            </div>
+
         </div>
 
-        <!-- PASO 3: FODA VISUAL -->
-        <div class="card" style="background-color: #f8f9fa;">
-            <h2 style="color: #333; letter-spacing: 2px;">3. Análisis F.O.D.A.</h2>
-            <p class="text-center text-muted mb-4">Generado automáticamente cruzando el gráfico anterior con el factor interno/externo.</p>
-            
+        <!-- PASO 3: FODA -->
+        <div class="card analysis-card" style="background-color: #ffffff;">
+
+            <h2>3. Análisis F.O.D.A.</h2>
+
+            <p class="section-subtitle">
+                Generado automáticamente cruzando el gráfico anterior con el factor interno/externo.
+            </p>
+
             <div class="foda-container shadow-sm">
+
                 <div class="foda-section foda-fortalezas">
-                    <div class="foda-title-wrapper"><span class="foda-title">Fortalezas</span></div>
+
+                    <div class="foda-title-wrapper">
+                        <span class="foda-title">Fortalezas</span>
+                    </div>
+
                     <ul class="foda-list">
-                        {% for item in fortalezas %} <li>{{ item.nombre }}</li> {% empty %} <li>No se identificaron fortalezas.</li> {% endfor %}
+
+                        {% for item in fortalezas %}
+                            <li>{{ item.nombre }}</li>
+                        {% empty %}
+                            <li>No se identificaron fortalezas.</li>
+                        {% endfor %}
+
                     </ul>
+
                 </div>
-                
+
                 <div class="foda-section foda-debilidades">
-                    <div class="foda-title-wrapper"><span class="foda-title">Debilidades</span></div>
+
+                    <div class="foda-title-wrapper">
+                        <span class="foda-title">Debilidades</span>
+                    </div>
+
                     <ul class="foda-list">
-                        {% for item in debilidades %} <li>{{ item.nombre }}</li> {% empty %} <li>No se identificaron debilidades.</li> {% endfor %}
+
+                        {% for item in debilidades %}
+                            <li>{{ item.nombre }}</li>
+                        {% empty %}
+                            <li>No se identificaron debilidades.</li>
+                        {% endfor %}
+
                     </ul>
+
                 </div>
 
                 <div class="foda-section foda-oportunidades">
-                    <div class="foda-title-wrapper"><span class="foda-title">Oportunidades</span></div>
+
+                    <div class="foda-title-wrapper">
+                        <span class="foda-title">Oportunidades</span>
+                    </div>
+
                     <ul class="foda-list">
-                        {% for item in oportunidades %} <li>{{ item.nombre }}</li> {% empty %} <li>No se identificaron oportunidades.</li> {% endfor %}
+
+                        {% for item in oportunidades %}
+                            <li>{{ item.nombre }}</li>
+                        {% empty %}
+                            <li>No se identificaron oportunidades.</li>
+                        {% endfor %}
+
                     </ul>
+
                 </div>
 
                 <div class="foda-section foda-amenazas">
-                    <div class="foda-title-wrapper"><span class="foda-title">Amenazas</span></div>
+
+                    <div class="foda-title-wrapper">
+                        <span class="foda-title">Amenazas</span>
+                    </div>
+
                     <ul class="foda-list">
-                        {% for item in amenazas %} <li>{{ item.nombre }}</li> {% empty %} <li>No se identificaron amenazas.</li> {% endfor %}
+
+                        {% for item in amenazas %}
+                            <li>{{ item.nombre }}</li>
+                        {% empty %}
+                            <li>No se identificaron amenazas.</li>
+                        {% endfor %}
+
                     </ul>
+
                 </div>
+
             </div>
         </div>
 
         <!-- PASO 4: MATRIZ MIC-MAC DIRECTA -->
-        <div class="card">
+        <div class="card analysis-card">
+
             <h2>4. Matriz de Valores MIC-MAC</h2>
-            <p class="text-center text-light mb-3">Interacción directa entre variables.</p>
+
+            <p class="section-subtitle">
+                Interacción directa entre variables.
+            </p>
+
             <table class="table table-bordered table-hover">
+
                 <thead>
                     <tr>
                         <th></th>
+
                         {% for var in variables %}
                             <th>{{ var }}</th>
                         {% endfor %}
+
                     </tr>
                 </thead>
+
                 <tbody>
+
                     {% for nombre, fila in filas %}
+
                     <tr>
+
                         <th>{{ nombre }}</th>
+
                         {% for valor in fila %}
-                            <td {% if valor > 2 %} style="background-color: orange;" {% endif %}>
+
+                            <td {% if valor > 2 %} style="background-color: #ffe0b2;" {% endif %}>
                                 {{ valor }}
                             </td>
+
                         {% endfor %}
+
                     </tr>
+
                     {% endfor %}
+
                 </tbody>
+
             </table>
         </div>
 
         <!-- PASO 5: RESULTADOS DIRECTOS MIC-MAC -->
-        <div class="card"> 
+        <div class="card analysis-card">
+
             <h2>5. Gráfico de Dispersión MIC-MAC</h2>
-            <p class="text-center text-light mb-3">Resultados de las sumas de filas y columnas de la Matriz.</p> 
-            <canvas id="micmacDispersionChart" width="800" height="500"></canvas> 
+
+            <p class="section-subtitle">
+                Resultados de las sumas de filas y columnas de la Matriz.
+            </p>
+
+            <canvas id="micmacDispersionChart"
+                    width="800"
+                    height="500">
+            </canvas>
+
         </div>
 
-        <div class="card">
+        <!-- PASO 6: CLASIFICACIÓN MICMAC -->
+        <div class="card analysis-card">
+
             <h2>6. Clasificación de Variables MICMAC</h2>
-            <p class="text-center text-light mb-3">Identificación de cuadrantes.</p>
+
+            <p class="section-subtitle">
+                Identificación de cuadrantes.
+            </p>
+
             <table class="table table-striped table-bordered">
+
                 <thead>
                     <tr>
                         <th>Variable</th>
                         <th>Clasificación</th>
                     </tr>
                 </thead>
+
                 <tbody>
+
                     {% for nombre, categoria in clasificacion_variables.items %}
+
                     <tr>
+
                         <td>{{ nombre }}</td>
+
                         <td>
+
                             {% if categoria == "Clave" %}
-                                <span class="badge bg-danger">{{ categoria }}</span>
+
+                                <span class="badge bg-danger">
+                                    {{ categoria }}
+                                </span>
+
                             {% elif categoria == "Motora" %}
-                                <span class="badge bg-primary">{{ categoria }}</span>
+
+                                <span class="badge bg-primary">
+                                    {{ categoria }}
+                                </span>
+
                             {% elif categoria == "Dependiente" %}
-                                <span class="badge bg-success">{{ categoria }}</span>
+
+                                <span class="badge bg-success">
+                                    {{ categoria }}
+                                </span>
+
                             {% else %}
-                                <span class="badge bg-secondary">{{ categoria }}</span>
+
+                                <span class="badge bg-secondary">
+                                    {{ categoria }}
+                                </span>
+
                             {% endif %}
+
                         </td>
+
                     </tr>
+
                     {% endfor %}
+
                 </tbody>
+
             </table>
+
         </div>
 
-        <!-- PASO 6: EFECTOS INDIRECTOS MIC-MAC (El Rebote) -->
-        <div class="card">
+        <!-- PASO 7: EFECTOS INDIRECTOS MIC-MAC -->
+        <div class="card analysis-card">
+
             <h2>7. Matriz de Valores MIC-MAC Indirecto</h2>
-            <p class="text-center text-light mb-3">Multiplicación matricial para descubrir influencias de segundo grado.</p>
-            <div id="heatmapMatrixChartContainer" class="hc-container"></div>
+
+            <p class="section-subtitle">
+                Multiplicación matricial para descubrir influencias de segundo grado.
+            </p>
+
+            <div id="heatmapMatrixChartContainer"
+                class="hc-container">
+            </div>
+
         </div>
 
-        <div class="card">
+        <!-- PASO 8: MIC-MAC INDIRECTO -->
+        <div class="card analysis-card">
+
             <h2>8. Gráfico de Dispersión MIC-MAC Indirecto</h2>
-            <p class="text-center text-light mb-3">Identificación de "Variables Ocultas" tras la multiplicación matemática.</p>
-            <canvas id="micmacChart" width="800" height="500"></canvas>
+
+            <p class="section-subtitle">
+                Identificación de "Variables Ocultas" tras la multiplicación matemática.
+            </p>
+
+            <canvas id="micmacChart"
+                    width="800"
+                    height="500">
+            </canvas>
+
         </div>
 
-        <!-- PASO 7: MACTOR -->
-        <div class="card"> 
-            <h2>9. Mapa de Relaciones de Poder (MACTOR)</h2> 
-            <p class="text-center text-light mb-3">Plano cartesiano de actores. La intensidad se refleja en el grosor y color del vector.</p>
-            <canvas id="mactorChart" width="800" height="500"></canvas> 
+        <!-- PASO 9: MACTOR -->
+        <div class="card analysis-card">
+
+            <h2>9. Mapa de Relaciones de Poder (MACTOR)</h2>
+
+            <p class="section-subtitle">
+                Plano cartesiano de actores. La intensidad se refleja en el grosor y color del vector.
+            </p>
+
+            <canvas id="mactorChart"
+                    width="800"
+                    height="500">
+            </canvas>
+
         </div>
-        
-        <!-- PASO 8: PETER SCHWARTZ Y FUTURO -->
-        <div class="card"> 
+
+        <!-- PASO 10: PETER SCHWARTZ -->
+        <div class="card analysis-card">
+
             <h2>10. Ejes de Escenarios (Peter-Schwartz)</h2>
-            <p class="text-center text-light mb-3">Cruce de las 2 variables de mayor impacto e incertidumbre.</p> 
-            <canvas id="peterSchwartzChart" width="800" height="500"></canvas> 
+
+            <p class="section-subtitle">
+                Cruce de las 2 variables de mayor impacto e incertidumbre.
+            </p>
+
+            <canvas id="peterSchwartzChart"
+                    width="800"
+                    height="500">
+            </canvas>
+
         </div>
 
-        <div class="card" style="background-color: #f0f2f5;">
-            <h2 style="color: #333; letter-spacing: 2px;">11. Escenarios Futuros (Resolución)</h2>
-            <p class="text-center text-muted mb-4">Los 4 escenarios redactados a partir del cruce de los ejes críticos.</p>
-            
+        <!-- PASO 11: ESCENARIOS -->
+        <div class="card analysis-card scenario-card">
+
+            <h2>11. Escenarios Futuros (Resolución)</h2>
+
+            <p class="section-subtitle">
+                Los 4 escenarios redactados a partir del cruce de los ejes críticos.
+            </p>
+
             <div class="row">
+
                 {% for esc in escenarios_schwartz %}
+
                 <div class="col-md-6 mb-4">
-                    <div class="card h-100 shadow-sm border-0" style="background-color: white;">
-                        <div class="card-header text-white text-center fw-bold" style="background-color: #1a5e38; letter-spacing: 1px;">
-                            <i class="fa-solid fa-map-location-dot me-2"></i> {{ esc.cuadrante }}
+
+                    <div class="card h-100 shadow-sm scenario-item p-0">
+
+                        <div class="card-header scenario-header text-center fw-bold">
+                            <i class="fa-solid fa-map-location-dot me-2"></i>
+                            {{ esc.cuadrante }}
                         </div>
+
                         <div class="card-body px-4 py-4 text-dark">
-                            <h4 class="text-center fw-bold mb-4" style="color: #d17c00; font-size: 1.5rem;">"{{ esc.nombre_marketinero }}"</h4>
-                            <div class="escenario-html" style="font-size: 0.95rem; line-height: 1.6;">
+
+                            <h4 class="text-center fw-bold mb-4 scenario-title">
+                                "{{ esc.nombre_marketinero }}"
+                            </h4>
+
+                            <div class="escenario-html"
+                                style="font-size: 0.95rem; line-height: 1.6;">
                                 {{ esc.descripcion|safe }}
                             </div>
+
                         </div>
+
                     </div>
+
                 </div>
+
                 {% empty %}
+
                 <div class="col-12 text-center text-muted">
-                    <p>No se han generado los escenarios de Schwartz todavía. Verificá que existan variables y estén evaluadas.</p>
+
+                    <p>
+                        No se han generado los escenarios de Schwartz todavía.
+                        Verificá que existan variables y estén evaluadas.
+                    </p>
+
                 </div>
+
                 {% endfor %}
+
             </div>
+
         </div>
 
     </div>
 
     <!-- SCRIPT DE DATOS -->
     <script>
+
         const datosDispersionStr = '{{ datos_dispersion|escapejs }}';
         const matrizIndirectaStr = '{{ matriz_indirecta|escapejs }}';
         const datosMicmacStr = '{{ datos_micmac|escapejs }}';
@@ -422,315 +808,1452 @@
         const umbralInf = parseFloat("{{ umbral_influencia|stringformat:'f'|default:'2.5' }}");
         const umbralDep = parseFloat("{{ umbral_dependencia|stringformat:'f'|default:'2.5' }}");
 
-        const datosDispersion = datosDispersionStr ? JSON.parse(datosDispersionStr) : { elementos: [], mediana_imp: 5, mediana_inc: 5 };
-        const matrizIndirecta = matrizIndirectaStr ? JSON.parse(matrizIndirectaStr) : {};
-        const datosMicmac = datosMicmacStr ? JSON.parse(datosMicmacStr) : {};
-        const datosMicmacIndirecto = datosMicmacIndirectoStr ? JSON.parse(datosMicmacIndirectoStr) : {};
-        const datosMactor = datosMactorStr ? JSON.parse(datosMactorStr) : { actores: [], matriz: [], influencia: [] };
-        const datosPestel = datosPestelStr ? JSON.parse(datosPestelStr) : {};
+        const datosDispersion = datosDispersionStr
+            ? JSON.parse(datosDispersionStr)
+            : {
+                elementos: [],
+                mediana_imp: 5,
+                mediana_inc: 5
+            };
+
+        const matrizIndirecta = matrizIndirectaStr
+            ? JSON.parse(matrizIndirectaStr)
+            : {};
+
+        const datosMicmac = datosMicmacStr
+            ? JSON.parse(datosMicmacStr)
+            : {};
+
+        const datosMicmacIndirecto = datosMicmacIndirectoStr
+            ? JSON.parse(datosMicmacIndirectoStr)
+            : {};
+
+        const datosMactor = datosMactorStr
+            ? JSON.parse(datosMactorStr)
+            : {
+                actores: [],
+                matriz: [],
+                influencia: []
+            };
+
+        const datosPestel = datosPestelStr
+            ? JSON.parse(datosPestelStr)
+            : {};
 
         const ejeXSchwartz = '{{ eje_x_schwartz|escapejs }}';
         const ejeYSchwartz = '{{ eje_y_schwartz|escapejs }}';
-        const nombresEscenarios = JSON.parse('{{ nombres_escenarios|escapejs|default:"{}" }}');
+
+        const nombresEscenarios =
+            JSON.parse('{{ nombres_escenarios|escapejs|default:"{}" }}');
+
     </script>
 
     <!-- PESTEL -->
     <script>
+
         try {
-            let pestel = datosPestel; 
-            const coloresPestel = { "Legal": "#fdbb63", "Ecológico": "#42d4b9", "Tecnológico": "#667bc6", "Social": "#5c33be", "Económico": "#49a4ff", "Político": "#613bc0" };
-            const nombreProyecto = '{{ tema.nombre|escapejs }}' || 'Proyecto';
-            const highchartsData = [{ id: 'root', name: nombreProyecto, color: '#333333' }];
+
+            let pestel = datosPestel;
+
+            const coloresPestel = {
+                "Legal": "#fd7e14",
+                "Ecológico": "#20c997",
+                "Tecnológico": "#5c7cfa",
+                "Social": "#7950f2",
+                "Económico": "#0d6efd",
+                "Político": "#6f42c1"
+            };
+
+            const nombreProyecto =
+                '{{ tema.nombre|escapejs }}' || 'Proyecto';
+
+            const highchartsData = [
+                {
+                    id: 'root',
+                    name: nombreProyecto,
+                    color: '#343a40'
+                }
+            ];
 
             Object.keys(pestel).forEach((categoria, index) => {
-                let colorRama = coloresPestel[categoria] || '#aaaaaa';
+
+                let colorRama =
+                    coloresPestel[categoria] || '#aaaaaa';
+
                 let catId = 'cat_' + index;
-                highchartsData.push({ id: catId, parent: 'root', name: categoria, color: colorRama });
+
+                highchartsData.push({
+                    id: catId,
+                    parent: 'root',
+                    name: categoria,
+                    color: colorRama
+                });
+
                 if (Array.isArray(pestel[categoria])) {
+
                     pestel[categoria].forEach((factor, fIndex) => {
-                        highchartsData.push({ id: catId + '_f_' + fIndex, parent: catId, name: factor, color: colorRama });
+
+                        highchartsData.push({
+                            id: catId + '_f_' + fIndex,
+                            parent: catId,
+                            name: factor,
+                            color: colorRama
+                        });
+
                     });
+
                 }
+
             });
 
             Highcharts.chart('pestelChartContainer', {
-                chart: { type: 'treegraph', spacingLeft: 20, spacingRight: 150, height: 750 },
-                title: { text: '' },
+
+                chart: {
+                    type: 'treegraph',
+                    spacingLeft: 20,
+                    spacingRight: 150,
+                    height: 750,
+                    backgroundColor: '#ffffff'
+                },
+
+                title: {
+                    text: ''
+                },
+
                 series: [{
-                    type: 'treegraph', data: highchartsData, tooltip: { pointFormat: '{point.name}' },
-                    marker: { symbol: 'circle', radius: 7 }, collapseButton: { enabled: false }, 
-                    dataLabels: { pointFormat: '{point.name}', style: { whiteSpace: 'nowrap', textOutline: '3px #ffffff', color: '#333333', fontSize: '13px', fontWeight: '500' } },
+                    type: 'treegraph',
+                    data: highchartsData,
+
+                    tooltip: {
+                        pointFormat: '{point.name}'
+                    },
+
+                    marker: {
+                        symbol: 'circle',
+                        radius: 7
+                    },
+
+                    collapseButton: {
+                        enabled: false
+                    },
+
+                    dataLabels: {
+                        pointFormat: '{point.name}',
+                        style: {
+                            whiteSpace: 'nowrap',
+                            textOutline: '3px #ffffff',
+                            color: '#333333',
+                            fontSize: '13px',
+                            fontWeight: '500'
+                        }
+                    },
+
                     levels: [
-                        { level: 1, dataLabels: { align: 'right', x: -10, style: { fontWeight: 'bold', fontSize: '15px' } } },
-                        { level: 2, dataLabels: { align: 'center', y: -20, x: 0, style: { fontWeight: 'bold', fontSize: '14px' } } },
-                        { level: 3, dataLabels: { align: 'left', x: 10 } }
+
+                        {
+                            level: 1,
+                            dataLabels: {
+                                align: 'right',
+                                x: -10,
+                                style: {
+                                    fontWeight: 'bold',
+                                    fontSize: '15px'
+                                }
+                            }
+                        },
+
+                        {
+                            level: 2,
+                            dataLabels: {
+                                align: 'center',
+                                y: -20,
+                                x: 0,
+                                style: {
+                                    fontWeight: 'bold',
+                                    fontSize: '14px'
+                                }
+                            }
+                        },
+
+                        {
+                            level: 3,
+                            dataLabels: {
+                                align: 'left',
+                                x: 10
+                            }
+                        }
+
                     ]
+
                 }],
-                credits: { enabled: false }
+
+                credits: {
+                    enabled: false
+                }
+
             });
-        } catch (e) { console.error("Error en Árbol PESTEL:", e); }
+
+        } catch (e) {
+
+            console.error("Error en Árbol PESTEL:", e);
+
+        }
+
     </script>
 
     <!-- DISPERSIÓN IMPO/INCE -->
     <script>
+
         try {
-            let varsData = datosDispersion.elementos.filter(e => e.tipo === 'Variable').map(e => ({
-                name: e.nombre, x: e.imp, y: e.inc
-            }));
-            let tendsData = datosDispersion.elementos.filter(e => e.tipo === 'Tendencia').map(e => ({
-                name: e.nombre, x: e.imp, y: e.inc
-            }));
+
+            let varsData =
+                datosDispersion.elementos
+                    .filter(e => e.tipo === 'Variable')
+                    .map(e => ({
+                        name: e.nombre,
+                        x: e.imp,
+                        y: e.inc
+                    }));
+
+            let tendsData =
+                datosDispersion.elementos
+                    .filter(e => e.tipo === 'Tendencia')
+                    .map(e => ({
+                        name: e.nombre,
+                        x: e.imp,
+                        y: e.inc
+                    }));
 
             Highcharts.chart('highchartsDispersionContainer', {
-                chart: { type: 'scatter', zoomType: 'xy', backgroundColor: '#ffffff' },
-                title: { text: '' }, 
+
+                chart: {
+                    type: 'scatter',
+                    zoomType: 'xy',
+                    backgroundColor: '#ffffff'
+                },
+
+                title: {
+                    text: ''
+                },
+
                 xAxis: {
-                    title: { enabled: true, text: 'Importancia' },
-                    min: 0, max: 10, startOnTick: true, endOnTick: true, showLastLabel: true,
-                    plotLines: [{ color: '#999999', dashStyle: 'Dash', width: 2, value: datosDispersion.mediana_imp, zIndex: 3 }]
+                    title: {
+                        enabled: true,
+                        text: 'Importancia',
+                        style: {
+                            color: '#343a40'
+                        }
+                    },
+
+                    min: 0,
+                    max: 10,
+                    startOnTick: true,
+                    endOnTick: true,
+                    showLastLabel: true,
+
+                    plotLines: [{
+                        color: '#adb5bd',
+                        dashStyle: 'Dash',
+                        width: 2,
+                        value: datosDispersion.mediana_imp,
+                        zIndex: 3
+                    }]
                 },
+
                 yAxis: {
-                    title: { text: 'Incertidumbre' },
-                    min: 0, max: 10,
-                    plotLines: [{ color: '#999999', dashStyle: 'Dash', width: 2, value: datosDispersion.mediana_inc, zIndex: 3 }]
+
+                    title: {
+                        text: 'Incertidumbre',
+                        style: {
+                            color: '#343a40'
+                        }
+                    },
+
+                    min: 0,
+                    max: 10,
+
+                    plotLines: [{
+                        color: '#adb5bd',
+                        dashStyle: 'Dash',
+                        width: 2,
+                        value: datosDispersion.mediana_inc,
+                        zIndex: 3
+                    }]
                 },
-                legend: { enabled: true },
+
+                legend: {
+                    enabled: true
+                },
+
                 tooltip: {
-                    useHTML: true, backgroundColor: 'rgba(255, 255, 255, 0.95)',
+
+                    useHTML: true,
+
+                    backgroundColor: 'rgba(255,255,255,0.97)',
+
                     formatter: function() {
-                        return '<div style="text-align: center; padding: 5px;"><b>' + this.point.name + '</b><br>IMPO: ' + this.x + ' , INCE: ' + this.y + '</div>';
+
+                        return '<div style="text-align:center;padding:5px;">' +
+                            '<b>' + this.point.name + '</b><br>' +
+                            'IMPO: ' + this.x +
+                            ' , INCE: ' + this.y +
+                            '</div>';
+
                     }
+
                 },
+
                 series: [
-                    { name: 'Variables', color: '#f4989d', marker: { radius: 6, symbol: 'circle', lineColor: '#e67373', lineWidth: 1 }, data: varsData },
-                    { name: 'Tendencias', color: '#66b2ff', marker: { radius: 6, symbol: 'triangle', lineColor: '#3388ff', lineWidth: 1 }, data: tendsData }
+
+                    {
+                        name: 'Variables',
+                        color: '#dc6b73',
+
+                        marker: {
+                            radius: 6,
+                            symbol: 'circle',
+                            lineColor: '#b94a52',
+                            lineWidth: 1
+                        },
+
+                        data: varsData
+                    },
+
+                    {
+                        name: 'Tendencias',
+                        color: '#4c9fe8',
+
+                        marker: {
+                            radius: 6,
+                            symbol: 'triangle',
+                            lineColor: '#2878ba',
+                            lineWidth: 1
+                        },
+
+                        data: tendsData
+                    }
+
                 ],
-                credits: { enabled: false }
+
+                credits: {
+                    enabled: false
+                }
+
             });
-        } catch (e) { console.error("Error en Highcharts Dispersión:", e); }
+
+        } catch (e) {
+
+            console.error("Error en Highcharts Dispersión:", e);
+
+        }
+
     </script>
 
     <!-- MICMAC DIRECTO E INDIRECTO -->
     <script>
+
         try {
-            let dDirecto = datosMicmac.variables ? datosMicmac : { variables: ["V1"], influencia: [0], dependencia: [0] };
-            const ctxDirecto = document.getElementById('micmacDispersionChart').getContext('2d');
+
+            let dDirecto =
+                datosMicmac.variables
+                    ? datosMicmac
+                    : {
+                        variables: ["V1"],
+                        influencia: [0],
+                        dependencia: [0]
+                    };
+
+            const ctxDirecto =
+                document
+                    .getElementById('micmacDispersionChart')
+                    .getContext('2d');
+
             new Chart(ctxDirecto, {
+
                 type: 'scatter',
-                data: { datasets: [{ label: 'Variables (Directo)', data: dDirecto.variables.map((v, i) => ({ x: dDirecto.influencia[i], y: dDirecto.dependencia[i], label: v })), backgroundColor: '#ff66b2', pointRadius: 7 }] },
-                options: { 
-                    plugins: { 
-                        legend: { display: false }, 
-                        tooltip: { callbacks: { label: (context) => dDirecto.variables[context.dataIndex] + " (Inf: " + context.raw.x + ", Dep: " + context.raw.y + ")" } }, 
-                        title: { display: true, text: 'Gráfico de Dispersión de MIC-MAC - Influencia vs Dependencia', color: '#fff', font: {size: 14} }, 
-                        annotation: { 
-                            annotations: { 
-                                ejeX: { type: 'line', xMin: umbralInf, xMax: umbralInf, borderColor: 'white', borderWidth: 2, borderDash: [5, 5] }, 
-                                ejeY: { type: 'line', yMin: umbralDep, yMax: umbralDep, borderColor: 'white', borderWidth: 2, borderDash: [5, 5] } 
-                            } 
-                        } 
-                    }, 
-                    scales: { 
-                        x: { title: { display: true, text: '(Influencia)', color: '#fff' }, ticks: { color: '#fff' } }, 
-                        y: { title: { display: true, text: '(Dependencia)', color: '#fff' }, ticks: { color: '#fff' } } 
-                    } 
+
+                data: {
+
+                    datasets: [{
+
+                        label: 'Variables (Directo)',
+
+                        data:
+                            dDirecto.variables.map((v, i) => ({
+                                x: dDirecto.influencia[i],
+                                y: dDirecto.dependencia[i],
+                                label: v
+                            })),
+
+                        backgroundColor: '#d85b9e',
+                        pointRadius: 7
+
+                    }]
+
+                },
+
+                options: {
+
+                    plugins: {
+
+                        legend: {
+                            display: false
+                        },
+
+                        tooltip: {
+
+                            callbacks: {
+
+                                label: (context) =>
+                                    dDirecto.variables[context.dataIndex] +
+                                    " (Inf: " + context.raw.x +
+                                    ", Dep: " + context.raw.y + ")"
+
+                            }
+
+                        },
+
+                        title: {
+
+                            display: true,
+
+                            text:
+                                'Gráfico de Dispersión de MIC-MAC - Influencia vs Dependencia',
+
+                            color: '#343a40',
+
+                            font: {
+                                size: 14
+                            }
+
+                        },
+
+                        annotation: {
+
+                            annotations: {
+
+                                ejeX: {
+                                    type: 'line',
+                                    xMin: umbralInf,
+                                    xMax: umbralInf,
+                                    borderColor: '#adb5bd',
+                                    borderWidth: 2,
+                                    borderDash: [5, 5]
+                                },
+
+                                ejeY: {
+                                    type: 'line',
+                                    yMin: umbralDep,
+                                    yMax: umbralDep,
+                                    borderColor: '#adb5bd',
+                                    borderWidth: 2,
+                                    borderDash: [5, 5]
+                                }
+
+                            }
+
+                        }
+
+                    },
+
+                    scales: {
+
+                        x: {
+
+                            title: {
+                                display: true,
+                                text: '(Influencia)',
+                                color: '#343a40'
+                            },
+
+                            ticks: {
+                                color: '#495057'
+                            }
+
+                        },
+
+                        y: {
+
+                            title: {
+                                display: true,
+                                text: '(Dependencia)',
+                                color: '#343a40'
+                            },
+
+                            ticks: {
+                                color: '#495057'
+                            }
+
+                        }
+
+                    }
+
                 }
+
             });
-        } catch (e) { console.error("Error en MICMAC Dispersión:", e); }
+
+        } catch (e) {
+
+            console.error("Error en MICMAC Dispersión:", e);
+
+        }
+
 
         try {
-            let mData = matrizIndirecta.variables ? matrizIndirecta : { variables: ["A", "B"], valores: [ [1, 2], [3, 4] ] };
+
+            let mData =
+                matrizIndirecta.variables
+                    ? matrizIndirecta
+                    : {
+                        variables: ["A", "B"],
+                        valores: [[1, 2], [3, 4]]
+                    };
+
             let hcData = [];
-            for (let i = 0; i < mData.variables.length; i++) {
-                for (let j = 0; j < mData.variables.length; j++) { hcData.push([j, i, mData.valores[i][j]]); }
+
+            for (
+                let i = 0;
+                i < mData.variables.length;
+                i++
+            ) {
+
+                for (
+                    let j = 0;
+                    j < mData.variables.length;
+                    j++
+                ) {
+
+                    hcData.push([
+                        j,
+                        i,
+                        mData.valores[i][j]
+                    ]);
+
+                }
+
             }
-            Highcharts.chart('heatmapMatrixChartContainer', {
-                chart: { type: 'heatmap', marginTop: 40, marginBottom: 80, plotBorderWidth: 1 },
-                title: { text: 'Matriz MIC-MAC del Proyecto', style: { fontWeight: 'bold' } },
-                xAxis: { categories: mData.variables, labels: { style: { color: '#333' } } },
-                yAxis: { categories: mData.variables, title: null, reversed: true, labels: { style: { color: '#333' } } },
-                colorAxis: { min: 0, minColor: '#ffffff', maxColor: '#689bcc' },
-                legend: { align: 'right', layout: 'vertical', verticalAlign: 'top', y: 25, symbolHeight: 280 },
-                tooltip: { formatter: function () { return `La variable: <b>${this.series.yAxis.categories[this.point.y]}</b><br>influye en <b>${this.point.value}</b> en<br>la variable: <b>${this.series.xAxis.categories[this.point.x]}</b>`; } },
-                series: [{ name: 'Matriz', borderWidth: 1, borderColor: '#dddddd', data: hcData, dataLabels: { enabled: true, color: '#000000', style: { textOutline: 'none', fontWeight: 'bold' } } }],
-                credits: { enabled: false }
-            });
-        } catch (e) { console.error("Error en Heatmap:", e); }
+
+            Highcharts.chart(
+                'heatmapMatrixChartContainer',
+                {
+
+                    chart: {
+                        type: 'heatmap',
+                        marginTop: 40,
+                        marginBottom: 80,
+                        plotBorderWidth: 1,
+                        backgroundColor: '#ffffff'
+                    },
+
+                    title: {
+                        text: 'Matriz MIC-MAC del Proyecto',
+                        style: {
+                            fontWeight: 'bold',
+                            color: '#343a40'
+                        }
+                    },
+
+                    xAxis: {
+
+                        categories: mData.variables,
+
+                        labels: {
+                            style: {
+                                color: '#333'
+                            }
+                        }
+
+                    },
+
+                    yAxis: {
+
+                        categories: mData.variables,
+                        title: null,
+                        reversed: true,
+
+                        labels: {
+                            style: {
+                                color: '#333'
+                            }
+                        }
+
+                    },
+
+                    colorAxis: {
+
+                        min: 0,
+                        minColor: '#ffffff',
+                        maxColor: '#689bcc'
+
+                    },
+
+                    legend: {
+
+                        align: 'right',
+                        layout: 'vertical',
+                        verticalAlign: 'top',
+                        y: 25,
+                        symbolHeight: 280
+
+                    },
+
+                    tooltip: {
+
+                        formatter: function() {
+
+                            return `La variable:
+                                <b>${this.series.yAxis.categories[this.point.y]}</b>
+                                <br>influye en <b>${this.point.value}</b>
+                                en<br>la variable:
+                                <b>${this.series.xAxis.categories[this.point.x]}</b>`;
+
+                        }
+
+                    },
+
+                    series: [{
+
+                        name: 'Matriz',
+
+                        borderWidth: 1,
+                        borderColor: '#dddddd',
+                        data: hcData,
+
+                        dataLabels: {
+
+                            enabled: true,
+                            color: '#000000',
+
+                            style: {
+                                textOutline: 'none',
+                                fontWeight: 'bold'
+                            }
+
+                        }
+
+                    }],
+
+                    credits: {
+                        enabled: false
+                    }
+
+                }
+            );
+
+        } catch (e) {
+
+            console.error("Error en Heatmap:", e);
+
+        }
+
 
         try {
-            let dIndirecto = datosMicmacIndirecto.variables ? datosMicmacIndirecto : { variables: ["V1"], influencia: [0], dependencia: [0] };
-            const ctxIndirecto = document.getElementById('micmacChart').getContext('2d');
+
+            let dIndirecto =
+                datosMicmacIndirecto.variables
+                    ? datosMicmacIndirecto
+                    : {
+                        variables: ["V1"],
+                        influencia: [0],
+                        dependencia: [0]
+                    };
+
+            const ctxIndirecto =
+                document
+                    .getElementById('micmacChart')
+                    .getContext('2d');
+
             new Chart(ctxIndirecto, {
+
                 type: 'scatter',
-                data: { datasets: [{ label: 'Variables (Indirecto)', data: dIndirecto.variables.map((v, i) => ({ x: dIndirecto.influencia[i], y: dIndirecto.dependencia[i], label: v })), backgroundColor: '#ffcc00', pointRadius: 7 }] },
-                options: { 
-                    plugins: { 
-                        legend: { display: false }, 
-                        tooltip: { callbacks: { label: (context) => dIndirecto.variables[context.dataIndex] + " (Inf: " + context.raw.x + ", Dep: " + context.raw.y + ")" } }, 
-                        title: { display: true, text: 'Gráfico de Dispersión de MIC-MAC - Influencia vs Dependencia - Indirecta', color: '#fff', font: {size: 14} } 
-                    }, 
-                    scales: { 
-                        x: { title: { display: true, text: '(Influencia)', color: '#fff' }, ticks: { color: '#fff' } }, 
-                        y: { title: { display: true, text: '(Dependencia)', color: '#fff' }, ticks: { color: '#fff' } } 
-                    } 
+
+                data: {
+
+                    datasets: [{
+
+                        label: 'Variables (Indirecto)',
+
+                        data:
+                            dIndirecto.variables.map((v, i) => ({
+                                x: dIndirecto.influencia[i],
+                                y: dIndirecto.dependencia[i],
+                                label: v
+                            })),
+
+                        backgroundColor: '#e0a800',
+                        pointRadius: 7
+
+                    }]
+
+                },
+
+                options: {
+
+                    plugins: {
+
+                        legend: {
+                            display: false
+                        },
+
+                        tooltip: {
+
+                            callbacks: {
+
+                                label: (context) =>
+                                    dIndirecto.variables[context.dataIndex] +
+                                    " (Inf: " + context.raw.x +
+                                    ", Dep: " + context.raw.y + ")"
+
+                            }
+
+                        },
+
+                        title: {
+
+                            display: true,
+
+                            text:
+                                'Gráfico de Dispersión de MIC-MAC - Influencia vs Dependencia - Indirecta',
+
+                            color: '#343a40',
+
+                            font: {
+                                size: 14
+                            }
+
+                        }
+
+                    },
+
+                    scales: {
+
+                        x: {
+
+                            title: {
+                                display: true,
+                                text: '(Influencia)',
+                                color: '#343a40'
+                            },
+
+                            ticks: {
+                                color: '#495057'
+                            }
+
+                        },
+
+                        y: {
+
+                            title: {
+                                display: true,
+                                text: '(Dependencia)',
+                                color: '#343a40'
+                            },
+
+                            ticks: {
+                                color: '#495057'
+                            }
+
+                        }
+
+                    }
+
                 }
+
             });
-        } catch (e) { console.error("Error en MICMAC Indirecto:", e); }
+
+        } catch (e) {
+
+            console.error("Error en MICMAC Indirecto:", e);
+
+        }
+
     </script>
 
-    <!-- MACTOR VECTORIAL A PRUEBA DE FALLOS -->
+    <!-- MACTOR VECTORIAL -->
     <script>
+
         try {
-            const ctxMactor = document.getElementById('mactorChart').getContext('2d');
-            
-            // Validamos que haya actores para graficar
-            if (datosMactor && datosMactor.actores && datosMactor.actores.length > 0) {
-                const nActores = datosMactor.actores.length;
-                const radius = 2.2; 
-                const centerX = 3; 
-                const centerY = 3; 
-                
+
+            const ctxMactor =
+                document
+                    .getElementById('mactorChart')
+                    .getContext('2d');
+
+            if (
+                datosMactor &&
+                datosMactor.actores &&
+                datosMactor.actores.length > 0
+            ) {
+
+                const nActores =
+                    datosMactor.actores.length;
+
+                const radius = 2.2;
+                const centerX = 3;
+                const centerY = 3;
+
                 let mactorPoints = [];
                 let posiciones = [];
-                const coloresNodos = ['#ffcc00', '#ff6666', '#33cc33', '#3399ff', '#9933cc', '#ff9933'];
 
-                for (let i = 0; i < nActores; i++) {
-                    let angle = (2 * Math.PI * i) / nActores - (Math.PI / 2); 
-                    let px = parseFloat((centerX + radius * Math.cos(angle)).toFixed(2));
-                    let py = parseFloat((centerY + radius * Math.sin(angle)).toFixed(2));
-                    
-                    posiciones.push({ x: px, y: py });
-                    mactorPoints.push({
-                        x: px, y: py, label: datosMactor.actores[i],
-                        r: 8 + ((datosMactor.influencia[i] || 0) * 1.5) 
+                const coloresNodos = [
+                    '#e0a800',
+                    '#dc6b73',
+                    '#28a745',
+                    '#3399ff',
+                    '#7950f2',
+                    '#fd7e14'
+                ];
+
+                for (
+                    let i = 0;
+                    i < nActores;
+                    i++
+                ) {
+
+                    let angle =
+                        (2 * Math.PI * i) / nActores -
+                        (Math.PI / 2);
+
+                    let px =
+                        parseFloat(
+                            (
+                                centerX +
+                                radius * Math.cos(angle)
+                            ).toFixed(2)
+                        );
+
+                    let py =
+                        parseFloat(
+                            (
+                                centerY +
+                                radius * Math.sin(angle)
+                            ).toFixed(2)
+                        );
+
+                    posiciones.push({
+                        x: px,
+                        y: py
                     });
+
+                    mactorPoints.push({
+
+                        x: px,
+                        y: py,
+
+                        label:
+                            datosMactor.actores[i],
+
+                        r:
+                            8 +
+                            ((datosMactor.influencia[i] || 0) * 1.5)
+
+                    });
+
                 }
 
                 let mactorAnnotations = {};
                 let annCount = 0;
 
-                for (let i = 0; i < nActores; i++) {
-                    for (let j = 0; j < nActores; j++) {
-                        let valor = (datosMactor.matriz[i] && datosMactor.matriz[i][j]) ? datosMactor.matriz[i][j] : 0;
-                        if (valor > 0 && i !== j) {
-                            let dx = posiciones[j].x - posiciones[i].x;
-                            let dy = posiciones[j].y - posiciones[i].y;
-                            let dist = Math.sqrt(dx*dx + dy*dy);
-                            
-                            let offsetStart = 0.2;
-                            let offsetEnd = 0.35; 
-                            
-                            let startX = posiciones[i].x + (dx/dist) * offsetStart;
-                            let startY = posiciones[i].y + (dy/dist) * offsetStart;
-                            let endX = posiciones[j].x - (dx/dist) * offsetEnd;
-                            let endY = posiciones[j].y - (dy/dist) * offsetEnd;
+                for (
+                    let i = 0;
+                    i < nActores;
+                    i++
+                ) {
 
-                            let mutuo = (datosMactor.matriz[j] && datosMactor.matriz[j][i]) ? datosMactor.matriz[j][i] : 0;
+                    for (
+                        let j = 0;
+                        j < nActores;
+                        j++
+                    ) {
+
+                        let valor =
+                            (
+                                datosMactor.matriz[i] &&
+                                datosMactor.matriz[i][j]
+                            )
+                                ? datosMactor.matriz[i][j]
+                                : 0;
+
+                        if (
+                            valor > 0 &&
+                            i !== j
+                        ) {
+
+                            let dx =
+                                posiciones[j].x -
+                                posiciones[i].x;
+
+                            let dy =
+                                posiciones[j].y -
+                                posiciones[i].y;
+
+                            let dist =
+                                Math.sqrt(
+                                    dx * dx +
+                                    dy * dy
+                                );
+
+                            let offsetStart = 0.2;
+                            let offsetEnd = 0.35;
+
+                            let startX =
+                                posiciones[i].x +
+                                (dx / dist) * offsetStart;
+
+                            let startY =
+                                posiciones[i].y +
+                                (dy / dist) * offsetStart;
+
+                            let endX =
+                                posiciones[j].x -
+                                (dx / dist) * offsetEnd;
+
+                            let endY =
+                                posiciones[j].y -
+                                (dy / dist) * offsetEnd;
+
+                            let mutuo =
+                                (
+                                    datosMactor.matriz[j] &&
+                                    datosMactor.matriz[j][i]
+                                )
+                                    ? datosMactor.matriz[j][i]
+                                    : 0;
+
                             if (mutuo > 0) {
-                                let perpX = -dy/dist * 0.15;
-                                let perpY = dx/dist * 0.15;
-                                if (i > j) { perpX = -perpX; perpY = -perpY; }
-                                startX += perpX; startY += perpY;
-                                endX += perpX; endY += perpY;
+
+                                let perpX =
+                                    -dy / dist * 0.15;
+
+                                let perpY =
+                                    dx / dist * 0.15;
+
+                                if (i > j) {
+
+                                    perpX = -perpX;
+                                    perpY = -perpY;
+
+                                }
+
+                                startX += perpX;
+                                startY += perpY;
+
+                                endX += perpX;
+                                endY += perpY;
+
                             }
 
-                            let opacity = valor >= 3 ? 0.9 : (valor === 2 ? 0.6 : 0.3);
-                            let thickness = valor * 2.5;
-                            let color = `rgba(100, 200, 255, ${opacity})`;
+                            let opacity =
+                                valor >= 3
+                                    ? 0.9
+                                    : (valor === 2 ? 0.6 : 0.3);
 
-                            mactorAnnotations[`vector_${annCount}`] = {
-                                type: 'line', xMin: startX, yMin: startY, xMax: endX, yMax: endY,
-                                borderColor: color, borderWidth: thickness,
-                                arrowHeads: { end: { display: true, length: valor * 4 + 6, width: valor * 4 + 6, fill: true } }
+                            let thickness =
+                                valor * 2.5;
+
+                            let color =
+                                `rgba(25, 135, 84, ${opacity})`;
+
+                            mactorAnnotations[
+                                `vector_${annCount}`
+                            ] = {
+
+                                type: 'line',
+
+                                xMin: startX,
+                                yMin: startY,
+                                xMax: endX,
+                                yMax: endY,
+
+                                borderColor: color,
+                                borderWidth: thickness,
+
+                                arrowHeads: {
+
+                                    end: {
+
+                                        display: true,
+
+                                        length:
+                                            valor * 4 + 6,
+
+                                        width:
+                                            valor * 4 + 6,
+
+                                        fill: true
+
+                                    }
+
+                                }
+
                             };
+
                             annCount++;
+
                         }
+
                     }
+
                 }
 
                 new Chart(ctxMactor, {
-                    type: 'bubble', 
-                    data: { datasets: [{ label: 'Actores', data: mactorPoints, backgroundColor: mactorPoints.map((p, i) => coloresNodos[i % coloresNodos.length]), borderColor: '#ffffff', borderWidth: 2 }] },
-                    options: { 
-                        plugins: { legend: { display: false }, tooltip: { callbacks: { label: (context) => context.raw.label } }, annotation: { annotations: mactorAnnotations } },
-                        scales: { 
-                            x: { min: 0, max: 6, ticks: { color: '#fff', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.2)', borderDash: [5,5] }, title: { display: false } }, 
-                            y: { min: 0, max: 6, ticks: { color: '#fff', stepSize: 1 }, grid: { color: 'rgba(255,255,255,0.2)', borderDash: [5,5] }, title: { display: false } } 
-                        } 
+
+                    type: 'bubble',
+
+                    data: {
+
+                        datasets: [{
+
+                            label: 'Actores',
+
+                            data: mactorPoints,
+
+                            backgroundColor:
+                                mactorPoints.map(
+                                    (p, i) =>
+                                        coloresNodos[
+                                            i % coloresNodos.length
+                                        ]
+                                ),
+
+                            borderColor: '#ffffff',
+                            borderWidth: 2
+
+                        }]
+
                     },
-                    plugins: [{
-                        id: 'actorNames',
-                        afterDatasetsDraw(chart, args, options) {
-                            const { ctx, data } = chart;
-                            ctx.save();
-                            ctx.font = 'bold 13px sans-serif'; ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-                            const meta = chart.getDatasetMeta(0);
-                            if(meta && meta.data){
-                                meta.data.forEach((bubble, index) => {
-                                    if(!bubble || bubble.x === undefined) return;
-                                    const label = data.datasets[0].data[index].label || '';
-                                    const text = label.length > 25 ? label.substring(0, 25) + '...' : label;
-                                    const r = data.datasets[0].data[index].r || 10;
-                                    ctx.fillText(text, bubble.x, bubble.y - r - 5);
-                                });
+
+                    options: {
+
+                        plugins: {
+
+                            legend: {
+                                display: false
+                            },
+
+                            tooltip: {
+
+                                callbacks: {
+
+                                    label:
+                                        (context) =>
+                                            context.raw.label
+
+                                }
+
+                            },
+
+                            annotation: {
+                                annotations: mactorAnnotations
                             }
-                            ctx.restore();
+
+                        },
+
+                        scales: {
+
+                            x: {
+
+                                min: 0,
+                                max: 6,
+
+                                ticks: {
+                                    color: '#495057',
+                                    stepSize: 1
+                                },
+
+                                grid: {
+                                    color: 'rgba(0,0,0,0.08)',
+                                    borderDash: [5,5]
+                                },
+
+                                title: {
+                                    display: false
+                                }
+
+                            },
+
+                            y: {
+
+                                min: 0,
+                                max: 6,
+
+                                ticks: {
+                                    color: '#495057',
+                                    stepSize: 1
+                                },
+
+                                grid: {
+                                    color: 'rgba(0,0,0,0.08)',
+                                    borderDash: [5,5]
+                                },
+
+                                title: {
+                                    display: false
+                                }
+
+                            }
+
                         }
+
+                    },
+
+                    plugins: [{
+
+                        id: 'actorNames',
+
+                        afterDatasetsDraw(
+                            chart,
+                            args,
+                            options
+                        ) {
+
+                            const {
+                                ctx,
+                                data
+                            } = chart;
+
+                            ctx.save();
+
+                            ctx.font =
+                                'bold 13px sans-serif';
+
+                            ctx.fillStyle =
+                                '#343a40';
+
+                            ctx.textAlign =
+                                'center';
+
+                            ctx.textBaseline =
+                                'bottom';
+
+                            const meta =
+                                chart.getDatasetMeta(0);
+
+                            if (
+                                meta &&
+                                meta.data
+                            ) {
+
+                                meta.data.forEach(
+                                    (bubble, index) => {
+
+                                        if (
+                                            !bubble ||
+                                            bubble.x === undefined
+                                        ) return;
+
+                                        const label =
+                                            data.datasets[0]
+                                                .data[index]
+                                                .label || '';
+
+                                        const text =
+                                            label.length > 25
+                                                ? label.substring(0, 25) + '...'
+                                                : label;
+
+                                        const r =
+                                            data.datasets[0]
+                                                .data[index]
+                                                .r || 10;
+
+                                        ctx.fillText(
+                                            text,
+                                            bubble.x,
+                                            bubble.y - r - 5
+                                        );
+
+                                    }
+                                );
+
+                            }
+
+                            ctx.restore();
+
+                        }
+
                     }]
+
                 });
+
             } else {
-                // Si no hay actores, pintamos un mensaje en el canvas en lugar de romper
-                ctxMactor.font = '18px sans-serif';
-                ctxMactor.fillStyle = '#fff';
-                ctxMactor.textAlign = 'center';
-                ctxMactor.fillText('Aún no se han definido actores clave para generar este mapa.', 400, 250);
+
+                ctxMactor.font =
+                    '18px sans-serif';
+
+                ctxMactor.fillStyle =
+                    '#6c757d';
+
+                ctxMactor.textAlign =
+                    'center';
+
+                ctxMactor.fillText(
+                    'Aún no se han definido actores clave para generar este mapa.',
+                    400,
+                    250
+                );
+
             }
-        } catch (e) { 
-            console.error("Error en Chart.js MACTOR vectorial:", e); 
-            const ctxMactor = document.getElementById('mactorChart').getContext('2d');
-            ctxMactor.font = '18px sans-serif';
-            ctxMactor.fillStyle = 'red';
-            ctxMactor.textAlign = 'center';
-            ctxMactor.fillText('Error al renderizar el mapa de poder. Revisar la consola.', 400, 250);
+
+        } catch (e) {
+
+            console.error(
+                "Error en Chart.js MACTOR vectorial:",
+                e
+            );
+
+            const ctxMactor =
+                document
+                    .getElementById('mactorChart')
+                    .getContext('2d');
+
+            ctxMactor.font =
+                '18px sans-serif';
+
+            ctxMactor.fillStyle =
+                '#dc3545';
+
+            ctxMactor.textAlign =
+                'center';
+
+            ctxMactor.fillText(
+                'Error al renderizar el mapa de poder. Revisar la consola.',
+                400,
+                250
+            );
+
         }
+
     </script>
 
     <!-- PETER SCHWARTZ -->
     <script>
+
         try {
+
             let psData = [
-                { x: 1.5, y: 1.5, label: nombresEscenarios['Estrella Ascendente'] || 'Estrella Ascendente' },
-                { x: -1.5, y: 1.5, label: nombresEscenarios['Experto en Evolución'] || 'Experto en Evolución' },
-                { x: -1.5, y: -1.5, label: nombresEscenarios['Retroceso Competitivo'] || 'Retroceso Competitivo' },
-                { x: 1.5, y: -1.5, label: nombresEscenarios['Proyección Brillante'] || 'Proyección Brillante' }
-            ];
-            const ctxPeter = document.getElementById('peterSchwartzChart').getContext('2d');
-            new Chart(ctxPeter, {
-                type: 'scatter',
-                data: { datasets: [{ label: 'Escenarios', data: psData, backgroundColor: '#00ffcc', pointRadius: 10, pointHoverRadius: 12 }] },
-                options: { 
-                    plugins: { 
-                        legend: { display: false }, 
-                        tooltip: { callbacks: { label: (context) => context.raw.label } },
-                        title: { display: true, text: 'Mapa de Escenarios (Peter-Schwartz)', color: '#fff', font: {size: 16} }, 
-                        annotation: { 
-                            annotations: { 
-                                ejeX: { type: 'line', xMin: 0, xMax: 0, borderColor: 'white', borderWidth: 2 }, 
-                                ejeY: { type: 'line', yMin: 0, yMax: 0, borderColor: 'white', borderWidth: 2 }, 
-                                cuadrante1: { type: 'label', xValue: 1.5, yValue: 1.8, content: ['Estrella Ascendente'], color: 'yellow', font: { size: 14, weight: 'bold' } }, 
-                                cuadrante2: { type: 'label', xValue: -1.5, yValue: 1.8, content: ['Experto en Evolución'], color: 'yellow', font: { size: 14, weight: 'bold' } }, 
-                                cuadrante3: { type: 'label', xValue: -1.5, yValue: -1.8, content: ['Retroceso Competitivo'], color: 'yellow', font: { size: 14, weight: 'bold' } }, 
-                                cuadrante4: { type: 'label', xValue: 1.5, yValue: -1.8, content: ['Proyección Brillante'], color: 'yellow', font: { size: 14, weight: 'bold' } } 
-                            } 
-                        } 
-                    }, 
-                    scales: { 
-                        x: { title: { display: true, text: ejeXSchwartz + ' (- a +)', color: '#fff' }, min: -2, max: 2, ticks: { color: '#fff' } }, 
-                        y: { title: { display: true, text: ejeYSchwartz + ' (- a +)', color: '#fff' }, min: -2, max: 2, ticks: { color: '#fff' } } 
-                    } 
+
+                {
+                    x: 1.5,
+                    y: 1.5,
+                    label:
+                        nombresEscenarios['Estrella Ascendente']
+                        || 'Estrella Ascendente'
+                },
+
+                {
+                    x: -1.5,
+                    y: 1.5,
+                    label:
+                        nombresEscenarios['Experto en Evolución']
+                        || 'Experto en Evolución'
+                },
+
+                {
+                    x: -1.5,
+                    y: -1.5,
+                    label:
+                        nombresEscenarios['Retroceso Competitivo']
+                        || 'Retroceso Competitivo'
+                },
+
+                {
+                    x: 1.5,
+                    y: -1.5,
+                    label:
+                        nombresEscenarios['Proyección Brillante']
+                        || 'Proyección Brillante'
                 }
+
+            ];
+
+            const ctxPeter =
+                document
+                    .getElementById('peterSchwartzChart')
+                    .getContext('2d');
+
+            new Chart(ctxPeter, {
+
+                type: 'scatter',
+
+                data: {
+
+                    datasets: [{
+
+                        label: 'Escenarios',
+
+                        data: psData,
+
+                        backgroundColor: '#20c997',
+
+                        pointRadius: 10,
+                        pointHoverRadius: 12
+
+                    }]
+
+                },
+
+                options: {
+
+                    plugins: {
+
+                        legend: {
+                            display: false
+                        },
+
+                        tooltip: {
+
+                            callbacks: {
+
+                                label:
+                                    (context) =>
+                                        context.raw.label
+
+                            }
+
+                        },
+
+                        title: {
+
+                            display: true,
+
+                            text:
+                                'Mapa de Escenarios (Peter-Schwartz)',
+
+                            color: '#343a40',
+
+                            font: {
+                                size: 16
+                            }
+
+                        },
+
+                        annotation: {
+
+                            annotations: {
+
+                                ejeX: {
+                                    type: 'line',
+                                    xMin: 0,
+                                    xMax: 0,
+                                    borderColor: '#adb5bd',
+                                    borderWidth: 2
+                                },
+
+                                ejeY: {
+                                    type: 'line',
+                                    yMin: 0,
+                                    yMax: 0,
+                                    borderColor: '#adb5bd',
+                                    borderWidth: 2
+                                },
+
+                                cuadrante1: {
+                                    type: 'label',
+                                    xValue: 1.5,
+                                    yValue: 1.8,
+                                    content: ['Estrella Ascendente'],
+                                    color: '#856404',
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
+                                },
+
+                                cuadrante2: {
+                                    type: 'label',
+                                    xValue: -1.5,
+                                    yValue: 1.8,
+                                    content: ['Experto en Evolución'],
+                                    color: '#856404',
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
+                                },
+
+                                cuadrante3: {
+                                    type: 'label',
+                                    xValue: -1.5,
+                                    yValue: -1.8,
+                                    content: ['Retroceso Competitivo'],
+                                    color: '#856404',
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
+                                },
+
+                                cuadrante4: {
+                                    type: 'label',
+                                    xValue: 1.5,
+                                    yValue: -1.8,
+                                    content: ['Proyección Brillante'],
+                                    color: '#856404',
+                                    font: {
+                                        size: 14,
+                                        weight: 'bold'
+                                    }
+                                }
+
+                            }
+
+                        }
+
+                    },
+
+                    scales: {
+
+                        x: {
+
+                            title: {
+                                display: true,
+                                text: ejeXSchwartz + ' (- a +)',
+                                color: '#343a40'
+                            },
+
+                            min: -2,
+                            max: 2,
+
+                            ticks: {
+                                color: '#495057'
+                            }
+
+                        },
+
+                        y: {
+
+                            title: {
+                                display: true,
+                                text: ejeYSchwartz + ' (- a +)',
+                                color: '#343a40'
+                            },
+
+                            min: -2,
+                            max: 2,
+
+                            ticks: {
+                                color: '#495057'
+                            }
+
+                        }
+
+                    }
+
+                }
+
             });
-        } catch (e) { console.error("Error en Peter-Schwartz:", e); }
+
+        } catch (e) {
+
+            console.error(
+                "Error en Peter-Schwartz:",
+                e
+            );
+
+        }
+
     </script>
+
 </body>
 </html>

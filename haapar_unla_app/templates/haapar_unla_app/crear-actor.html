@@ -1,54 +1,115 @@
-{% extends 'haapar_unla_app/base.html' %} 
-{% block title %} Crear Actor - HAAPAR {% endblock %} 
+{% extends 'haapar_unla_app/base.html' %}
+
+{% block title %}Crear Actor - HAAPAR{% endblock %}
+
 {% block content %}
 
 <main class="main">
+
+  <!-- Encabezado -->
   <div class="page-title dark-background">
     <div class="container position-relative">
-      <h1 class="text-center heading-section">Crear Nuevo Actor</h1>
-      <p class="text-center text-muted">{{ subsistema.nombre }}</p>
+
+      <a href="{% url 'actor-detalle' subsistema.id_subsistema %}"
+        class="btn-back"
+        title="Volver a los actores">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
+
+      <h1 class="text-center heading-section mb-2">
+        Crear Nuevo Actor
+      </h1>
+
+      <p class="text-center mb-0">
+        {{ subsistema.nombre }}
+      </p>
+
     </div>
   </div>
 
-  <section>
+  <!-- Formulario -->
+  <section class="py-4">
+    <div class="container">
 
-            <form method="post" action="{% url 'crear-actor' subsistema.id_subsistema %}" class="styled-form">
+      <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
 
-    <div class="container d-flex justify-content-center">
-      <div class="col-lg-8 col-md-10">
-        <div class="card shadow p-4" style="max-width: 600px; margin: auto;">
-          <div class="card-body">
-            <form method="post" action="{% url 'crear-actor' subsistema.id_subsistema %}">
+          <div class="card bg-light border border-success shadow-sm rounded-3">
+            <div class="card-body p-4">
 
-              {% csrf_token %}
-              
-              <div class="mb-3">
-                <label for="nombre" class="form-label">Nombre del Actor</label>
-                <input type="text" class="form-control" id="nombre" name="nombre" required>
-              </div>
-              
-              <div class="mb-3">
-                <label for="descripcion" class="form-label">Descripción</label>
-                <textarea class="form-control" id="descripcion" name="descripcion" rows="3" required></textarea>
-              </div>
-              
-              <div class="mb-3">
-                <label for="puesto" class="form-label">Puesto/Rol</label>
-                <input type="text" class="form-control" id="puesto" name="puesto" required>
-              </div>
-              
-              <div class="d-flex justify-content-center">
-                <button type="submit" class="btn btn-success me-2">Guardar</button>
-                <a href="{% url 'actor-detalle' subsistema.id_subsistema %}" class="btn btn-secondary">Cancelar</a>
-              </div>
-            </form>
+              <form method="post"
+                    action="{% url 'crear-actor' subsistema.id_subsistema %}">
 
+                {% csrf_token %}
+
+                <div class="mb-3">
+                  <label for="nombre" class="form-label">
+                    Nombre del Actor
+                  </label>
+
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="nombre"
+                    name="nombre"
+                    required>
+                </div>
+
+                <div class="mb-3">
+                  <label for="descripcion" class="form-label">
+                    Descripción
+                  </label>
+
+                  <textarea
+                    class="form-control"
+                    id="descripcion"
+                    name="descripcion"
+                    rows="4"
+                    required></textarea>
+                </div>
+
+                <div class="mb-4">
+                  <label for="puesto" class="form-label">
+                    Puesto/Rol
+                  </label>
+
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="puesto"
+                    name="puesto"
+                    required>
+                </div>
+
+                <div class="d-flex justify-content-center gap-2 flex-wrap">
+
+                  <a
+                    href="{% url 'actor-detalle' subsistema.id_subsistema %}"
+                    class="btn btn-outline-secondary">
+                    <i class="fa-solid fa-xmark me-1"></i>
+                    Cancelar
+                  </a>
+
+                  <button
+                    type="submit"
+                    class="btn btn-success">
+                    <i class="fa-solid fa-floppy-disk me-1"></i>
+                    Guardar
+                  </button>
+
+                </div>
+
+              </form>
+
+            </div>
           </div>
+
         </div>
       </div>
-    </div>
 
+    </div>
   </section>
+
 </main>
 
 {% endblock %}

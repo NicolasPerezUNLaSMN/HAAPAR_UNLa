@@ -1,62 +1,60 @@
 {% extends 'haapar_unla_app/base.html' %}
 
-{% block title %}Tendencias del Subsistema - HAAPAR{% endblock %}
+{% block title %}
+Tendencias del Subsistema - HAAPAR
+{% endblock %}
 
 {% block content %}
 
-  <main class="main">
+<main class="main">
 
+  <!-- ============================= -->
+  <!-- ENCABEZADO -->
+  <!-- ============================= -->
+  <div class="page-title dark-background">
 
-    <!-- Encabezado -->
-    <div class="page-title dark-background">
+    <div class="container position-relative">
 
-      <div class="container position-relative">
+      <a href="{% url 'proyecto-detalle' tema.id_tema subsistema.id_subsistema %}"
+        class="btn-back"
+        title="Volver al subsistema">
 
+        <i class="fa-solid fa-arrow-left"></i>
 
-        <a href="{% url 'proyecto-detalle' tema.id_tema subsistema.id_subsistema %}"
-          class="btn-back position-absolute top-0 start-0 mt-3 ms-3">
+      </a>
 
-          <i class="fa-solid fa-arrow-left"></i>
+      <h1 class="text-center heading-section">
+        Tendencias del Subsistema
+      </h1>
 
-        </a>
-
-
-
-        <h1 class="text-center heading-section">
-          TENDENCIAS DEL SUBSISTEMA
-        </h1>
-
-
-
-        <p class="text-center fw-bold mb-0">
-          Subsistema: {{ subsistema.nombre }}
-        </p>
-
-
-      </div>
+      <p class="text-center mb-0">
+        {{ tema.nombre }}
+        <span class="mx-2">·</span>
+        <strong>{{ subsistema.nombre }}</strong>
+      </p>
 
     </div>
 
+  </div>
 
 
+  <!-- ============================= -->
+  <!-- BOTONERA -->
+  <!-- ============================= -->
+  <section class="py-4">
 
+    <div class="container">
 
-    <!-- Botonera principal -->
-    <div class="container mt-4 mb-4">
-
-      <div class="d-flex justify-content-center gap-3 flex-wrap">
-
+      <div class="d-flex justify-content-center gap-3 flex-wrap text-center">
 
         <a href="{% url 'crear-tendencia' subsistema.id_subsistema %}"
-          class="btn btn-primary">
+          class="btn btn-success">
 
           <i class="fa-solid fa-plus me-2"></i>
 
           Agregar Tendencia
 
         </a>
-
-
 
 
         <a href="{% url 'historial-tendencias' subsistema.id_subsistema %}"
@@ -68,313 +66,237 @@
 
         </a>
 
-
-
       </div>
 
     </div>
 
+  </section>
 
 
+  <!-- ============================= -->
+  <!-- LISTADO DE TENDENCIAS -->
+  <!-- ============================= -->
+  <section class="pb-5">
 
-
-
-    <!-- Listado de tendencias -->
-    <div class="container mt-4">
-
-
+    <div class="container">
 
       {% for tendencia in page_obj %}
 
+        <!-- ============================= -->
+        <!-- TARJETA DE TENDENCIA -->
+        <!-- ============================= -->
+        <div class="card bg-light border border-success shadow-sm rounded-3 mb-4">
+
+          <!-- CABECERA -->
+          <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
+
+            <div class="d-flex align-items-center">
+
+              <span class="fw-bold text-success me-2">
+                {{ forloop.counter0|add:page_obj.start_index }}.
+              </span>
 
 
-      <div class="card mb-4 proyecto-base">
+              <a href="{% url 'tendencia-completa' tendencia.id_tendencia_externa %}"
+                class="fw-bold text-success text-decoration-none">
+
+                {{ tendencia.nombre }}
+
+              </a>
+
+            </div>
 
 
+            <!-- ACCIONES -->
+            <div class="text-nowrap">
 
-        <!-- Cabecera -->
-        <div class="card-header d-flex justify-content-between align-items-center">
+              <a href="{% url 'editar-tendencia' tendencia.pk %}"
+                class="btn btn-sm btn-outline-primary"
+                title="Editar tendencia">
 
+                <i class="fa-solid fa-pen"></i>
 
-
-          <div class="d-flex align-items-center">
-
-
-            <span class="fw-bold me-2">
-              {{ forloop.counter0|add:page_obj.start_index }}.
-            </span>
+              </a>
 
 
+              <form action="{% url 'eliminar-tendencia' tendencia.pk %}"
+                method="POST"
+                class="d-inline">
 
-        <a href="{% url 'tendencia-completa' tendencia.id_tendencia_externa %}"
-          class="fw-bold text-primary titulo-tendencia text-decoration-none">
+                {% csrf_token %}
 
-            {{ tendencia.nombre }}
+                <button type="submit"
+                  class="btn btn-sm btn-outline-danger ms-1"
+                  title="Eliminar tendencia"
+                  onclick="return confirm('¿Estás seguro de eliminar esta tendencia?')">
 
-        </a>
+                  <i class="fa-solid fa-trash"></i>
 
+                </button>
 
-          </div>
+              </form>
 
-
-
-
-
-          <div class="text-nowrap">
-
-
-
-            <a href="{% url 'editar-tendencia' tendencia.pk %}"
-              class="btn btn-sm btn-outline-primary"
-              title="Editar tendencia">
-
-
-              <i class="fa-solid fa-pen"></i>
-
-
-            </a>
-
-
-
-
-
-            <form action="{% url 'eliminar-tendencia' tendencia.pk %}"
-                  method="POST"
-                  class="d-inline">
-
-
-              {% csrf_token %}
-
-
-
-              <button type="submit"
-                      class="btn btn-sm btn-outline-danger ms-1"
-                      title="Eliminar tendencia"
-                      onclick="return confirm('¿Estás seguro de eliminar esta tendencia?')">
-
-
-                <i class="fa-solid fa-trash"></i>
-
-
-              </button>
-
-
-
-            </form>
-
+            </div>
 
           </div>
 
 
-        </div>
+          <!-- INFORMACIÓN -->
+          <div class="card-body p-4">
+
+            <p class="text-muted mb-2">
+
+              <strong class="text-dark">
+                Nombre corto:
+              </strong>
+
+              {{ tendencia.nombre_corto }}
+
+            </p>
 
 
+            <p class="text-muted mb-2">
+
+              <strong class="text-dark">
+                Tipo de dato:
+              </strong>
+
+              {{ tendencia.tipo_dato }}
+
+            </p>
 
 
+            <p class="mb-0 text-muted">
 
+              <strong class="text-dark">
+                Descripción:
+              </strong>
 
+              {{ tendencia.descripcion }}
 
-        <!-- Información -->
-        <div class="card-body">
+            </p>
 
-
-
-          <p class="text-muted mb-2">
-
-            <strong>
-              Nombre corto:
-            </strong>
-
-            {{ tendencia.nombre_corto }}
-
-          </p>
-
-
-
-
-
-          <p class="text-muted mb-2">
-
-            <strong>
-              Tipo de dato:
-            </strong>
-
-            {{ tendencia.tipo_dato }}
-
-          </p>
-
-
-
-
-
-          <p class="mb-0">
-
-            <strong>
-              Descripción:
-            </strong>
-
-            {{ tendencia.descripcion }}
-
-          </p>
-
-
-
+          </div>
 
         </div>
-
-
-      </div>
-
-
-
 
 
       {% empty %}
 
 
+        <!-- ============================= -->
+        <!-- SIN TENDENCIAS -->
+        <!-- ============================= -->
+        <div class="card bg-light border border-success shadow-sm rounded-3">
 
-      <div class="alert alert-info text-center">
+          <div class="card-body text-center p-5">
 
+            <div class="mb-3">
 
-        No hay tendencias definidas para este subsistema.
+              <i class="fa-solid fa-arrow-trend-up fa-2x text-success"></i>
 
-
-        <br>
-
-
-        <a href="{% url 'crear-tendencia' subsistema.id_subsistema %}"
-          class="alert-link">
-
-          Agregar primera tendencia
-
-        </a>
+            </div>
 
 
-      </div>
+            <h5 class="fw-bold text-dark">
+              No hay tendencias definidas
+            </h5>
 
+
+            <p class="text-muted mb-3">
+              Este subsistema todavía no tiene tendencias registradas.
+            </p>
+
+
+            <a href="{% url 'crear-tendencia' subsistema.id_subsistema %}"
+              class="btn btn-success">
+
+              <i class="fa-solid fa-plus me-2"></i>
+
+              Agregar primera tendencia
+
+            </a>
+
+          </div>
+
+        </div>
 
 
       {% endfor %}
 
 
-
-
-
-
-
-
-
-      <!-- Paginación -->
+      <!-- ============================= -->
+      <!-- PAGINACIÓN -->
+      <!-- ============================= -->
       {% if page_obj.paginator.num_pages > 1 %}
 
+        <div class="d-flex justify-content-center mt-4 mb-5">
 
+          <nav aria-label="Paginación de tendencias">
 
-      <div class="pagination-container d-flex justify-content-center mt-4 mb-5">
+            <div class="d-flex align-items-center gap-2 flex-wrap justify-content-center">
 
 
+              {% if page_obj.has_previous %}
 
-        <span class="step-links">
+                <a href="?page=1"
+                  class="btn btn-sm btn-outline-secondary">
 
+                  &laquo; Primera
 
+                </a>
 
 
+                <a href="?page={{ page_obj.previous_page_number }}"
+                  class="btn btn-sm btn-outline-success">
 
-          {% if page_obj.has_previous %}
+                  Anterior
 
+                </a>
 
+              {% endif %}
 
-          <a href="?page=1"
-            class="btn btn-sm btn-outline-secondary">
 
-            &laquo; Primera
+              <span class="fw-bold text-muted mx-2">
 
-          </a>
+                Página {{ page_obj.number }}
+                de {{ page_obj.paginator.num_pages }}
 
+              </span>
 
 
+              {% if page_obj.has_next %}
 
+                <a href="?page={{ page_obj.next_page_number }}"
+                  class="btn btn-sm btn-outline-success">
 
-          <a href="?page={{ page_obj.previous_page_number }}"
-            class="btn btn-sm btn-outline-primary">
+                  Siguiente
 
-            Anterior
+                </a>
 
-          </a>
 
+                <a href="?page={{ page_obj.paginator.num_pages }}"
+                  class="btn btn-sm btn-outline-secondary">
 
+                  Última &raquo;
 
-          {% endif %}
+                </a>
 
+              {% endif %}
 
 
+            </div>
 
+          </nav>
 
-
-
-
-          <span class="current fw-bold mx-3">
-
-
-            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
-
-
-          </span>
-
-
-
-
-
-
-
-          {% if page_obj.has_next %}
-
-
-
-
-          <a href="?page={{ page_obj.next_page_number }}"
-            class="btn btn-sm btn-outline-primary">
-
-            Siguiente
-
-          </a>
-
-
-
-
-
-
-          <a href="?page={{ page_obj.paginator.num_pages }}"
-            class="btn btn-sm btn-outline-secondary">
-
-            Última &raquo;
-
-          </a>
-
-
-
-
-          {% endif %}
-
-
-
-        </span>
-
-
-      </div>
-
-
+        </div>
 
       {% endif %}
 
-
-
-
     </div>
 
+  </section>
 
-
-  </main>
-
-
+</main>
 
 {% endblock %}

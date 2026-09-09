@@ -14,15 +14,23 @@
     <div class="container position-relative">
 
         <a href="{% url 'tendencia-detalle' subsistema.id_subsistema %}"
-           class="btn-back position-absolute top-0 start-0 mt-3 ms-3">
+           class="btn-back">
 
             <i class="fa-solid fa-arrow-left"></i>
 
         </a>
 
-        <h1 class="text-center heading-section">
-            TENDENCIA: {{ tendencia.nombre }}
+        <h1 class="text-center heading-section mb-2">
+            Detalle de Tendencia
         </h1>
+
+        <p class="text-center mb-0">
+            {{ tendencia.subsistema.sistema.tema.nombre }}
+            <span class="mx-2">·</span>
+            {{ tendencia.subsistema.nombre }}
+            <span class="mx-2">·</span>
+            <strong>{{ tendencia.nombre }}</strong>
+        </p>
 
     </div>
 
@@ -40,12 +48,12 @@
 
         <div class="col-12 mb-4">
 
-            <div class="card proyecto-base">
+            <div class="card h-100 bg-light border border-success shadow-sm rounded-3">
 
-                <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
 
                     <h6 class="mb-0">
-                        Indicadores
+                        Indicadores de la Tendencia
                     </h6>
 
                     <button
@@ -65,11 +73,11 @@
 
                     {% for i in indicadores %}
 
-                        <div class="border rounded p-3 mb-3">
+                        <div class="border rounded p-3 mb-3 bg-white">
 
                             <div class="d-flex justify-content-between align-items-start">
 
-                                <strong>
+                                <strong class="text-success">
                                     {{ i.nombre_corto }}
                                 </strong>
 
@@ -245,7 +253,7 @@
 
                                             <button
                                                 type="submit"
-                                                class="btn btn-primary">
+                                                class="btn btn-success">
 
                                                 Guardar cambios
 
@@ -263,9 +271,15 @@
 
                     {% empty %}
 
-                        <p class="text-muted text-center mb-0">
-                            No hay indicadores para esta tendencia.
-                        </p>
+                        <div class="text-center py-3">
+
+                            <i class="fa-solid fa-chart-line fa-2x text-success mb-2"></i>
+
+                            <p class="text-muted mb-0">
+                                No hay indicadores para esta tendencia.
+                            </p>
+
+                        </div>
 
                     {% endfor %}
 
@@ -283,12 +297,12 @@
 
         <div class="col-12 mb-4">
 
-            <div class="card proyecto-base">
+            <div class="card h-100 bg-light border border-success shadow-sm rounded-3">
 
-                <div class="card-header d-flex justify-content-between align-items-center">
+                <div class="card-header bg-transparent border-bottom d-flex justify-content-between align-items-center">
 
                     <h6 class="mb-0">
-                        Evaluaciones
+                        Evaluaciones de la Tendencia
                     </h6>
 
 
@@ -493,11 +507,15 @@
 
                     {% else %}
 
-                        <p class="text-muted text-center mb-0">
+                        <div class="text-center py-3">
 
-                            Todavía no existen evaluaciones para esta tendencia.
+                            <i class="fa-solid fa-clipboard-check fa-2x text-success mb-2"></i>
 
-                        </p>
+                            <p class="text-muted mb-0">
+                                Todavía no existen evaluaciones para esta tendencia.
+                            </p>
+
+                        </div>
 
                     {% endif %}
 
@@ -515,10 +533,9 @@
 
 </main>
 
+
 <!-- ========================================================= -->
-
 <!-- MODAL EVALUACIÓN -->
-
 <!-- ========================================================= -->
 
 <div
@@ -527,161 +544,158 @@
     tabindex="-1"
     aria-hidden="true">
 
+    <div class="modal-dialog">
 
-<div class="modal-dialog">
+        <div class="modal-content">
 
-    <div class="modal-content">
+            <form
+                method="POST"
+                action="{% url 'evaluar-tendencia' tendencia.id_tendencia_externa %}">
 
-        <form
-            method="POST"
-            action="{% url 'evaluar-tendencia' tendencia.id_tendencia_externa %}">
-
-            {% csrf_token %}
-
-
-            <div class="modal-header">
-
-                <h5 class="modal-title">
-
-                    {% if mi_evaluacion %}
-                        Modificar mi evaluación
-                    {% else %}
-                        Agregar mi evaluación
-                    {% endif %}
-
-                </h5>
+                {% csrf_token %}
 
 
-                <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal">
-                </button>
+                <div class="modal-header">
 
-            </div>
+                    <h5 class="modal-title">
 
+                        {% if mi_evaluacion %}
+                            Modificar mi evaluación
+                        {% else %}
+                            Agregar mi evaluación
+                        {% endif %}
 
-            <div class="modal-body">
-
-                <p class="text-muted">
-                    Indicá tu valoración sobre la importancia y la
-                    incertidumbre de esta tendencia.
-                </p>
+                    </h5>
 
 
-                <!-- IMPORTANCIA -->
-
-                <div class="mb-3">
-
-                    <label class="form-label">
-                        Importancia
-                    </label>
-
-                    <select
-                        name="importancia"
-                        class="form-select"
-                        required>
-
-                        <option value="">
-                            Seleccionar...
-                        </option>
-
-                        {% for i in rango_10 %}
-
-                            <option
-                                value="{{ i }}"
-                                {% if mi_evaluacion and mi_evaluacion.importancia == i %}
-                                    selected
-                                {% endif %}>
-
-                                {{ i }}
-
-                            </option>
-
-                        {% endfor %}
-
-                    </select>
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                    </button>
 
                 </div>
 
 
-                <!-- INCERTIDUMBRE -->
+                <div class="modal-body">
 
-                <div class="mb-3">
+                    <p class="text-muted">
+                        Indicá tu valoración sobre la importancia y la
+                        incertidumbre de esta tendencia.
+                    </p>
 
-                    <label class="form-label">
-                        Incertidumbre
-                    </label>
 
-                    <select
-                        name="incertidumbre"
-                        class="form-select"
-                        required>
+                    <!-- IMPORTANCIA -->
 
-                        <option value="">
-                            Seleccionar...
-                        </option>
+                    <div class="mb-3">
 
-                        {% for i in rango_10 %}
+                        <label class="form-label">
+                            Importancia
+                        </label>
 
-                            <option
-                                value="{{ i }}"
-                                {% if mi_evaluacion and mi_evaluacion.incertidumbre == i %}
-                                    selected
-                                {% endif %}>
+                        <select
+                            name="importancia"
+                            class="form-select"
+                            required>
 
-                                {{ i }}
-
+                            <option value="">
+                                Seleccionar...
                             </option>
 
-                        {% endfor %}
+                            {% for i in rango_10 %}
 
-                    </select>
+                                <option
+                                    value="{{ i }}"
+                                    {% if mi_evaluacion and mi_evaluacion.importancia == i %}
+                                        selected
+                                    {% endif %}>
+
+                                    {{ i }}
+
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- INCERTIDUMBRE -->
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Incertidumbre
+                        </label>
+
+                        <select
+                            name="incertidumbre"
+                            class="form-select"
+                            required>
+
+                            <option value="">
+                                Seleccionar...
+                            </option>
+
+                            {% for i in rango_10 %}
+
+                                <option
+                                    value="{{ i }}"
+                                    {% if mi_evaluacion and mi_evaluacion.incertidumbre == i %}
+                                        selected
+                                    {% endif %}>
+
+                                    {{ i }}
+
+                                </option>
+
+                            {% endfor %}
+
+                        </select>
+
+                    </div>
 
                 </div>
 
-            </div>
+
+                <div class="modal-footer">
+
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
+
+                        Cancelar
+
+                    </button>
 
 
-            <div class="modal-footer">
+                    <button
+                        type="submit"
+                        class="btn btn-success">
 
-                <button
-                    type="button"
-                    class="btn btn-secondary"
-                    data-bs-dismiss="modal">
+                        {% if mi_evaluacion %}
+                            Guardar cambios
+                        {% else %}
+                            Guardar evaluación
+                        {% endif %}
 
-                    Cancelar
+                    </button>
 
-                </button>
+                </div>
 
+            </form>
 
-                <button
-                    type="submit"
-                    class="btn btn-success">
-
-                    {% if mi_evaluacion %}
-                        Guardar cambios
-                    {% else %}
-                        Guardar evaluación
-                    {% endif %}
-
-                </button>
-
-            </div>
-
-        </form>
+        </div>
 
     </div>
 
 </div>
 
 
-</div>
-
 <!-- ========================================================= -->
-
 <!-- MODAL CREAR INDICADOR -->
-
 <!-- ========================================================= -->
 
 <div
@@ -690,117 +704,115 @@
     tabindex="-1"
     aria-hidden="true">
 
+    <div class="modal-dialog modal-lg">
 
-<div class="modal-dialog modal-lg">
+        <div class="modal-content">
 
-    <div class="modal-content">
+            <form
+                method="POST"
+                action="{% url 'crear-indicador-tendencia' tendencia.id_tendencia_externa %}">
 
-        <form
-            method="POST"
-            action="{% url 'crear-indicador-tendencia' tendencia.id_tendencia_externa %}">
+                {% csrf_token %}
 
-            {% csrf_token %}
-
-            <input
-                type="hidden"
-                name="next"
-                value="{{ request.path }}">
-
-
-            <div class="modal-header">
-
-                <h5 class="modal-title">
-                    Nuevo Indicador
-                </h5>
-
-                <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="modal">
-                </button>
-
-            </div>
+                <input
+                    type="hidden"
+                    name="next"
+                    value="{{ request.path }}">
 
 
-            <div class="modal-body">
+                <div class="modal-header">
 
-                <div class="mb-3">
+                    <h5 class="modal-title">
+                        Agregar Indicador
+                    </h5>
 
-                    <label class="form-label">
-                        Nombre corto
-                    </label>
-
-                    <input
-                        type="text"
-                        name="nombre_corto"
-                        class="form-control"
-                        placeholder="Nombre"
-                        required>
+                    <button
+                        type="button"
+                        class="btn-close"
+                        data-bs-dismiss="modal">
+                    </button>
 
                 </div>
 
 
-                <div class="mb-3">
+                <div class="modal-body">
 
-                    <label class="form-label">
-                        Descripción
-                    </label>
+                    <div class="mb-3">
 
-                    <textarea
-                        name="descripcion"
-                        class="form-control"
-                        rows="3"
-                        placeholder="Descripción"
-                        required></textarea>
+                        <label class="form-label">
+                            Nombre corto
+                        </label>
+
+                        <input
+                            type="text"
+                            name="nombre_corto"
+                            class="form-control"
+                            placeholder="Nombre"
+                            required>
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Descripción
+                        </label>
+
+                        <textarea
+                            name="descripcion"
+                            class="form-control"
+                            rows="3"
+                            placeholder="Descripción"
+                            required></textarea>
+
+                    </div>
+
+
+                    <div class="mb-3">
+
+                        <label class="form-label">
+                            Fórmula
+                        </label>
+
+                        <input
+                            type="text"
+                            name="formula"
+                            class="form-control"
+                            placeholder="Posible fórmula de cálculo">
+
+                    </div>
 
                 </div>
 
 
-                <div class="mb-3">
+                <div class="modal-footer">
 
-                    <label class="form-label">
-                        Fórmula
-                    </label>
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        data-bs-dismiss="modal">
 
-                    <input
-                        type="text"
-                        name="formula"
-                        class="form-control"
-                        placeholder="Posible fórmula de cálculo">
+                        Cancelar
+
+                    </button>
+
+
+                    <button
+                        type="submit"
+                        class="btn btn-success">
+
+                        Guardar
+
+                    </button>
 
                 </div>
 
-            </div>
+            </form>
 
-
-            <div class="modal-footer">
-
-                <button
-                    type="button"
-                    class="btn btn-secondary"
-                    data-bs-dismiss="modal">
-
-                    Cancelar
-
-                </button>
-
-
-                <button
-                    type="submit"
-                    class="btn btn-success">
-
-                    Guardar
-
-                </button>
-
-            </div>
-
-        </form>
+        </div>
 
     </div>
-
-</div>
-
 
 </div>
 

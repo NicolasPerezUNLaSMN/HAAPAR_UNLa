@@ -1,52 +1,137 @@
 {% extends 'haapar_unla_app/base.html' %}
-{% block title %}Subsistemas{% endblock %}
+
+{% block title %}Subsistemas - HAAPAR{% endblock %}
 
 {% block content %}
-<div class="container d-flex justify-content-center align-items-center my-4">
-  <div class="contenedor-subsistema" style="max-width: 700px; width: 100%;">
-    <section class="report-section text-center">
-      
-      <h3 class="mb-4 heading-section">TEMA: <span class="heading-section">{{ tema.nombre }}</span></h3>
-      
-      {% for sistema in sistemas %}
-        <h4 class="mb-3 ">{{ sistema.nombre }}</h4>
-        <div class="section-divider"></div>
 
-        <div class="subsistemas-list">
-          {% for sub in sistema.subsistema_set.all %}
-            <div class="subsistema-item d-flex justify-content-between align-items-center">
-              <div class="d-flex align-items-center">
-                <i class="fas fa-layer-group me-2"></i>
-                  <a href="{% url 'proyecto-detalle' tema.id_tema sub.id_subsistema %}" class="text-decoration-none">
-                    {{ sub.nombre }}
-                  </a>
-              </div>
-              <form method="post" 
-                    action="{% url 'eliminar-subsistema' sub.id_subsistema %}"
-                    onsubmit="return confirm('¿Seguro que deseas dar de baja este subsistema?');">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-sm btn-outline-danger eliminar-btn">
-                  <i class="fas fa-trash-alt"></i>
-                </button>
-              </form>
-            </div>
-          {% empty %}
-            <p class="text-muted">No hay subsistemas en este sistema.</p>
-          {% endfor %}
-        </div>
-      {% empty %}
-        <p class="text-muted">No hay sistemas en este tema.</p>
-      {% endfor %}
-      
-      <!-- Botón de agregar subsistema -->
-      <div class="mt-4">
-        <a href="{% url 'crear-subsistema' tema.id_tema %}" 
-           class="btn btn-primary" >
-          <i class="fas fa-plus-circle me-2"></i> Agregar subsistema
-        </a>
-      </div>
-    </section>
+<main class="main">
+
+  <!-- Encabezado -->
+  <div class="page-title dark-background">
+    <div class="container position-relative">
+
+      <a
+        href="{% url 'listar-proyectos' %}"
+        class="btn-back"
+        title="Volver a los proyectos">
+        <i class="fa-solid fa-arrow-left"></i>
+      </a>
+
+      <h1 class="text-center heading-section mb-2">
+        Subsistemas
+      </h1>
+
+      <p class="text-center mb-0">
+        {{ tema.nombre }}
+      </p>
+
+    </div>
   </div>
-</div>
+
+            <!-- Botón agregar -->
+          <div class="d-flex justify-content-center mt-4">
+
+            <a
+              href="{% url 'crear-subsistema' tema.id_tema %}"
+              class="btn btn-success">
+              <i class="fas fa-plus-circle me-2"></i>
+              Agregar Subsistema
+            </a>
+
+          </div>
+
+  <!-- Sistemas y subsistemas -->
+  <section class="py-4">
+    <div class="container">
+
+      <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+
+          {% for sistema in sistemas %}
+
+            <div class="card bg-light border border-success shadow-sm rounded-3 mb-4">
+
+              <div class="card-body p-4">
+
+                <div class="pt-3">
+
+                  {% for sub in sistema.subsistema_set.all %}
+
+                    <div class="d-flex justify-content-between align-items-center border rounded p-3 mb-3 bg-white">
+
+                      <div class="d-flex align-items-center">
+                        <i class="fas fa-layer-group text-success me-2"></i>
+
+                        <a
+                          href="{% url 'proyecto-detalle' tema.id_tema sub.id_subsistema %}"
+                          class="text-decoration-none text-success fw-semibold">
+                          {{ sub.nombre }}
+                        </a>
+                      </div>
+
+                      <form
+                        method="post"
+                        action="{% url 'eliminar-subsistema' sub.id_subsistema %}"
+                        onsubmit="return confirm('¿Seguro que deseas dar de baja este subsistema?');">
+
+                        {% csrf_token %}
+
+                        <button
+                          type="submit"
+                          class="btn btn-sm btn-outline-danger"
+                          title="Eliminar subsistema">
+                          <i class="fas fa-trash-alt"></i>
+                        </button>
+
+                      </form>
+
+                    </div>
+
+                  {% empty %}
+
+                    <div class="text-center py-3">
+                      <i class="fa-solid fa-layer-group fa-2x text-success mb-2"></i>
+
+                      <p class="text-muted mb-0">
+                        No hay subsistemas en este sistema.
+                      </p>
+                    </div>
+
+                  {% endfor %}
+
+                </div>
+
+              </div>
+            </div>
+
+          {% empty %}
+
+            <div class="card bg-light border border-success shadow-sm rounded-3">
+
+              <div class="card-body text-center p-5">
+
+                <i class="fa-solid fa-diagram-project fa-3x text-success mb-3"></i>
+
+                <h5 class="mb-2">
+                  No hay sistemas
+                </h5>
+
+                <p class="text-muted mb-0">
+                  No hay sistemas en este tema.
+                </p>
+
+              </div>
+
+            </div>
+
+          {% endfor %}
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</main>
 
 {% endblock %}
