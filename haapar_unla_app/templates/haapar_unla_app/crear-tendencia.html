@@ -10,11 +10,15 @@
   <div class="page-title dark-background">
     <div class="container position-relative">
 
-      <a href="{% url 'tendencia-detalle' subsistema.id_subsistema %}"
-        class="btn-back"
-        title="Volver a las tendencias">
-        <i class="fa-solid fa-arrow-left"></i>
-      </a>
+      {% if next_url == 'matriz' %}
+          <a href="{% url 'editar-matriz' subsistema.id_subsistema %}" class="btn-back" title="Volver a los gráficos">
+            <i class="fa-solid fa-arrow-left"></i>
+          </a>
+      {% else %}
+          <a href="{% url 'tendencia-detalle' subsistema.id_subsistema %}" class="btn-back" title="Volver a las tendencias">
+            <i class="fa-solid fa-arrow-left"></i>
+          </a>
+      {% endif %}
 
       <h1 class="text-center heading-section mb-2">
         Crear Nueva Tendencia
@@ -41,6 +45,7 @@
                     action="{% url 'crear-tendencia' subsistema.id_subsistema %}">
 
                 {% csrf_token %}
+                <input type="hidden" name="next" value="{{ next_url }}">
 
                 <div class="mb-3">
                   <label for="nombre" class="form-label">
@@ -98,12 +103,21 @@
 
                 <div class="d-flex justify-content-center gap-2 flex-wrap">
 
-                  <a
-                    href="{% url 'tendencia-detalle' subsistema.id_subsistema %}"
-                    class="btn btn-outline-secondary">
-                    <i class="fa-solid fa-xmark me-1"></i>
-                    Cancelar
-                  </a>
+                  {% if next_url == 'matriz' %}
+                    <a
+                      href="{% url 'editar-matriz' subsistema.id_subsistema %}"
+                      class="btn btn-outline-secondary">
+                      <i class="fa-solid fa-xmark me-1"></i>
+                      Cancelar
+                    </a>
+                  {% else %}
+                    <a
+                      href="{% url 'tendencia-detalle' subsistema.id_subsistema %}"
+                      class="btn btn-outline-secondary">
+                      <i class="fa-solid fa-xmark me-1"></i>
+                      Cancelar
+                    </a>
+                  {% endif %}
 
                   <button
                     type="submit"

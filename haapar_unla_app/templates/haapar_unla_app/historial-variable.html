@@ -15,6 +15,8 @@
   <div class="d-flex justify-content-end mb-3">
 
       <form method="get" class="d-flex gap-2 align-items-center">
+          
+          <input type="hidden" name="from" value="{{ from_view }}">
 
           <div class="input-group input-group-sm" style="width: 260px;">
               <span class="input-group-text">
@@ -65,7 +67,7 @@
           </select>
 
           {% if busqueda or accion_seleccionada %}
-          <a href="{% url 'historial-variables-subsistema' subsistema_id %}"
+          <a href="{% url 'historial-variables-subsistema' subsistema_id %}?from={{ from_view }}"
             class="btn btn-sm btn-outline-secondary">
               <i class="fa-solid fa-xmark"></i>
           </a>
@@ -163,12 +165,12 @@
   <span class="step-links">
 
     {% if page_obj.has_previous %}
-      <a href="?page=1&q={{ busqueda }}&accion={{ accion_seleccionada }}"
+      <a href="?page=1&q={{ busqueda }}&accion={{ accion_seleccionada }}&from={{ from_view }}"
         class="btn btn-sm btn-outline-secondary">
         &laquo; Primera
       </a>
 
-      <a href="?page={{ page_obj.previous_page_number }}&q={{ busqueda }}&accion={{ accion_seleccionada }}"
+      <a href="?page={{ page_obj.previous_page_number }}&q={{ busqueda }}&accion={{ accion_seleccionada }}&from={{ from_view }}"
         class="btn btn-sm btn-outline-primary">
         Anterior
       </a>
@@ -179,12 +181,12 @@
     </span>
 
     {% if page_obj.has_next %}
-      <a href="?page={{ page_obj.next_page_number }}&q={{ busqueda }}&accion={{ accion_seleccionada }}"
+      <a href="?page={{ page_obj.next_page_number }}&q={{ busqueda }}&accion={{ accion_seleccionada }}&from={{ from_view }}"
         class="btn btn-sm btn-outline-primary">
         Siguiente
       </a>
 
-      <a href="?page={{ page_obj.paginator.num_pages }}&q={{ busqueda }}&accion={{ accion_seleccionada }}"
+      <a href="?page={{ page_obj.paginator.num_pages }}&q={{ busqueda }}&accion={{ accion_seleccionada }}&from={{ from_view }}"
         class="btn btn-sm btn-outline-secondary">
         Última &raquo;
       </a>

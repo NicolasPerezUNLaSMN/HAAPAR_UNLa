@@ -10,12 +10,15 @@
   <div class="page-title dark-background">
     <div class="container position-relative">
 
-      <a
-        href="{% url 'variable-detalle' subsistema.id_subsistema %}"
-        class="btn-back"
-        title="Volver a las variables">
-        <i class="fa-solid fa-arrow-left"></i>
-      </a>
+      {% if next == 'matriz' %}
+          <a href="{% url 'editar-matriz' subsistema.id_subsistema %}" class="btn-back" title="Volver a los gráficos">
+            <i class="fa-solid fa-arrow-left"></i>
+          </a>
+      {% else %}
+          <a href="{% url 'variable-detalle' subsistema.id_subsistema %}" class="btn-back" title="Volver a las variables">
+            <i class="fa-solid fa-arrow-left"></i>
+          </a>
+      {% endif %}
 
       <h1 class="text-center heading-section mb-2">
         Crear Nueva Variable

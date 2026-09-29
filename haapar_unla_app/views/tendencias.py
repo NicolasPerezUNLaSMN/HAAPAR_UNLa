@@ -346,7 +346,6 @@ def eliminar_evaluacion_tendencia(request, tendencia_id):
 
 @login_required
 def historial_tendencias(request, subsistema_id):
-
     historial = (
         Historial.objects.filter(tendencia__subsistema_id=subsistema_id)
         .select_related("tendencia", "usuario")
@@ -354,13 +353,13 @@ def historial_tendencias(request, subsistema_id):
     )
 
     busqueda = request.GET.get("q", "").strip()
+    accion = request.GET.get("accion", "").strip()
+    from_view = request.GET.get("from", "").strip()  # CAPTURAMOS EL ORIGEN
 
     if busqueda:
         historial = historial.annotate(
             tendencia_sin_acentos=Func("tendencia__nombre", function="unaccent")
         ).filter(tendencia_sin_acentos__icontains=busqueda)
-
-    accion = request.GET.get("accion", "").strip()
 
     if accion:
         historial = historial.filter(accion=accion)
@@ -378,5 +377,6 @@ def historial_tendencias(request, subsistema_id):
             "subsistema_id": subsistema_id,
             "busqueda": busqueda,
             "accion_seleccionada": accion,
+            "from_view": from_view,  # LO PASAMOS AL HTML
         },
     )

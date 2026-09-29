@@ -287,13 +287,13 @@ def eliminar_indicador(request, pk):
 
 @login_required
 def historial_variables(request, subsistema_id):
-
     historial = Historial.objects.filter(
         variable__subsistema_id=subsistema_id
     ).select_related("variable", "usuario")
 
     busqueda = request.GET.get("q", "").strip()
     accion = request.GET.get("accion", "").strip()
+    from_view = request.GET.get("from", "").strip()  # CAPTURAMOS EL ORIGEN
 
     if busqueda:
         historial = historial.annotate(
@@ -317,6 +317,7 @@ def historial_variables(request, subsistema_id):
             "subsistema_id": subsistema_id,
             "busqueda": busqueda,
             "accion_seleccionada": accion,
+            "from_view": from_view,  # LO PASAMOS AL HTML
         },
     )
 
